@@ -32,3 +32,4 @@ Thumbs.db
 /.env.backup
 composer.lock
 package-lock.json
+/public/vendor/log-viewer

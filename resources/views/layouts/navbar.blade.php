@@ -18,8 +18,7 @@
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" role="button" href="{{ route('logout') }}"
-               onclick="event.preventDefault();document.getElementById('logout-form').submit();">
+            <a class="nav-link" role="button" href="{{ route('logout') }}" onclick="event.preventDefault();document.getElementById('logout-form').submit();">
                 Logout
             </a>
         </li>

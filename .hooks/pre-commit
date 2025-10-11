@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# Get PHP files
+php_files=$(git diff --cached --name-only --diff-filter=ACM -- '*.php' ':!*.blade.php')
+
+# Get Blade files specifically
+blade_files=$(git diff --cached --name-only --diff-filter=ACM -- '*.blade.php')
+
+# Run Laravel Pint on PHP files if any exist
+if [ -n "$php_files" ]; then
+    vendor/bin/pint $php_files -q
+    git add $php_files
+fi
+
+# Run Prettier on Blade files if any exist
+if [ -n "$blade_files" ]; then
+    npx prettier --write $blade_files
+    git add $blade_files
+fi
