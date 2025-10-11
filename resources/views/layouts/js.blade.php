@@ -1,30 +1,28 @@
 <!-- jQuery -->
-<script src="{{ asset('plugins/jquery/jquery.min.js') }}"></script>
+<script src="{{asset('plugins/jquery/jquery.min.js')}}"></script>
 <!-- Bootstrap 4 -->
-<script src="{{ asset('plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+<script src="{{asset('plugins/bootstrap/js/bootstrap.bundle.min.js')}}"></script>
 <!-- AdminLTE App -->
-<script src="{{ asset('dist/js/adminlte.min.js') }}"></script>
+<script src="{{asset('dist/js/adminlte.min.js')}}"></script>
 <!-- DataTables  & Plugins -->
-<script src="{{ asset('plugins/datatables/jquery.dataTables.min.js') }}"></script>
-<script src="{{ asset('plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') }}"></script>
-<script src="{{ asset('plugins/datatables-responsive/js/dataTables.responsive.min.js') }}"></script>
-<script src="{{ asset('plugins/datatables-responsive/js/responsive.bootstrap4.min.js') }}"></script>
-<script src="{{ asset('plugins/datatables-buttons/js/dataTables.buttons.min.js') }}"></script>
-<script src="{{ asset('plugins/datatables-buttons/js/buttons.bootstrap4.min.js') }}"></script>
-<script src="{{ asset('plugins/jszip/jszip.min.js') }}"></script>
-<script src="{{ asset('plugins/pdfmake/pdfmake.min.js') }}"></script>
-<script src="{{ asset('plugins/pdfmake/vfs_fonts.js') }}"></script>
-<script src="{{ asset('plugins/datatables-buttons/js/buttons.html5.min.js') }}"></script>
-<script src="{{ asset('plugins/datatables-buttons/js/buttons.print.min.js') }}"></script>
-<script src="{{ asset('plugins/datatables-buttons/js/buttons.colVis.min.js') }}"></script>
+<script src="{{asset('plugins/datatables/jquery.dataTables.min.js')}}"></script>
+<script src="{{asset('plugins/datatables-bs4/js/dataTables.bootstrap4.min.js')}}"></script>
+<script src="{{asset('plugins/datatables-responsive/js/dataTables.responsive.min.js')}}"></script>
+<script src="{{asset('plugins/datatables-responsive/js/responsive.bootstrap4.min.js')}}"></script>
+<script src="{{asset('plugins/datatables-buttons/js/dataTables.buttons.min.js')}}"></script>
+<script src="{{asset('plugins/datatables-buttons/js/buttons.bootstrap4.min.js')}}"></script>
+<script src="{{asset('plugins/jszip/jszip.min.js')}}"></script>
+<script src="{{asset('plugins/pdfmake/pdfmake.min.js')}}"></script>
+<script src="{{asset('plugins/pdfmake/vfs_fonts.js')}}"></script>
+<script src="{{asset('plugins/datatables-buttons/js/buttons.html5.min.js')}}"></script>
+<script src="{{asset('plugins/datatables-buttons/js/buttons.print.min.js')}}"></script>
+<script src="{{asset('plugins/datatables-buttons/js/buttons.colVis.min.js')}}"></script>
 <!-- Sweet Alert 2 -->
-<script src="{{ asset('plugins/sweetalert2/sweetalert2.all.js') }}"></script>
-<script src="{{ asset('plugins/moment/moment.min.js') }}"></script>
-<script src="{{ asset('plugins/moment/moment-with-locales.js') }}"></script>
-<script src="{{ asset('plugins/select2/js/select2.full.js') }}"></script>
+<script src="{{asset('plugins/sweetalert2/sweetalert2.all.js')}}"></script>
+<script src="{{asset('plugins/moment/moment.min.js')}}"></script>
+<script src="{{asset('plugins/moment/moment-with-locales.js')}}"></script>
+<script src="{{asset('plugins/select2/js/select2.full.js')}}"></script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.6.0/moment-timezone-with-data.min.js"></script>
 <script>
     function alertMsg(msg, status = 'success') {
         Swal.fire({
@@ -35,12 +33,12 @@
         })
     }
 
-    $(document).ready(function() {
+    $(document).ready(function () {
         $('.select2').select2({
             theme: 'bootstrap4'
         })
 
-        $(document).on('submit', '.restore_form', function(e) {
+        $(document).on('submit', '.restore_form', function (e) {
             e.preventDefault();
             var form = this;
             Swal.fire({
@@ -59,15 +57,15 @@
                         data: new FormData(form),
                         contentType: false,
                         processData: false,
-                        beforeSend: function() {
+                        beforeSend: function () {
                             Swal.showLoading();
                         },
-                        success: function(response) {
+                        success: function (response) {
                             Swal.close();
                             $('#table').DataTable().ajax.reload();
                             alertMsg(response.message, response.status);
                         },
-                        error: function(xhr, error, status) {
+                        error: function (xhr, error, status) {
                             Swal.close();
                             var response = xhr.responseJSON;
                             alertMsg(response.message, 'error');
@@ -84,25 +82,4 @@
         // });
     })
 
-    /**
-     * Get the user's current timezone
-     * @returns {string} The IANA timezone identifier (e.g., 'America/New_York')
-     */
-    function getUserTimezone() {
-        try {
-            // Use Intl API (modern browsers)
-            return Intl.DateTimeFormat().resolvedOptions().timeZone;
-        } catch (error) {
-
-            // Fallback to moment-timezone if Intl is not available
-            if (typeof moment !== 'undefined' && moment.tz) {
-                console.warn('moment timezone');
-                return moment.tz.guess();
-            }
-
-            // Last resort: return UTC
-            console.warn('Unable to detect timezone, defaulting to UTC');
-            return 'UTC';
-        }
-    }
 </script>

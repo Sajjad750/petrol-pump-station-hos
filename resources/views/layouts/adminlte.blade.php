@@ -34,12 +34,6 @@
             <!-- /.control-sidebar -->
         </div>
         <!-- ./wrapper -->
-
-        <!-- Tank Alarm System - Available on all pages -->
-        @auth
-            @include('components.tank-alarm-panel')
-        @endauth
-
         @include('layouts.js')
         @stack('js')
     </body>
