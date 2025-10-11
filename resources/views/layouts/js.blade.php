@@ -33,10 +33,124 @@
         })
     }
 
+    // Dark Mode Functionality
+    function initDarkMode() {
+        // Check for saved dark mode preference or default to light mode
+        const darkMode = localStorage.getItem('darkMode') === 'true';
+        
+        if (darkMode) {
+            document.body.classList.add('dark-mode');
+            document.getElementById('darkModeIcon').className = 'fas fa-sun';
+        } else {
+            document.body.classList.remove('dark-mode');
+            document.getElementById('darkModeIcon').className = 'fas fa-moon';
+        }
+        
+        // Reinitialize Select2 after dark mode is applied
+        setTimeout(function() {
+            $('.select2').select2('destroy').select2({
+                theme: 'bootstrap4'
+            });
+            
+            // Force apply dark mode styles after initialization
+            setTimeout(function() {
+                if (document.body.classList.contains('dark-mode')) {
+                    $('.select2-container--default .select2-selection--single').css({
+                        'background-color': '#2d2d2d',
+                        'background-image': 'none',
+                        'border-color': '#4a4a4a',
+                        'color': '#ffffff'
+                    });
+                    $('.select2-container--default .select2-selection--multiple').css({
+                        'background-color': '#2d2d2d',
+                        'background-image': 'none',
+                        'border-color': '#4a4a4a',
+                        'color': '#ffffff'
+                    });
+                }
+            }, 50);
+        }, 200);
+    }
+
+    // Toggle dark mode
+    function toggleDarkMode() {
+        const body = document.body;
+        const icon = document.getElementById('darkModeIcon');
+        
+        if (body.classList.contains('dark-mode')) {
+            // Switch to light mode
+            body.classList.remove('dark-mode');
+            icon.className = 'fas fa-moon';
+            localStorage.setItem('darkMode', 'false');
+        } else {
+            // Switch to dark mode
+            body.classList.add('dark-mode');
+            icon.className = 'fas fa-sun';
+            localStorage.setItem('darkMode', 'true');
+        }
+        
+        // Reinitialize Select2 to apply new styles
+        setTimeout(function() {
+            $('.select2').select2('destroy').select2({
+                theme: 'bootstrap4'
+            });
+            
+            // Force apply dark mode styles after reinitialization
+            setTimeout(function() {
+                if (document.body.classList.contains('dark-mode')) {
+                    $('.select2-container--default .select2-selection--single').css({
+                        'background-color': '#2d2d2d',
+                        'background-image': 'none',
+                        'border-color': '#4a4a4a',
+                        'color': '#ffffff'
+                    });
+                    $('.select2-container--default .select2-selection--multiple').css({
+                        'background-color': '#2d2d2d',
+                        'background-image': 'none',
+                        'border-color': '#4a4a4a',
+                        'color': '#ffffff'
+                    });
+                }
+            }, 50);
+        }, 200);
+    }
+
+    // Dark mode event listener
+    document.addEventListener('DOMContentLoaded', function() {
+        initDarkMode();
+        
+        document.getElementById('darkModeToggle').addEventListener('click', function(e) {
+            e.preventDefault();
+            toggleDarkMode();
+        });
+    });
+
     $(document).ready(function () {
         $('.select2').select2({
             theme: 'bootstrap4'
         })
+
+        // Global Select2 dark mode hover effects
+        $(document).on('select2:open', '.select2', function() {
+            // Ensure proper styling is applied when dropdown opens
+            setTimeout(function() {
+                if (document.body.classList.contains('dark-mode')) {
+                    $('.select2-results__option').each(function() {
+                        if ($(this).attr('aria-selected') === 'true') {
+                            $(this).css({
+                                'background-color': '#3a3a3a',
+                                'color': '#ffffff'
+                            });
+                        } else {
+                            $(this).css({
+                                'background-color': '#2d2d2d',
+                                'color': '#ffffff'
+                            });
+                        }
+                    });
+                }
+            }, 50);
+        });
 
         $(document).on('submit', '.restore_form', function (e) {
             e.preventDefault();
