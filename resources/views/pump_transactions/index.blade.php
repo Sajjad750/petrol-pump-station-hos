@@ -14,7 +14,7 @@
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table id="pump-transactions-table" class="table-striped table-hover custom-table table">
+                            <table id="pump-transactions-table" class="table-bordered table">
                                 <thead class="custom-table-header">
                                 <tr>
                                     <th>ID</th>
