@@ -36,6 +36,7 @@ return new class () extends Migration {
             $table->integer('pts_user_id')->nullable();
             $table->text('pts_configuration_id')->nullable();
             $table->unsignedBigInteger('shift_id')->nullable()->index();
+            $table->string('mode_of_payment')->nullable()->index();
 
             // HOS-specific additions
             $table->foreignId('station_id')->constrained()->onDelete('cascade');
