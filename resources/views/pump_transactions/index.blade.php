@@ -24,7 +24,6 @@
                                     <th>Pump ID</th>
                                     <th>Nozzle ID</th>
                                     <th>Fuel Grade</th>
-                                    <th>Fuel Grade Name</th>
                                     <th>Tank ID</th>
                                     <th>Transaction #</th>
                                     <th>Volume</th>
@@ -89,27 +88,6 @@
                 'serverSide': true,
                 'ajax': {
                     'url': '{{ route('pump_transactions') }}',
-                    'data': function(d) {
-                        // Enhanced date and time filtering parameters
-                        d.from_date = $('#filter-from-date').val();
-                        d.to_date = $('#filter-to-date').val();
-                        d.from_time = $('#filter-from-time').val();
-                        d.to_time = $('#filter-to-time').val();
-                        d.start_time = $('#filter-start-time').val();
-                        d.end_time = $('#filter-end-time').val();
-                        d.fuel_grade = $('#filter-fuel-grade').val();
-                        d.pump_id = $('#filter-pump-id').val();
-
-                        // Log filter parameters for debugging
-                        console.log('Filter parameters sent to backend:', {
-                            from_date: d.from_date,
-                            to_date: d.to_date,
-                            from_time: d.from_time,
-                            to_time: d.to_time,
-                            pump_id: d.pump_id,
-                            fuel_grade: d.fuel_grade
-                        });
-                    }
                 },
                 'order': [0, 'desc'],
                 'columns': [{
@@ -132,9 +110,6 @@
                     },
                     {
                         data: 'pts_fuel_grade_id'
-                    },
-                    {
-                        data: 'fuel_grade_name'
                     },
                     {
                         data: 'pts_tank_id'
