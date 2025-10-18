@@ -15,7 +15,7 @@ return new class () extends Migration {
 
             // BOS fields (mirroring BOS structure)
             $table->uuid('uuid')->unique();
-            $table->string('pts2_device_id');
+            $table->string('pts2_device_id')->nullable();
             $table->string('pts_id', 50)->index();
             $table->integer('request_id')->nullable();
             $table->dateTime('date_time_start')->nullable();
@@ -29,6 +29,7 @@ return new class () extends Migration {
             $table->float('tc_volume')->nullable();
             $table->float('price')->nullable();
             $table->float('amount')->nullable();
+            $table->float('starting_totalizer')->nullable();
             $table->float('total_volume')->nullable();
             $table->float('total_amount')->nullable();
             $table->text('tag')->nullable();

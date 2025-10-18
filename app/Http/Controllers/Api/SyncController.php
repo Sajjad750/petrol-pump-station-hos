@@ -149,6 +149,7 @@ class SyncController extends Controller
             'tc_volume' => $bosData['tc_volume'],
             'price' => $bosData['price'],
             'amount' => $bosData['amount'],
+            'starting_totalizer' => $bosData['starting_totalizer'],
             'total_volume' => $bosData['total_volume'],
             'total_amount' => $bosData['total_amount'],
             'tag' => $bosData['tag'],
