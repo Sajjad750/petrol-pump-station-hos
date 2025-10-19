@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\FuelGrade;
 use App\Models\Pump;
 use App\Models\PumpTransaction;
 use App\Models\Station;
@@ -672,6 +673,149 @@ class SyncController extends Controller
             'probe_data' => $bosData['probe_data'] ?? null,
             'station_id' => $stationId,
             'bos_tank_delivery_id' => $bosData['id'],
+            'bos_uuid' => $bosData['uuid'],
+            'created_at_bos' => $bosData['created_at'] ?? null,
+            'updated_at_bos' => $bosData['updated_at'] ?? null,
+        ];
+    }
+
+    /**
+     * Sync fuel grades from BOS
+     */
+    public function syncFuelGrades(Request $request): JsonResponse
+    {
+        Log::debug("syncFuelGrades: ", (array)$request->all());
+
+        $station = $request->get('station');
+        $ptsId = $request->input('pts_id');
+        $fuelGrades = $request->input('data', []);
+        Log::debug("fuel_grades: ", (array)$fuelGrades);
+
+        $created = 0;
+        $updated = 0;
+        $failed = 0;
+        $errors = [];
+
+        DB::beginTransaction();
+
+        try {
+            foreach ($fuelGrades as $fuelGradeData) {
+                try {
+                    // Create sync log entry
+                    $syncLog = SyncLog::createLog(
+                        $station->id,
+                        'fuel_grades',
+                        'create',
+                        $fuelGradeData,
+                        'pending'
+                    );
+
+                    // Prepare fuel grade data for HOS
+                    $hosFuelGradeData = $this->prepareFuelGradeData($fuelGradeData, $station->id);
+
+                    // Use updateOrCreate to handle duplicates
+                    $fuelGrade = FuelGrade::updateOrCreate(
+                        [
+                            'station_id' => $station->id,
+                            'bos_fuel_grade_id' => $fuelGradeData['id'],
+                        ],
+                        array_merge($hosFuelGradeData, [
+                            'synced_at' => now(),
+                        ])
+                    );
+
+                    // Mark sync log as successful
+                    $syncLog->markAsSuccessful([
+                        'fuel_grade_id' => $fuelGrade->id,
+                        'action' => $fuelGrade->wasRecentlyCreated ? 'created' : 'updated',
+                    ]);
+
+                    if ($fuelGrade->wasRecentlyCreated) {
+                        $created++;
+                    } else {
+                        $updated++;
+                    }
+                } catch (\Exception $e) {
+                    $failed++;
+                    $errors[] = [
+                        'fuel_grade_id' => $fuelGradeData['id'] ?? 'unknown',
+                        'error' => $e->getMessage(),
+                    ];
+
+                    // Mark sync log as failed
+                    if (isset($syncLog)) {
+                        $syncLog->markAsFailed($e->getMessage());
+                    }
+
+                    Log::error('Failed to sync fuel grade', [
+                        'station_id' => $station->id,
+                        'pts_id' => $ptsId,
+                        'fuel_grade_data' => $fuelGradeData,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            // Update station's last sync time
+            $station->updateLastSync();
+
+            DB::commit();
+
+            $totalItems = $created + $updated + $failed;
+            $allFailed = $totalItems > 0 && $failed === $totalItems;
+
+            return response()->json([
+                'success' => !$allFailed,
+                'message' => $allFailed
+                    ? "All {$failed} fuel grades failed to sync"
+                    : "Synced {$created} created, {$updated} updated, {$failed} failed fuel grades",
+                'data' => [
+                    'created' => $created,
+                    'updated' => $updated,
+                    'failed' => $failed,
+                    'errors' => $errors,
+                ],
+            ], $allFailed ? 422 : 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Sync fuel grades failed', [
+                'station_id' => $station->id,
+                'pts_id' => $ptsId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Sync operation failed: ' . $e->getMessage(),
+                'data' => [
+                    'created' => $created,
+                    'updated' => $updated,
+                    'failed' => $failed,
+                    'errors' => $errors,
+                ],
+            ], 500);
+        }
+    }
+
+    /**
+     * Prepare fuel grade data for HOS storage
+     */
+    private function prepareFuelGradeData(array $bosData, int $stationId): array
+    {
+        return [
+            'uuid' => Str::uuid7(),
+            'pts_fuel_grade_id' => $bosData['pts_fuel_grade_id'] ?? null,
+            'name' => $bosData['name'],
+            'price' => $bosData['price'],
+            'scheduled_price' => $bosData['scheduled_price'] ?? null,
+            'scheduled_at' => $bosData['scheduled_at'] ?? null,
+            'expansion_coefficient' => $bosData['expansion_coefficient'] ?? null,
+            'blend_tank1_id' => $bosData['blend_tank1_id'] ?? null,
+            'blend_tank1_percentage' => $bosData['blend_tank1_percentage'] ?? null,
+            'blend_tank2_id' => $bosData['blend_tank2_id'] ?? null,
+            'station_id' => $stationId,
+            'bos_fuel_grade_id' => $bosData['id'],
             'bos_uuid' => $bosData['uuid'],
             'created_at_bos' => $bosData['created_at'] ?? null,
             'updated_at_bos' => $bosData['updated_at'] ?? null,
