@@ -17,6 +17,7 @@ class TankMeasurement extends Model
         'synced_at' => 'datetime',
         'created_at_bos' => 'datetime',
         'updated_at_bos' => 'datetime',
+        'alarms' => 'array',
         'product_height' => 'decimal:3',
         'water_height' => 'decimal:3',
         'temperature' => 'decimal:2',

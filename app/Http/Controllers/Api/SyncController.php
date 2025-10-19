@@ -98,16 +98,21 @@ class SyncController extends Controller
 
             DB::commit();
 
+            $totalItems = $created + $updated + $failed;
+            $allFailed = $totalItems > 0 && $failed === $totalItems;
+
             return response()->json([
-                'success' => true,
-                'message' => "Synced {$created} created, {$updated} updated, {$failed} failed transactions",
+                'success' => !$allFailed,
+                'message' => $allFailed
+                    ? "All {$failed} transactions failed to sync"
+                    : "Synced {$created} created, {$updated} updated, {$failed} failed transactions",
                 'data' => [
                     'created' => $created,
                     'updated' => $updated,
                     'failed' => $failed,
                     'errors' => $errors,
                 ],
-            ]);
+            ], $allFailed ? 422 : 200);
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -293,16 +298,21 @@ class SyncController extends Controller
 
             DB::commit();
 
+            $totalItems = $created + $updated + $failed;
+            $allFailed = $totalItems > 0 && $failed === $totalItems;
+
             return response()->json([
-                'success' => true,
-                'message' => "Synced {$created} created, {$updated} updated, {$failed} failed pumps",
+                'success' => !$allFailed,
+                'message' => $allFailed
+                    ? "All {$failed} pumps failed to sync"
+                    : "Synced {$created} created, {$updated} updated, {$failed} failed pumps",
                 'data' => [
                     'created' => $created,
                     'updated' => $updated,
                     'failed' => $failed,
                     'errors' => $errors,
                 ],
-            ]);
+            ], $allFailed ? 422 : 200);
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -429,16 +439,21 @@ class SyncController extends Controller
 
             DB::commit();
 
+            $totalItems = $created + $updated + $failed;
+            $allFailed = $totalItems > 0 && $failed === $totalItems;
+
             return response()->json([
-                'success' => true,
-                'message' => "Synced {$created} created, {$updated} updated, {$failed} failed tank measurements",
+                'success' => !$allFailed,
+                'message' => $allFailed
+                    ? "All {$failed} tank measurements failed to sync"
+                    : "Synced {$created} created, {$updated} updated, {$failed} failed tank measurements",
                 'data' => [
                     'created' => $created,
                     'updated' => $updated,
                     'failed' => $failed,
                     'errors' => $errors,
                 ],
-            ]);
+            ], $allFailed ? 422 : 200);
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -475,7 +490,7 @@ class SyncController extends Controller
             'fuel_grade_id' => $bosData['fuel_grade_id'] ?? null,
             'fuel_grade_name' => $bosData['fuel_grade_name'] ?? null,
             'status' => $bosData['status'] ?? null,
-            'alarms' => json_encode($bosData['alarms'] ?? []),
+            'alarms' => $bosData['alarms'] ?? [],
             'product_height' => $bosData['product_height'] ?? null,
             'water_height' => $bosData['water_height'] ?? null,
             'temperature' => $bosData['temperature'] ?? null,
