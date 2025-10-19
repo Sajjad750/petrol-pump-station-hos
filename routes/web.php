@@ -17,6 +17,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('pump_transactions', \App\Http\Controllers\PumpTransactionListController::class)->name('pump_transactions');
+    Route::get('pumps', \App\Http\Controllers\PumpListController::class)->name('pumps');
+    Route::get('tank_measurements', \App\Http\Controllers\TankMeasurementListController::class)->name('tank_measurements');
 });
 
 require __DIR__.'/auth.php';
