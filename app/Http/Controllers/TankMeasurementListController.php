@@ -106,12 +106,10 @@ class TankMeasurementListController extends Controller
             $row['tank_filling_percentage'] = $row['tank_filling_percentage'] ? number_format($row['tank_filling_percentage'], 2) . '%' : '-';
 
             // Format alarms JSON
-            if ($row['alarms']) {
-                $alarms = json_decode($row['alarms'], true);
-                $row['alarms'] = is_array($alarms) ? implode(', ', $alarms) : $row['alarms'];
-            } else {
-                $row['alarms'] = '-';
+            if (is_string($row['alarms'])) {
+                $row['alarms'] = json_decode($row['alarms'], true);
             }
+            $row['alarms'] = is_array($row['alarms']) ? implode(', ', $row['alarms']) : $row['alarms'];
 
             return $row;
         });
