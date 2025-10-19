@@ -14,5 +14,6 @@ Route::prefix('sync')->middleware(['bos.api.key', 'throttle:120,1'])->group(func
     Route::post('/pumps', [SyncController::class, 'syncPumps']);
     Route::get('/status', [SyncController::class, 'getSyncStatus']);
     Route::post('/tank-measurements', [SyncController::class, 'syncTankMeasurements']);
-    // Future endpoints: tank-measurements, tank-deliveries, alert-records
+    Route::post('/tank-deliveries', [SyncController::class, 'syncTankDeliveries']);
+    // Future endpoints: alert-records
 });

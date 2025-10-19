@@ -7,6 +7,7 @@ use App\Models\Pump;
 use App\Models\PumpTransaction;
 use App\Models\Station;
 use App\Models\SyncLog;
+use App\Models\TankDelivery;
 use App\Models\TankMeasurement;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -504,6 +505,173 @@ class SyncController extends Controller
             'configuration_id' => $bosData['configuration_id'] ?? null,
             'station_id' => $stationId,
             'bos_tank_measurement_id' => $bosData['id'],
+            'bos_uuid' => $bosData['uuid'],
+            'created_at_bos' => $bosData['created_at'] ?? null,
+            'updated_at_bos' => $bosData['updated_at'] ?? null,
+        ];
+    }
+
+    /**
+     * Sync tank deliveries from BOS
+     */
+    public function syncTankDeliveries(Request $request): JsonResponse
+    {
+        Log::debug("syncTankDeliveries: ", (array)$request->all());
+
+        $station = $request->get('station');
+        $ptsId = $request->input('pts_id');
+        $tankDeliveries = $request->input('data', []);
+        Log::debug("tank_deliveries: ", (array)$tankDeliveries);
+
+        $created = 0;
+        $updated = 0;
+        $failed = 0;
+        $errors = [];
+
+        DB::beginTransaction();
+
+        try {
+            foreach ($tankDeliveries as $tankDeliveryData) {
+                try {
+                    // Create sync log entry
+                    $syncLog = SyncLog::createLog(
+                        $station->id,
+                        'tank_deliveries',
+                        'create',
+                        $tankDeliveryData,
+                        'pending'
+                    );
+
+                    // Prepare tank delivery data for HOS
+                    $hosTankDeliveryData = $this->prepareTankDeliveryData($tankDeliveryData, $station->id);
+
+                    // Use updateOrCreate to handle duplicates
+                    $tankDelivery = TankDelivery::updateOrCreate(
+                        [
+                            'station_id' => $station->id,
+                            'bos_tank_delivery_id' => $tankDeliveryData['id'],
+                        ],
+                        array_merge($hosTankDeliveryData, [
+                            'synced_at' => now(),
+                        ])
+                    );
+
+                    // Mark sync log as successful
+                    $syncLog->markAsSuccessful([
+                        'tank_delivery_id' => $tankDelivery->id,
+                        'action' => $tankDelivery->wasRecentlyCreated ? 'created' : 'updated',
+                    ]);
+
+                    if ($tankDelivery->wasRecentlyCreated) {
+                        $created++;
+                    } else {
+                        $updated++;
+                    }
+                } catch (\Exception $e) {
+                    $failed++;
+                    $errors[] = [
+                        'tank_delivery_id' => $tankDeliveryData['id'] ?? 'unknown',
+                        'error' => $e->getMessage(),
+                    ];
+
+                    // Mark sync log as failed
+                    if (isset($syncLog)) {
+                        $syncLog->markAsFailed($e->getMessage());
+                    }
+
+                    Log::error('Failed to sync tank delivery', [
+                        'station_id' => $station->id,
+                        'pts_id' => $ptsId,
+                        'tank_delivery_data' => $tankDeliveryData,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            // Update station's last sync time
+            $station->updateLastSync();
+
+            DB::commit();
+
+            $totalItems = $created + $updated + $failed;
+            $allFailed = $totalItems > 0 && $failed === $totalItems;
+
+            return response()->json([
+                'success' => !$allFailed,
+                'message' => $allFailed
+                    ? "All {$failed} tank deliveries failed to sync"
+                    : "Synced {$created} created, {$updated} updated, {$failed} failed tank deliveries",
+                'data' => [
+                    'created' => $created,
+                    'updated' => $updated,
+                    'failed' => $failed,
+                    'errors' => $errors,
+                ],
+            ], $allFailed ? 422 : 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Sync tank deliveries failed', [
+                'station_id' => $station->id,
+                'pts_id' => $ptsId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Sync operation failed: ' . $e->getMessage(),
+                'data' => [
+                    'created' => $created,
+                    'updated' => $updated,
+                    'failed' => $failed,
+                    'errors' => $errors,
+                ],
+            ], 500);
+        }
+    }
+
+    /**
+     * Prepare tank delivery data for HOS storage
+     */
+    private function prepareTankDeliveryData(array $bosData, int $stationId): array
+    {
+        return [
+            'uuid' => Str::uuid7(),
+            'request_id' => $bosData['request_id'] ?? null,
+            'pts_id' => $bosData['pts_id'],
+            'pts_delivery_id' => $bosData['pts_delivery_id'] ?? null,
+            'tank' => $bosData['tank'],
+            'fuel_grade_id' => $bosData['fuel_grade_id'] ?? null,
+            'fuel_grade_name' => $bosData['fuel_grade_name'] ?? null,
+            'configuration_id' => $bosData['configuration_id'] ?? null,
+            'start_datetime' => $bosData['start_datetime'] ?? null,
+            'start_product_height' => $bosData['start_product_height'] ?? null,
+            'start_water_height' => $bosData['start_water_height'] ?? null,
+            'start_temperature' => $bosData['start_temperature'] ?? null,
+            'start_product_volume' => $bosData['start_product_volume'] ?? null,
+            'start_product_tc_volume' => $bosData['start_product_tc_volume'] ?? null,
+            'start_product_density' => $bosData['start_product_density'] ?? null,
+            'start_product_mass' => $bosData['start_product_mass'] ?? null,
+            'end_datetime' => $bosData['end_datetime'] ?? null,
+            'end_product_height' => $bosData['end_product_height'] ?? null,
+            'end_water_height' => $bosData['end_water_height'] ?? null,
+            'end_temperature' => $bosData['end_temperature'] ?? null,
+            'end_product_volume' => $bosData['end_product_volume'] ?? null,
+            'end_product_tc_volume' => $bosData['end_product_tc_volume'] ?? null,
+            'end_product_density' => $bosData['end_product_density'] ?? null,
+            'end_product_mass' => $bosData['end_product_mass'] ?? null,
+            'received_product_volume' => $bosData['received_product_volume'] ?? null,
+            'absolute_product_height' => $bosData['absolute_product_height'] ?? null,
+            'absolute_water_height' => $bosData['absolute_water_height'] ?? null,
+            'absolute_temperature' => $bosData['absolute_temperature'] ?? null,
+            'absolute_product_volume' => $bosData['absolute_product_volume'] ?? null,
+            'absolute_product_tc_volume' => $bosData['absolute_product_tc_volume'] ?? null,
+            'absolute_product_density' => $bosData['absolute_product_density'] ?? null,
+            'absolute_product_mass' => $bosData['absolute_product_mass'] ?? null,
+            'pumps_dispensed_volume' => $bosData['pumps_dispensed_volume'] ?? null,
+            'probe_data' => $bosData['probe_data'] ?? null,
+            'station_id' => $stationId,
+            'bos_tank_delivery_id' => $bosData['id'],
             'bos_uuid' => $bosData['uuid'],
             'created_at_bos' => $bosData['created_at'] ?? null,
             'updated_at_bos' => $bosData['updated_at'] ?? null,
