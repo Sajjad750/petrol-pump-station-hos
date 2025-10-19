@@ -60,6 +60,14 @@ class Station extends Model
     }
 
     /**
+     * Get all pumps for this station
+     */
+    public function pumps(): HasMany
+    {
+        return $this->hasMany(Pump::class);
+    }
+
+    /**
      * Get all sync logs for this station
      */
     public function syncLogs(): HasMany

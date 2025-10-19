@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Pump;
 use App\Models\PumpTransaction;
 use App\Models\Station;
 use App\Models\SyncLog;
@@ -210,5 +211,138 @@ class SyncController extends Controller
                 'recent_logs' => $recentLogs,
             ],
         ]);
+    }
+
+    /**
+     * Sync pumps from BOS
+     */
+    public function syncPumps(Request $request): JsonResponse
+    {
+        $station = $request->get('station');
+        $ptsId = $request->input('pts_id');
+        $pumps = $request->input('data', []);
+
+        $created = 0;
+        $updated = 0;
+        $failed = 0;
+        $errors = [];
+
+        DB::beginTransaction();
+
+        try {
+            foreach ($pumps as $pumpData) {
+                try {
+                    // Create sync log entry
+                    $syncLog = SyncLog::createLog(
+                        $station->id,
+                        'pumps',
+                        'create',
+                        $pumpData,
+                        'pending'
+                    );
+
+                    // Prepare pump data for HOS
+                    $hosPumpData = $this->preparePumpData($pumpData, $station->id);
+
+                    // Use updateOrCreate to handle duplicates
+                    $pump = Pump::updateOrCreate(
+                        [
+                            'station_id' => $station->id,
+                            'bos_pump_id' => $pumpData['id'],
+                        ],
+                        array_merge($hosPumpData, [
+                            'synced_at' => now(),
+                        ])
+                    );
+
+                    // Mark sync log as successful
+                    $syncLog->markAsSuccessful([
+                        'pump_id' => $pump->id,
+                        'action' => $pump->wasRecentlyCreated ? 'created' : 'updated',
+                    ]);
+
+                    if ($pump->wasRecentlyCreated) {
+                        $created++;
+                    } else {
+                        $updated++;
+                    }
+                } catch (\Exception $e) {
+                    $failed++;
+                    $errors[] = [
+                        'pump_id' => $pumpData['id'] ?? 'unknown',
+                        'error' => $e->getMessage(),
+                    ];
+
+                    // Mark sync log as failed
+                    if (isset($syncLog)) {
+                        $syncLog->markAsFailed($e->getMessage());
+                    }
+
+                    Log::error('Failed to sync pump', [
+                        'station_id' => $station->id,
+                        'pts_id' => $ptsId,
+                        'pump_data' => $pumpData,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            // Update station's last sync time
+            $station->updateLastSync();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Synced {$created} created, {$updated} updated, {$failed} failed pumps",
+                'data' => [
+                    'created' => $created,
+                    'updated' => $updated,
+                    'failed' => $failed,
+                    'errors' => $errors,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Sync pumps failed', [
+                'station_id' => $station->id,
+                'pts_id' => $ptsId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Sync operation failed: ' . $e->getMessage(),
+                'data' => [
+                    'created' => $created,
+                    'updated' => $updated,
+                    'failed' => $failed,
+                    'errors' => $errors,
+                ],
+            ], 500);
+        }
+    }
+
+    /**
+     * Prepare pump data for HOS storage
+     */
+    private function preparePumpData(array $bosData, int $stationId): array
+    {
+        return [
+            'station_id' => $stationId,
+            'bos_pump_id' => $bosData['id'],
+            'bos_uuid' => $bosData['uuid'],
+            'name' => $bosData['name'],
+            'pump_id' => $bosData['pump_id'],
+            'is_self_service' => $bosData['is_self_service'],
+            'nozzles_count' => $bosData['nozzles_count'],
+            'status' => $bosData['status'],
+            'pts_pump_id' => $bosData['pts_pump_id'],
+            'pts_port_id' => $bosData['pts_port_id'] ?? null,
+            'pts_address_id' => $bosData['pts_address_id'] ?? null,
+            'created_at_bos' => $bosData['created_at'] ?? null,
+            'updated_at_bos' => $bosData['updated_at'] ?? null,
+        ];
     }
 }
