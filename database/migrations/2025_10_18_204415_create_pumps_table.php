@@ -19,8 +19,8 @@ return new class () extends Migration {
             $table->uuid('bos_uuid')->nullable()->comment('Original BOS UUID');
 
             // BOS fields
-            $table->string('name');
-            $table->string('pump_id');
+            $table->string('name')->nullable();
+            $table->string('pump_id')->nullable();
             $table->boolean('is_self_service')->nullable();
             $table->integer('nozzles_count')->nullable();
             $table->string('status')->nullable();

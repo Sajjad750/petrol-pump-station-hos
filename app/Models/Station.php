@@ -68,6 +68,14 @@ class Station extends Model
     }
 
     /**
+     * Get all tank measurements for this station
+     */
+    public function tankMeasurements(): HasMany
+    {
+        return $this->hasMany(TankMeasurement::class);
+    }
+
+    /**
      * Get all sync logs for this station
      */
     public function syncLogs(): HasMany
