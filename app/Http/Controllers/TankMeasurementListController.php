@@ -12,10 +12,30 @@ class TankMeasurementListController extends Controller
     public function __invoke(Request $request)
     {
         if (request()->ajax()) {
+            // Return filter options if requested
+            if ($request->has('get_filter_options')) {
+                return response()->json($this->getFilterOptions());
+            }
+
             return response()->json($this->showData(request()));
         }
 
         return view('tank_measurements.index');
+    }
+
+    protected function getFilterOptions(): array
+    {
+        $statuses = \App\Models\TankMeasurement::query()
+            ->distinct()
+            ->whereNotNull('status')
+            ->pluck('status')
+            ->sort()
+            ->values()
+            ->toArray();
+
+        return [
+            'statuses' => $statuses,
+        ];
     }
 
     protected function showData($request)
@@ -59,6 +79,37 @@ class TankMeasurementListController extends Controller
         $orderDir = $request->input('order.0.dir');
 
         $query = \App\Models\TankMeasurement::with('station');
+
+        // Date Filters
+        if ($request->filled('from_date') || $request->filled('to_date')) {
+            $from_date = $request->input('from_date');
+            $to_date = $request->input('to_date');
+
+            if ($from_date && $to_date) {
+                // Both dates provided
+                $from_datetime = $from_date.' 00:00:00';
+                $to_datetime = $to_date.' 23:59:59';
+                $query->whereBetween('date_time', [$from_datetime, $to_datetime]);
+            } elseif ($from_date) {
+                // Only from_date provided
+                $from_datetime = $from_date.' 00:00:00';
+                $query->where('date_time', '>=', $from_datetime);
+            } elseif ($to_date) {
+                // Only to_date provided
+                $to_datetime = $to_date.' 23:59:59';
+                $query->where('date_time', '<=', $to_datetime);
+            }
+        }
+
+        // Status Filter
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        // Tank ID Filter
+        if ($request->filled('tank_id')) {
+            $query->where('tank', $request->input('tank_id'));
+        }
 
         // Global search for all columns
         if ($request->has('search') && $request->search['value'] != '') {

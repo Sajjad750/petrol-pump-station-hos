@@ -7,6 +7,55 @@
         <div class="row">
             <!-- Main Content -->
             <div class="col-md-12">
+                <!-- Filters Card -->
+                <div class="card custom-card mb-3">
+                    <div class="card-header custom-card-header">
+                        <h5 class="mb-0">Filters</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="filter-form">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="from_date">From Date</label>
+                                        <input type="date" class="form-control" id="from_date" name="from_date">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="to_date">To Date</label>
+                                        <input type="date" class="form-control" id="to_date" name="to_date">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="status">Status</label>
+                                        <select class="form-control" id="status" name="status">
+                                            <option value="">All Statuses</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="tank_id">Tank ID</label>
+                                        <input type="text" class="form-control" id="tank_id" name="tank_id" placeholder="Enter Tank ID">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <button type="button" id="filter-btn" class="btn btn-primary">
+                                        <i class="fas fa-filter"></i> Apply Filters
+                                    </button>
+                                    <button type="button" id="reset-btn" class="btn btn-secondary">
+                                        <i class="fas fa-redo"></i> Reset
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
                 <div class="card custom-card">
                     <div class="card-header custom-card-header">
                         <h4 class="mb-0">Tank Measurements</h4>
@@ -93,6 +142,12 @@
                 'serverSide': true,
                 'ajax': {
                     'url': '{{ route('tank_measurements') }}',
+                    'data': function(d) {
+                        d.from_date = $('#from_date').val();
+                        d.to_date = $('#to_date').val();
+                        d.status = $('#status').val();
+                        d.tank_id = $('#tank_id').val();
+                    }
                 },
                 'order': [0, 'desc'],
                 'columns': [{
@@ -196,9 +251,51 @@
                 ]
             });
 
+            // Load filter options
+            $.ajax({
+                url: '{{ route('tank_measurements') }}',
+                type: 'GET',
+                data: {
+                    get_filter_options: true
+                },
+                success: function(response) {
+                    // Populate status dropdown
+                    if (response.statuses) {
+                        response.statuses.forEach(function(status) {
+                            if (status) {
+                                $('#status').append('<option value="' + status + '">' + status + '</option>');
+                            }
+                        });
+                    }
+                }
+            });
 
+            // Apply filters button
+            $('#filter-btn').on('click', function() {
+                table.draw();
+            });
 
+            // Reset filters button
+            $('#reset-btn').on('click', function() {
+                $('#from_date').val('');
+                $('#to_date').val('');
+                $('#status').val('');
+                $('#tank_id').val('');
+                table.draw();
+            });
 
+            // Allow Enter key to trigger filter
+            $('#filter-form input, #filter-form select').on('keypress', function(e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    table.draw();
+                }
+            });
+
+            // Auto-filter on status dropdown change
+            $('#status').on('change', function() {
+                table.draw();
+            });
         });
     </script>
 @endpush
