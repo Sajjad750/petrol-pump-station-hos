@@ -52,6 +52,29 @@ class PumpTransactionListController extends Controller
 
         $query = \App\Models\PumpTransaction::query();
 
+        // Date and Time Filters
+        if ($request->filled('from_date') || $request->filled('to_date') || $request->filled('from_time') || $request->filled('to_time')) {
+            $from_date = $request->input('from_date');
+            $to_date = $request->input('to_date');
+            $from_time = $request->input('from_time', '00:00:00');
+            $to_time = $request->input('to_time', '23:59:59');
+
+            if ($from_date && $to_date) {
+                // Both dates provided
+                $from_datetime = $from_date.' '.$from_time;
+                $to_datetime = $to_date.' '.$to_time;
+                $query->whereBetween('date_time_start', [$from_datetime, $to_datetime]);
+            } elseif ($from_date) {
+                // Only from_date provided
+                $from_datetime = $from_date.' '.$from_time;
+                $query->where('date_time_start', '>=', $from_datetime);
+            } elseif ($to_date) {
+                // Only to_date provided
+                $to_datetime = $to_date.' '.$to_time;
+                $query->where('date_time_start', '<=', $to_datetime);
+            }
+        }
+
         // Global search for all columns
         if ($request->has('search') && $request->search['value'] != '') {
             $search = $request->search['value'];
