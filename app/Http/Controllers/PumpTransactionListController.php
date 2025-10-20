@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Exports\PumpTransactionExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\PumpTransaction;
 
 class PumpTransactionListController extends Controller
 {
@@ -16,6 +20,63 @@ class PumpTransactionListController extends Controller
         }
 
         return view('pump_transactions.index');
+    }
+
+    /**
+     * Export pump transactions to Excel.
+     */
+    public function exportExcel(Request $request): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        $filters = [
+            'from_date' => $request->input('from_date'),
+            'to_date' => $request->input('to_date'),
+            'from_time' => $request->input('from_time'),
+            'to_time' => $request->input('to_time'),
+        ];
+
+        $filename = 'pump_transactions_' . now()->format('Y-m-d_His') . '.xlsx';
+
+        return Excel::download(new PumpTransactionExport($filters), $filename);
+    }
+
+    /**
+     * Export pump transactions to PDF.
+     */
+    public function exportPdf(Request $request): \Illuminate\Http\Response
+    {
+        $filters = [
+            'from_date' => $request->input('from_date'),
+            'to_date' => $request->input('to_date'),
+            'from_time' => $request->input('from_time'),
+            'to_time' => $request->input('to_time'),
+        ];
+
+        $query = PumpTransaction::query()->with(['pump', 'shift']);
+
+        // Apply same filters as export
+        if (!empty($filters['from_date'])) {
+            $query->whereDate('created_at', '>=', $filters['from_date']);
+        }
+
+        if (!empty($filters['to_date'])) {
+            $query->whereDate('created_at', '<=', $filters['to_date']);
+        }
+
+        if (!empty($filters['from_time']) && !empty($filters['to_time'])) {
+            $query->whereTime('created_at', '>=', $filters['from_time'])
+                  ->whereTime('created_at', '<=', $filters['to_time']);
+        }
+
+        $transactions = $query->orderBy('created_at', 'desc')->get();
+
+        $pdf = Pdf::loadView('reports.pump_transactions_pdf', [
+            'transactions' => $transactions,
+            'filters' => $filters,
+        ]);
+
+        $filename = 'pump_transactions_' . now()->format('Y-m-d_His') . '.pdf';
+
+        return $pdf->download($filename);
     }
 
     protected function showData($request)

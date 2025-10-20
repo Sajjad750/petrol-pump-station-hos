@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Exports\TankMeasurementExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\TankMeasurement;
 
 class TankMeasurementListController extends Controller
 {
@@ -21,6 +25,66 @@ class TankMeasurementListController extends Controller
         }
 
         return view('tank_measurements.index');
+    }
+
+    /**
+     * Export tank measurements to Excel.
+     */
+    public function exportExcel(Request $request): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        $filters = [
+            'from_date' => $request->input('from_date'),
+            'to_date' => $request->input('to_date'),
+            'status' => $request->input('status'),
+            'tank_id' => $request->input('tank_id'),
+        ];
+
+        $filename = 'tank_measurements_' . now()->format('Y-m-d_His') . '.xlsx';
+
+        return Excel::download(new TankMeasurementExport($filters), $filename);
+    }
+
+    /**
+     * Export tank measurements to PDF.
+     */
+    public function exportPdf(Request $request): \Illuminate\Http\Response
+    {
+        $filters = [
+            'from_date' => $request->input('from_date'),
+            'to_date' => $request->input('to_date'),
+            'status' => $request->input('status'),
+            'tank_id' => $request->input('tank_id'),
+        ];
+
+        $query = TankMeasurement::query()->with('tank');
+
+        // Apply same filters as export
+        if (!empty($filters['from_date'])) {
+            $query->whereDate('created_at', '>=', $filters['from_date']);
+        }
+
+        if (!empty($filters['to_date'])) {
+            $query->whereDate('created_at', '<=', $filters['to_date']);
+        }
+
+        if (!empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        if (!empty($filters['tank_id'])) {
+            $query->where('tank_id', $filters['tank_id']);
+        }
+
+        $measurements = $query->orderBy('created_at', 'desc')->get();
+
+        $pdf = Pdf::loadView('reports.tank_measurements_pdf', [
+            'measurements' => $measurements,
+            'filters' => $filters,
+        ]);
+
+        $filename = 'tank_measurements_' . now()->format('Y-m-d_His') . '.pdf';
+
+        return $pdf->download($filename);
     }
 
     protected function getFilterOptions(): array

@@ -15,35 +15,48 @@
                     <div class="card-body">
                         <form id="filter-form">
                             <div class="row">
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <div class="form-group">
-                                        <label for="from_date">From Date</label>
+                                        <label for="from_date">Start Date</label>
                                         <input type="date" class="form-control" id="from_date" name="from_date">
                                     </div>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <div class="form-group">
-                                        <label for="to_date">To Date</label>
+                                        <label for="to_date">End Date</label>
                                         <input type="date" class="form-control" id="to_date" name="to_date">
                                     </div>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <div class="form-group">
-                                        <label for="status">Status</label>
-                                        <select class="form-control" id="status" name="status">
-                                            <option value="">All Statuses</option>
+                                        <label for="from_time">Start Time</label>
+                                        <input type="time" class="form-control" id="from_time" name="from_time">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label for="to_time">End Time</label>
+                                        <input type="time" class="form-control" id="to_time" name="to_time">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label for="tank">Tank</label>
+                                        <select class="form-control" id="tank" name="tank">
+                                            <option value="">All Tanks</option>
                                         </select>
                                     </div>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <div class="form-group">
-                                        <label for="tank_id">Tank ID</label>
-                                        <input type="text" class="form-control" id="tank_id" name="tank_id" placeholder="Enter Tank ID">
+                                        <label for="tank_search">Tank ID Search</label>
+                                        <input type="text" class="form-control" id="tank_search" name="tank_search" placeholder="Search Tank ID">
                                     </div>
                                 </div>
                             </div>
+                      
                             <div class="row">
-                                <div class="col-md-12" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <div class="col-md-12 d-flex justify-content-md-end justify-content-start" style="gap: 10px;">
                                     <button type="button" id="filter-btn" class="btn btn-primary">
                                         <i class="fas fa-filter"></i> Apply Filters
                                     </button>
@@ -64,11 +77,11 @@
 
                 <div class="card custom-card">
                     <div class="card-header custom-card-header">
-                        <h4 class="mb-0">Tank Measurements</h4>
+                        <h4 class="mb-0">Tank Deliveries</h4>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table id="tank-measurements-table" class="table-bordered table">
+                            <table id="tank-deliveries-table" class="table-bordered table">
                                 <thead class="custom-table-header">
                                     <tr>
                                         <th>ID</th>
@@ -76,24 +89,37 @@
                                         <th>UUID</th>
                                         <th>Request ID</th>
                                         <th>PTS ID</th>
-                                        <th>Date Time</th>
+                                        <th>Delivery ID</th>
                                         <th>Tank</th>
                                         <th>Fuel Grade ID</th>
                                         <th>Fuel Grade Name</th>
-                                        <th>Status</th>
-                                        <th>Alarms</th>
-                                        <th>Product Height</th>
-                                        <th>Water Height</th>
-                                        <th>Temperature</th>
-                                        <th>Product Volume</th>
-                                        <th>Water Volume</th>
-                                        <th>Product Ullage</th>
-                                        <th>Product TC Volume</th>
-                                        <th>Product Density</th>
-                                        <th>Product Mass</th>
-                                        <th>Tank Filling %</th>
+                                        <th>Start DateTime</th>
+                                        <th>End DateTime</th>
+                                        <th>Start Product Height</th>
+                                        <th>Start Water Height</th>
+                                        <th>Start Temperature</th>
+                                        <th>Start Product Volume</th>
+                                        <th>Start TC Volume</th>
+                                        <th>Start Density</th>
+                                        <th>Start Mass</th>
+                                        <th>End Product Height</th>
+                                        <th>End Water Height</th>
+                                        <th>End Temperature</th>
+                                        <th>End Product Volume</th>
+                                        <th>End TC Volume</th>
+                                        <th>End Density</th>
+                                        <th>End Mass</th>
+                                        <th>Received Volume</th>
+                                        <th>Abs Product Height</th>
+                                        <th>Abs Water Height</th>
+                                        <th>Abs Temperature</th>
+                                        <th>Abs Product Volume</th>
+                                        <th>Abs TC Volume</th>
+                                        <th>Abs Density</th>
+                                        <th>Abs Mass</th>
+                                        <th>Pumps Dispensed Volume</th>
                                         <th>Configuration ID</th>
-                                        <th>BOS Tank Measurement ID</th>
+                                        <th>BOS Delivery ID</th>
                                         <th>BOS UUID</th>
                                         <th>Synced At</th>
                                         <th>Created At BOS</th>
@@ -104,55 +130,28 @@
                                 </thead>
                             </table>
                         </div>
-                        <!-- Pagination -->
-                        <div class="d-flex justify-content-center mt-4">
-
-                        </div>
-
-                        <!-- <div class="py-4 text-center">
-                                                <i class="bi bi-inbox display-1 text-muted"></i>
-                                                <h5 class="mt-3">No tank measurements found</h5>
-                                                <p class="text-muted">There are no tank measurements to display.</p>
-                                            </div> -->
-
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Tank Measurement Details Modal -->
-        <!-- <div class="modal fade" id="tankMeasurementModal" tabindex="-1" aria-labelledby="tankMeasurementModalLabel" aria-hidden="true">
-                                <div class="modal-dialog modal-lg">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="tankMeasurementModalLabel">Tank Measurement Details</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body" id="tankMeasurementDetails"> -->
-        <!-- Tank measurement details will be loaded here -->
-        <!-- </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div> -->
     </div>
 @endsection
 
 @push('js')
     <script>
         $(document).ready(function() {
-            var table = $('#tank-measurements-table').DataTable({
+            var table = $('#tank-deliveries-table').DataTable({
                 'processing': true,
                 'serverSide': true,
                 'ajax': {
-                    'url': '{{ route('tank_measurements') }}',
+                    'url': '{{ route('tank_deliveries') }}',
                     'data': function(d) {
                         d.from_date = $('#from_date').val();
                         d.to_date = $('#to_date').val();
-                        d.status = $('#status').val();
-                        d.tank_id = $('#tank_id').val();
+                        d.from_time = $('#from_time').val();
+                        d.to_time = $('#to_time').val();
+                        d.tank = $('#tank').val();
+                        d.tank_search = $('#tank_search').val();
                     }
                 },
                 'order': [0, 'desc'],
@@ -176,7 +175,8 @@
                         defaultContent: '-'
                     },
                     {
-                        data: 'date_time'
+                        data: 'pts_delivery_id',
+                        defaultContent: '-'
                     },
                     {
                         data: 'tank',
@@ -191,48 +191,86 @@
                         defaultContent: '-'
                     },
                     {
-                        data: 'status',
-                        defaultContent: '-'
+                        data: 'start_datetime'
                     },
                     {
-                        data: 'alarms'
+                        data: 'end_datetime'
                     },
                     {
-                        data: 'product_height'
+                        data: 'start_product_height'
                     },
                     {
-                        data: 'water_height'
+                        data: 'start_water_height'
                     },
                     {
-                        data: 'temperature'
+                        data: 'start_temperature'
                     },
                     {
-                        data: 'product_volume'
+                        data: 'start_product_volume'
                     },
                     {
-                        data: 'water_volume'
+                        data: 'start_product_tc_volume'
                     },
                     {
-                        data: 'product_ullage'
+                        data: 'start_product_density'
                     },
                     {
-                        data: 'product_tc_volume'
+                        data: 'start_product_mass'
                     },
                     {
-                        data: 'product_density'
+                        data: 'end_product_height'
                     },
                     {
-                        data: 'product_mass'
+                        data: 'end_water_height'
                     },
                     {
-                        data: 'tank_filling_percentage'
+                        data: 'end_temperature'
+                    },
+                    {
+                        data: 'end_product_volume'
+                    },
+                    {
+                        data: 'end_product_tc_volume'
+                    },
+                    {
+                        data: 'end_product_density'
+                    },
+                    {
+                        data: 'end_product_mass'
+                    },
+                    {
+                        data: 'received_product_volume'
+                    },
+                    {
+                        data: 'absolute_product_height'
+                    },
+                    {
+                        data: 'absolute_water_height'
+                    },
+                    {
+                        data: 'absolute_temperature'
+                    },
+                    {
+                        data: 'absolute_product_volume'
+                    },
+                    {
+                        data: 'absolute_product_tc_volume'
+                    },
+                    {
+                        data: 'absolute_product_density'
+                    },
+                    {
+                        data: 'absolute_product_mass'
+                    },
+                    {
+                        data: 'pumps_dispensed_volume'
                     },
                     {
                         data: 'configuration_id',
                         defaultContent: '-'
                     },
                     {
-                        data: 'bos_tank_measurement_id',
+                        data: 'bos_tank_delivery_id',
                         defaultContent: '-'
                     },
                     {
@@ -254,22 +292,23 @@
                     {
                         data: 'updated_at'
                     }
-                ]
+                ],
+                'scrollX': true
             });
 
             // Load filter options
             $.ajax({
-                url: '{{ route('tank_measurements') }}',
+                url: '{{ route('tank_deliveries') }}',
                 type: 'GET',
                 data: {
                     get_filter_options: true
                 },
                 success: function(response) {
-                    // Populate status dropdown
-                    if (response.statuses) {
-                        response.statuses.forEach(function(status) {
-                            if (status) {
-                                $('#status').append('<option value="' + status + '">' + status + '</option>');
+                    // Populate tank dropdown
+                    if (response.tanks) {
+                        response.tanks.forEach(function(tank) {
+                            if (tank) {
+                                $('#tank').append('<option value="' + tank + '">Tank ' + tank + '</option>');
                             }
                         });
                     }
@@ -285,9 +324,39 @@
             $('#reset-btn').on('click', function() {
                 $('#from_date').val('');
                 $('#to_date').val('');
-                $('#status').val('');
-                $('#tank_id').val('');
+                $('#from_time').val('');
+                $('#to_time').val('');
+                $('#tank').val('');
+                $('#tank_search').val('');
                 table.draw();
+            });
+
+            // Export to Excel
+            $('#export-excel-btn').on('click', function() {
+                const filters = {
+                    start_date: $('#from_date').val(),
+                    end_date: $('#to_date').val(),
+                    start_time: $('#from_time').val(),
+                    end_time: $('#to_time').val(),
+                    tank: $('#tank').val(),
+                    tank_id: $('#tank_search').val()
+                };
+                const queryString = $.param(filters);
+                window.location.href = '{{ route('tank_deliveries.export.excel') }}?' + queryString;
+            });
+
+            // Export to PDF
+            $('#export-pdf-btn').on('click', function() {
+                const filters = {
+                    start_date: $('#from_date').val(),
+                    end_date: $('#to_date').val(),
+                    start_time: $('#from_time').val(),
+                    end_time: $('#to_time').val(),
+                    tank: $('#tank').val(),
+                    tank_id: $('#tank_search').val()
+                };
+                const queryString = $.param(filters);
+                window.location.href = '{{ route('tank_deliveries.export.pdf') }}?' + queryString;
             });
 
             // Allow Enter key to trigger filter
@@ -298,34 +367,11 @@
                 }
             });
 
-            // Auto-filter on status dropdown change
-            $('#status').on('change', function() {
+            // Auto-filter on tank dropdown change
+            $('#tank').on('change', function() {
                 table.draw();
-            });
-
-            // Export to Excel
-            $('#export-excel-btn').on('click', function() {
-                const filters = {
-                    from_date: $('#from_date').val(),
-                    to_date: $('#to_date').val(),
-                    status: $('#status').val(),
-                    tank_id: $('#tank_id').val()
-                };
-                const queryString = $.param(filters);
-                window.location.href = '{{ route('tank_measurements.export.excel') }}?' + queryString;
-            });
-
-            // Export to PDF
-            $('#export-pdf-btn').on('click', function() {
-                const filters = {
-                    from_date: $('#from_date').val(),
-                    to_date: $('#to_date').val(),
-                    status: $('#status').val(),
-                    tank_id: $('#tank_id').val()
-                };
-                const queryString = $.param(filters);
-                window.location.href = '{{ route('tank_measurements.export.pdf') }}?' + queryString;
             });
         });
     </script>
 @endpush
+

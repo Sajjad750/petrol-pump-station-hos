@@ -44,6 +44,54 @@
                             <p>Tank Measurements</p>
                         </a>
                     </li>
+                    <li class="nav-item {{ $route_name == 'tank_deliveries' ? 'menu-open' : '' }}">
+                        <a href="{{ route('tank_deliveries') }}" class="nav-link {{ $route_name == 'tank_deliveries' ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-truck-loading"></i>
+                            <p>Tank Deliveries</p>
+                        </a>
+                    </li>
+                    <li class="nav-item {{ $route_name == 'tank_inventories' ? 'menu-open' : '' }}">
+                        <a href="{{ route('tank_inventories') }}" class="nav-link {{ $route_name == 'tank_inventories' ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-boxes"></i>
+                            <p>Tank Inventories</p>
+                        </a>
+                    </li>
+                    <li class="nav-item {{ $route_name == 'product_wise_summaries' ? 'menu-open' : '' }}">
+                        <a href="{{ route('product_wise_summaries') }}" class="nav-link {{ $route_name == 'product_wise_summaries' ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-chart-bar"></i>
+                            <p>Product Summaries</p>
+                        </a>
+                    </li>
+                    <li class="nav-item {{ $route_name == 'payment_mode_wise_summaries' ? 'menu-open' : '' }}">
+                        <a href="{{ route('payment_mode_wise_summaries') }}" class="nav-link {{ $route_name == 'payment_mode_wise_summaries' ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-credit-card"></i>
+                            <p>Payment Summaries</p>
+                        </a>
+                    </li>
+                    <li class="nav-item {{ $route_name == 'fuel_grades' ? 'menu-open' : '' }}">
+                        <a href="{{ route('fuel_grades') }}" class="nav-link {{ $route_name == 'fuel_grades' ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-oil-can"></i>
+                            <p>Fuel Grades</p>
+                        </a>
+                    </li>
+                    <li class="nav-item {{ $route_name == 'shifts' ? 'menu-open' : '' }}">
+                        <a href="{{ route('shifts') }}" class="nav-link {{ $route_name == 'shifts' ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-clock"></i>
+                            <p>Shifts</p>
+                        </a>
+                    </li>
+                    <li class="nav-item {{ $route_name == 'shift_templates' ? 'menu-open' : '' }}">
+                        <a href="{{ route('shift_templates') }}" class="nav-link {{ $route_name == 'shift_templates' ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-calendar-alt"></i>
+                            <p>Shift Templates</p>
+                        </a>
+                    </li>
+                    <li class="nav-item {{ $route_name == 'pts_users' ? 'menu-open' : '' }}">
+                        <a href="{{ route('pts_users') }}" class="nav-link {{ $route_name == 'pts_users' ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-users-cog"></i>
+                            <p>PTS Users</p>
+                        </a>
+                    </li>
                 @endif
 
             </ul>

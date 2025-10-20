@@ -6,7 +6,7 @@
     <div class="container-fluid">
         <div class="row">
             <!-- Main Content -->
-            <div class="col-md-12">
+            <div class="col-md-12 ">
                 <!-- Filters Card -->
                 <div class="card custom-card mb-3">
                     <div class="card-header custom-card-header">
@@ -41,12 +41,18 @@
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-md-12">
+                                <div class="col-md-12" style="display: flex; gap: 10px; flex-wrap: wrap;">
                                     <button type="button" id="filter-btn" class="btn btn-primary">
                                         <i class="fas fa-filter"></i> Apply Filters
                                     </button>
                                     <button type="button" id="reset-btn" class="btn btn-secondary">
                                         <i class="fas fa-redo"></i> Reset
+                                    </button>
+                                    <button type="button" id="export-excel-btn" class="btn btn-success">
+                                        <i class="fas fa-file-excel"></i> Export Excel
+                                    </button>
+                                    <button type="button" id="export-pdf-btn" class="btn btn-danger">
+                                        <i class="fas fa-file-pdf"></i> Export PDF
                                     </button>
                                 </div>
                             </div>
@@ -222,6 +228,30 @@
                     e.preventDefault();
                     table.draw();
                 }
+            });
+
+            // Export to Excel
+            $('#export-excel-btn').on('click', function() {
+                const filters = {
+                    from_date: $('#from_date').val(),
+                    to_date: $('#to_date').val(),
+                    from_time: $('#from_time').val(),
+                    to_time: $('#to_time').val()
+                };
+                const queryString = $.param(filters);
+                window.location.href = '{{ route('pump_transactions.export.excel') }}?' + queryString;
+            });
+
+            // Export to PDF
+            $('#export-pdf-btn').on('click', function() {
+                const filters = {
+                    from_date: $('#from_date').val(),
+                    to_date: $('#to_date').val(),
+                    from_time: $('#from_time').val(),
+                    to_time: $('#to_time').val()
+                };
+                const queryString = $.param(filters);
+                window.location.href = '{{ route('pump_transactions.export.pdf') }}?' + queryString;
             });
         });
     </script>

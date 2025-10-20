@@ -12,11 +12,11 @@
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto">
         <!-- Dark Mode Toggle -->
-        <li class="nav-item">
+        <!-- <li class="nav-item">
             <a class="nav-link" href="#" role="button" id="darkModeToggle" title="Toggle Dark Mode">
                 <i class="fas fa-moon" id="darkModeIcon"></i>
             </a>
-        </li>
+        </li> -->
         <li class="nav-item">
             <a class="nav-link" role="button" href="{{ route('logout') }}" onclick="event.preventDefault();document.getElementById('logout-form').submit();">
                 Logout
