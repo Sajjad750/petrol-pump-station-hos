@@ -38,6 +38,16 @@ return new class () extends Migration {
             $table->float('end_product_tc_volume')->nullable();
             $table->float('end_product_density')->nullable();
             $table->float('end_product_mass')->nullable();
+            $table->float('received_product_volume')->nullable();
+            $table->float('absolute_product_height')->nullable();
+            $table->float('absolute_water_height')->nullable();
+            $table->float('absolute_temperature')->nullable();
+            $table->float('absolute_product_volume')->nullable();
+            $table->float('absolute_product_tc_volume')->nullable();
+            $table->float('absolute_product_density')->nullable();
+            $table->float('absolute_product_mass')->nullable();
+            $table->float('pumps_dispensed_volume')->nullable();
+            $table->json('probe_data')->nullable();
 
             // HOS-specific additions
             $table->foreignId('station_id')->constrained()->onDelete('cascade');

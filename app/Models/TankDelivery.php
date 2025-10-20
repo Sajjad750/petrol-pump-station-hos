@@ -32,6 +32,16 @@ class TankDelivery extends Model
         'end_product_tc_volume' => 'decimal:3',
         'end_product_density' => 'decimal:3',
         'end_product_mass' => 'decimal:3',
+        'received_product_volume' => 'decimal:3',
+        'absolute_product_height' => 'decimal:3',
+        'absolute_water_height' => 'decimal:3',
+        'absolute_temperature' => 'decimal:2',
+        'absolute_product_volume' => 'decimal:3',
+        'absolute_product_tc_volume' => 'decimal:3',
+        'absolute_product_density' => 'decimal:3',
+        'absolute_product_mass' => 'decimal:3',
+        'pumps_dispensed_volume' => 'decimal:3',
+        'probe_data' => 'array',
     ];
 
     /**
