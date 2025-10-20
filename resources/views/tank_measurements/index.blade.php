@@ -43,7 +43,7 @@
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-md-12" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <div class="col-md-12  d-flex justify-content-md-end justify-content-start" style="gap: 10px;">
                                     <button type="button" id="filter-btn" class="btn btn-primary">
                                         <i class="fas fa-filter"></i> Apply Filters
                                     </button>
