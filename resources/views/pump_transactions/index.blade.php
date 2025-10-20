@@ -15,13 +15,13 @@
                     <div class="card-body">
                         <form id="filter-form">
                             <div class="row">
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <div class="form-group">
                                         <label for="from_date">From Date</label>
                                         <input type="date" class="form-control" id="from_date" name="from_date">
                                     </div>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <div class="form-group">
                                         <label for="to_date">To Date</label>
                                         <input type="date" class="form-control" id="to_date" name="to_date">
@@ -39,9 +39,20 @@
                                         <input type="time" class="form-control" id="to_time" name="to_time">
                                     </div>
                                 </div>
+                                   
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label for="station_id">Station</label>
+                                        <select class="form-control" id="station_id" name="station_id">
+                                            <option value="">All Stations</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            
                             </div>
+                       
                             <div class="row">
-                                <div class="col-md-12 d-flex justify-content-md-end justify-content-start" style="gap: 10px;">
+                                <div class="col-md-12 d-flex justify-content-end" style="gap: 10px;">
                                     <button type="button" id="filter-btn" class="btn btn-primary">
                                         <i class="fas fa-filter"></i> Apply Filters
                                     </button>
@@ -142,6 +153,7 @@
                         d.to_date = $('#to_date').val();
                         d.from_time = $('#from_time').val();
                         d.to_time = $('#to_time').val();
+                        d.station_id = $('#station_id').val();
                     }
                 },
                 'order': [0, 'desc'],
@@ -219,11 +231,33 @@
                 $('#to_date').val('');
                 $('#from_time').val('');
                 $('#to_time').val('');
+                $('#station_id').val('');
+                table.draw();
+            });
+
+            // Load stations for dropdown
+            $.ajax({
+                url: '{{ route('pump_transactions') }}',
+                method: 'GET',
+                data: { get_stations: true },
+                success: function(response) {
+                    if (response.stations) {
+                        response.stations.forEach(function(station) {
+                            $('#station_id').append(
+                                $('<option></option>').val(station.id).text(station.site_name)
+                            );
+                        });
+                    }
+                }
+            });
+
+            // Auto-filter on station dropdown change
+            $('#station_id').on('change', function() {
                 table.draw();
             });
 
             // Allow Enter key to trigger filter
-            $('#filter-form input').on('keypress', function(e) {
+            $('#filter-form input, #filter-form select').on('keypress', function(e) {
                 if (e.which === 13) {
                     e.preventDefault();
                     table.draw();
@@ -236,7 +270,8 @@
                     from_date: $('#from_date').val(),
                     to_date: $('#to_date').val(),
                     from_time: $('#from_time').val(),
-                    to_time: $('#to_time').val()
+                    to_time: $('#to_time').val(),
+                    station_id: $('#station_id').val()
                 };
                 const queryString = $.param(filters);
                 window.location.href = '{{ route('pump_transactions.export.excel') }}?' + queryString;
@@ -248,7 +283,8 @@
                     from_date: $('#from_date').val(),
                     to_date: $('#to_date').val(),
                     from_time: $('#from_time').val(),
-                    to_time: $('#to_time').val()
+                    to_time: $('#to_time').val(),
+                    station_id: $('#station_id').val()
                 };
                 const queryString = $.param(filters);
                 window.location.href = '{{ route('pump_transactions.export.pdf') }}?' + queryString;

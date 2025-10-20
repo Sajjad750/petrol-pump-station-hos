@@ -39,10 +39,19 @@
                                         <input type="time" class="form-control" id="to_time" name="to_time">
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-2">
                                     <div class="form-group">
                                         <label for="tank_search">Tank ID Search</label>
                                         <input type="text" class="form-control" id="tank_search" name="tank_search" placeholder="Search Tank ID">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label for="station_id">Station</label>
+                                        <select class="form-control" id="station_id" name="station_id">
+                                            <option value="">All Stations</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
@@ -127,6 +136,7 @@
                         d.from_time = $('#from_time').val();
                         d.to_time = $('#to_time').val();
                         d.tank_search = $('#tank_search').val();
+                        d.station_id = $('#station_id').val();
                     }
                 },
                 'order': [0, 'desc'],
@@ -235,6 +245,7 @@
                 $('#from_time').val('');
                 $('#to_time').val('');
                 $('#tank_search').val('');
+                $('#station_id').val('');
                 table.draw();
             });
 
@@ -245,7 +256,8 @@
                     end_date: $('#to_date').val(),
                     start_time: $('#from_time').val(),
                     end_time: $('#to_time').val(),
-                    tank_id: $('#tank_search').val()
+                    tank_id: $('#tank_search').val(),
+                    station_id: $('#station_id').val()
                 };
                 const queryString = $.param(filters);
                 window.location.href = '{{ route('tank_inventories.export.excel') }}?' + queryString;
@@ -258,7 +270,8 @@
                     end_date: $('#to_date').val(),
                     start_time: $('#from_time').val(),
                     end_time: $('#to_time').val(),
-                    tank_id: $('#tank_search').val()
+                    tank_id: $('#tank_search').val(),
+                    station_id: $('#station_id').val()
                 };
                 const queryString = $.param(filters);
                 window.location.href = '{{ route('tank_inventories.export.pdf') }}?' + queryString;
@@ -270,6 +283,27 @@
                     e.preventDefault();
                     table.draw();
                 }
+            });
+
+            // Load stations for dropdown
+            $.ajax({
+                url: '{{ route('tank_inventories') }}',
+                method: 'GET',
+                data: { get_stations: true },
+                success: function(response) {
+                    if (response.stations) {
+                        response.stations.forEach(function(station) {
+                            $('#station_id').append(
+                                $('<option></option>').val(station.id).text(station.site_name)
+                            );
+                        });
+                    }
+                }
+            });
+
+            // Auto-filter on station dropdown change
+            $('#station_id').on('change', function() {
+                table.draw();
             });
         });
     </script>

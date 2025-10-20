@@ -16,6 +16,15 @@ class TankDeliveryListController extends Controller
     public function __invoke(Request $request)
     {
         if (request()->ajax()) {
+            // Return stations if requested
+            if ($request->has('get_stations')) {
+                $stations = \App\Models\Station::select('id', 'site_name')
+                    ->orderBy('site_name')
+                    ->get();
+
+                return response()->json(['stations' => $stations]);
+            }
+
             // Return filter options if requested
             if ($request->has('get_filter_options')) {
                 return response()->json($this->getFilterOptions());
@@ -39,6 +48,7 @@ class TankDeliveryListController extends Controller
             'end_time' => $request->input('end_time'),
             'tank' => $request->input('tank'),
             'tank_id' => $request->input('tank_id'),
+            'station_id' => $request->input('station_id'),
         ];
 
         $filename = 'tank_deliveries_' . now()->format('Y-m-d_His') . '.xlsx';
@@ -58,6 +68,7 @@ class TankDeliveryListController extends Controller
             'end_time' => $request->input('end_time'),
             'tank' => $request->input('tank'),
             'tank_id' => $request->input('tank_id'),
+            'station_id' => $request->input('station_id'),
         ];
 
         $query = TankDelivery::query()->with('station');
@@ -81,6 +92,10 @@ class TankDeliveryListController extends Controller
 
         if (!empty($filters['tank_id'])) {
             $query->where('tank', 'like', '%' . $filters['tank_id'] . '%');
+        }
+
+        if (!empty($filters['station_id'])) {
+            $query->where('station_id', $filters['station_id']);
         }
 
         $deliveries = $query->orderBy('start_datetime', 'desc')->get();
@@ -196,6 +211,11 @@ class TankDeliveryListController extends Controller
         // Tank ID Search Filter (input)
         if ($request->filled('tank_search')) {
             $query->where('tank', 'like', '%'.$request->input('tank_search').'%');
+        }
+
+        // Station Filter
+        if ($request->filled('station_id')) {
+            $query->where('station_id', $request->input('station_id'));
         }
 
         // Global search for all columns

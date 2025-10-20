@@ -15,7 +15,7 @@
                     <div class="card-body">
                         <form id="filter-form">
                             <div class="row">
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <div class="form-group">
                                         <label for="timezone">Timezone</label>
                                         <select class="form-control" id="timezone" name="timezone">
@@ -23,10 +23,18 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <div class="form-group">
                                         <label for="device_id">Device ID</label>
                                         <input type="text" class="form-control" id="device_id" name="device_id" placeholder="Search Device ID">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="station_id">Station</label>
+                                        <select class="form-control" id="station_id" name="station_id">
+                                            <option value="">All Stations</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
@@ -96,6 +104,7 @@
                     'data': function(d) {
                         d.timezone = $('#timezone').val();
                         d.device_id = $('#device_id').val();
+                        d.station_id = $('#station_id').val();
                     }
                 },
                 'order': [0, 'desc'],
@@ -181,6 +190,7 @@
             $('#reset-btn').on('click', function() {
                 $('#timezone').val('');
                 $('#device_id').val('');
+                $('#station_id').val('');
                 table.draw();
             });
 
@@ -189,7 +199,8 @@
             $('#export-excel-btn').on('click', function() {
                 const filters = {
                     timezone: $('#timezone').val(),
-                    device_id: $('#device_id').val()
+                    device_id: $('#device_id').val(),
+                    station_id: $('#station_id').val()
                 };
                 const queryString = $.param(filters);
                 window.location.href = '{{ route('shift_templates.export.excel') }}?' + queryString;
@@ -199,7 +210,8 @@
             $('#export-pdf-btn').on('click', function() {
                 const filters = {
                     timezone: $('#timezone').val(),
-                    device_id: $('#device_id').val()
+                    device_id: $('#device_id').val(),
+                    station_id: $('#station_id').val()
                 };
                 const queryString = $.param(filters);
                 window.location.href = '{{ route('shift_templates.export.pdf') }}?' + queryString;
@@ -215,6 +227,27 @@
 
             // Auto-filter on timezone dropdown change
             $('#timezone').on('change', function() {
+                table.draw();
+            });
+
+            // Load stations for dropdown
+            $.ajax({
+                url: '{{ route('shift_templates') }}',
+                method: 'GET',
+                data: { get_stations: true },
+                success: function(response) {
+                    if (response.stations) {
+                        response.stations.forEach(function(station) {
+                            $('#station_id').append(
+                                $('<option></option>').val(station.id).text(station.site_name)
+                            );
+                        });
+                    }
+                }
+            });
+
+            // Auto-filter on station dropdown change
+            $('#station_id').on('change', function() {
                 table.draw();
             });
         });

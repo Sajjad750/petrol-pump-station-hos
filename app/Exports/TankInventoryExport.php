@@ -41,6 +41,10 @@ class TankInventoryExport implements FromQuery, WithHeadings, WithMapping, WithS
             $query->where('tank_id', 'like', '%' . $this->filters['tank_id'] . '%');
         }
 
+        if (!empty($this->filters['station_id'])) {
+            $query->where('station_id', $this->filters['station_id']);
+        }
+
         return $query->orderBy('timestamp', 'desc');
     }
 

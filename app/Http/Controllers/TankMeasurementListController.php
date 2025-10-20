@@ -16,6 +16,15 @@ class TankMeasurementListController extends Controller
     public function __invoke(Request $request)
     {
         if (request()->ajax()) {
+            // Return stations if requested
+            if ($request->has('get_stations')) {
+                $stations = \App\Models\Station::select('id', 'site_name')
+                    ->orderBy('site_name')
+                    ->get();
+
+                return response()->json(['stations' => $stations]);
+            }
+
             // Return filter options if requested
             if ($request->has('get_filter_options')) {
                 return response()->json($this->getFilterOptions());
@@ -37,6 +46,7 @@ class TankMeasurementListController extends Controller
             'to_date' => $request->input('to_date'),
             'status' => $request->input('status'),
             'tank_id' => $request->input('tank_id'),
+            'station_id' => $request->input('station_id'),
         ];
 
         $filename = 'tank_measurements_' . now()->format('Y-m-d_His') . '.xlsx';
@@ -73,6 +83,10 @@ class TankMeasurementListController extends Controller
 
         if (!empty($filters['tank_id'])) {
             $query->where('tank_id', $filters['tank_id']);
+        }
+
+        if (!empty($filters['station_id'])) {
+            $query->where('station_id', $filters['station_id']);
         }
 
         $measurements = $query->orderBy('created_at', 'desc')->get();
@@ -173,6 +187,11 @@ class TankMeasurementListController extends Controller
         // Tank ID Filter
         if ($request->filled('tank_id')) {
             $query->where('tank', $request->input('tank_id'));
+        }
+
+        // Station Filter
+        if ($request->filled('station_id')) {
+            $query->where('station_id', $request->input('station_id'));
         }
 
         // Global search for all columns

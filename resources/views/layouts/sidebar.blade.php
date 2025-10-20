@@ -75,7 +75,7 @@
                         </a>
                     </li>
                     <li class="nav-item {{ $route_name == 'shifts' ? 'menu-open' : '' }}">
-                        <a href="{{ route('shifts') }}" class="nav-link {{ $route_name == 'shifts' ? 'active' : '' }}">
+                        <a href="{{ route('shifts.index') }}" class="nav-link {{ $route_name == 'shifts' ? 'active' : '' }}">
                             <i class="nav-icon fas fa-clock"></i>
                             <p>Shifts</p>
                         </a>

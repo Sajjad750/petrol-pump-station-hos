@@ -21,7 +21,7 @@ class PumpTransactionExport implements FromQuery, WithHeadings, WithMapping, Wit
 
     public function query()
     {
-        $query = PumpTransaction::query()->with(['pump', 'shift']);
+        $query = PumpTransaction::query()->with(['pump', 'shift', 'station']);
 
         // Apply filters
         if (!empty($this->filters['from_date'])) {
@@ -35,6 +35,10 @@ class PumpTransactionExport implements FromQuery, WithHeadings, WithMapping, Wit
         if (!empty($this->filters['from_time']) && !empty($this->filters['to_time'])) {
             $query->whereTime('created_at', '>=', $this->filters['from_time'])
                   ->whereTime('created_at', '<=', $this->filters['to_time']);
+        }
+
+        if (!empty($this->filters['station_id'])) {
+            $query->where('station_id', $this->filters['station_id']);
         }
 
         return $query->orderBy('created_at', 'desc');

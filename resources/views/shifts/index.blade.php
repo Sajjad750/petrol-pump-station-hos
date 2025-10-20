@@ -56,14 +56,16 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="row">
+                      
                                 <div class="col-md-3">
                                     <div class="form-group">
-                                        <label for="user_id">User ID</label>
-                                        <input type="text" class="form-control" id="user_id" name="user_id" placeholder="Search User ID">
+                                        <label for="station_id">Station</label>
+                                        <select class="form-control" id="station_id" name="station_id">
+                                            <option value="">All Stations</option>
+                                        </select>
                                     </div>
                                 </div>
-                            </div>
+                            
                       
                             <div class="row">
                                 <div class="col-md-12 d-flex justify-content-md-end justify-content-start" style="gap: 10px;">
@@ -112,6 +114,7 @@
                                         <th>Updated At BOS</th>
                                         <th>Created At</th>
                                         <th>Updated At</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                             </table>
@@ -130,7 +133,7 @@
                 'processing': true,
                 'serverSide': true,
                 'ajax': {
-                    'url': '{{ route('shifts') }}',
+                    'url': '{{ route('shifts.index') }}',
                     'data': function(d) {
                         d.from_date = $('#from_date').val();
                         d.to_date = $('#to_date').val();
@@ -139,6 +142,7 @@
                         d.status = $('#status').val();
                         d.close_type = $('#close_type').val();
                         d.user_id = $('#user_id').val();
+                        d.station_id = $('#station_id').val();
                     }
                 },
                 'order': [0, 'desc'],
@@ -207,6 +211,16 @@
                     },
                     {
                         data: 'updated_at'
+                    },
+                    {
+                        data: 'id',
+                        orderable: false,
+                        searchable: false,
+                        render: function(data, type, row) {
+                            return '<a href="{{ url("shifts") }}/' + data + '/summary" class="btn btn-sm btn-info" title="View Summary">' +
+                                '<i class="fas fa-eye"></i> View Summary' +
+                                '</a>';
+                        }
                     }
                 ],
                 'scrollX': true
@@ -214,7 +228,7 @@
 
             // Load filter options
             $.ajax({
-                url: '{{ route('shifts') }}',
+                url: '{{ route('shifts.index') }}',
                 type: 'GET',
                 data: {
                     get_filter_options: true
@@ -252,6 +266,7 @@
                 $('#status').val('');
                 $('#close_type').val('');
                 $('#user_id').val('');
+                $('#station_id').val('');
                 table.draw();
             });
 
@@ -264,7 +279,8 @@
                     end_time: $('#to_time').val(),
                     status: $('#status').val(),
                     close_type: $('#close_type').val(),
-                    user_id: $('#user_id').val()
+                    user_id: $('#user_id').val(),
+                    station_id: $('#station_id').val()
                 };
                 const queryString = $.param(filters);
                 window.location.href = '{{ route('shifts.export.excel') }}?' + queryString;
@@ -279,7 +295,8 @@
                     end_time: $('#to_time').val(),
                     status: $('#status').val(),
                     close_type: $('#close_type').val(),
-                    user_id: $('#user_id').val()
+                    user_id: $('#user_id').val(),
+                    station_id: $('#station_id').val()
                 };
                 const queryString = $.param(filters);
                 window.location.href = '{{ route('shifts.export.pdf') }}?' + queryString;
@@ -295,6 +312,27 @@
 
             // Auto-filter on dropdown change
             $('#status, #close_type').on('change', function() {
+                table.draw();
+            });
+
+            // Load stations for dropdown
+            $.ajax({
+                url: '{{ route('shifts.index') }}',
+                method: 'GET',
+                data: { get_stations: true },
+                success: function(response) {
+                    if (response.stations) {
+                        response.stations.forEach(function(station) {
+                            $('#station_id').append(
+                                $('<option></option>').val(station.id).text(station.site_name)
+                            );
+                        });
+                    }
+                }
+            });
+
+            // Auto-filter on station dropdown change
+            $('#station_id').on('change', function() {
                 table.draw();
             });
         });

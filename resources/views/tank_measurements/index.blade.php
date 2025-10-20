@@ -15,13 +15,13 @@
                     <div class="card-body">
                         <form id="filter-form">
                             <div class="row">
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <div class="form-group">
                                         <label for="from_date">From Date</label>
                                         <input type="date" class="form-control" id="from_date" name="from_date">
                                     </div>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <div class="form-group">
                                         <label for="to_date">To Date</label>
                                         <input type="date" class="form-control" id="to_date" name="to_date">
@@ -39,6 +39,14 @@
                                     <div class="form-group">
                                         <label for="tank_id">Tank ID</label>
                                         <input type="text" class="form-control" id="tank_id" name="tank_id" placeholder="Enter Tank ID">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label for="station_id">Station</label>
+                                        <select class="form-control" id="station_id" name="station_id">
+                                            <option value="">All Stations</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
@@ -153,6 +161,7 @@
                         d.to_date = $('#to_date').val();
                         d.status = $('#status').val();
                         d.tank_id = $('#tank_id').val();
+                        d.station_id = $('#station_id').val();
                     }
                 },
                 'order': [0, 'desc'],
@@ -287,6 +296,7 @@
                 $('#to_date').val('');
                 $('#status').val('');
                 $('#tank_id').val('');
+                $('#station_id').val('');
                 table.draw();
             });
 
@@ -303,13 +313,35 @@
                 table.draw();
             });
 
+            // Load stations for dropdown
+            $.ajax({
+                url: '{{ route('tank_measurements') }}',
+                method: 'GET',
+                data: { get_stations: true },
+                success: function(response) {
+                    if (response.stations) {
+                        response.stations.forEach(function(station) {
+                            $('#station_id').append(
+                                $('<option></option>').val(station.id).text(station.site_name)
+                            );
+                        });
+                    }
+                }
+            });
+
+            // Auto-filter on station dropdown change
+            $('#station_id').on('change', function() {
+                table.draw();
+            });
+
             // Export to Excel
             $('#export-excel-btn').on('click', function() {
                 const filters = {
                     from_date: $('#from_date').val(),
                     to_date: $('#to_date').val(),
                     status: $('#status').val(),
-                    tank_id: $('#tank_id').val()
+                    tank_id: $('#tank_id').val(),
+                    station_id: $('#station_id').val()
                 };
                 const queryString = $.param(filters);
                 window.location.href = '{{ route('tank_measurements.export.excel') }}?' + queryString;
@@ -321,7 +353,8 @@
                     from_date: $('#from_date').val(),
                     to_date: $('#to_date').val(),
                     status: $('#status').val(),
-                    tank_id: $('#tank_id').val()
+                    tank_id: $('#tank_id').val(),
+                    station_id: $('#station_id').val()
                 };
                 const queryString = $.param(filters);
                 window.location.href = '{{ route('tank_measurements.export.pdf') }}?' + queryString;

@@ -53,6 +53,14 @@
                                         <input type="text" class="form-control" id="tank_search" name="tank_search" placeholder="Search Tank ID">
                                     </div>
                                 </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="station_id">Station</label>
+                                        <select class="form-control" id="station_id" name="station_id">
+                                            <option value="">All Stations</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                       
                             <div class="row">
@@ -152,6 +160,7 @@
                         d.to_time = $('#to_time').val();
                         d.tank = $('#tank').val();
                         d.tank_search = $('#tank_search').val();
+                        d.station_id = $('#station_id').val();
                     }
                 },
                 'order': [0, 'desc'],
@@ -328,6 +337,7 @@
                 $('#to_time').val('');
                 $('#tank').val('');
                 $('#tank_search').val('');
+                $('#station_id').val('');
                 table.draw();
             });
 
@@ -339,7 +349,8 @@
                     start_time: $('#from_time').val(),
                     end_time: $('#to_time').val(),
                     tank: $('#tank').val(),
-                    tank_id: $('#tank_search').val()
+                    tank_id: $('#tank_search').val(),
+                    station_id: $('#station_id').val()
                 };
                 const queryString = $.param(filters);
                 window.location.href = '{{ route('tank_deliveries.export.excel') }}?' + queryString;
@@ -353,7 +364,8 @@
                     start_time: $('#from_time').val(),
                     end_time: $('#to_time').val(),
                     tank: $('#tank').val(),
-                    tank_id: $('#tank_search').val()
+                    tank_id: $('#tank_search').val(),
+                    station_id: $('#station_id').val()
                 };
                 const queryString = $.param(filters);
                 window.location.href = '{{ route('tank_deliveries.export.pdf') }}?' + queryString;
@@ -369,6 +381,27 @@
 
             // Auto-filter on tank dropdown change
             $('#tank').on('change', function() {
+                table.draw();
+            });
+
+            // Load stations for dropdown
+            $.ajax({
+                url: '{{ route('tank_deliveries') }}',
+                method: 'GET',
+                data: { get_stations: true },
+                success: function(response) {
+                    if (response.stations) {
+                        response.stations.forEach(function(station) {
+                            $('#station_id').append(
+                                $('<option></option>').val(station.id).text(station.site_name)
+                            );
+                        });
+                    }
+                }
+            });
+
+            // Auto-filter on station dropdown change
+            $('#station_id').on('change', function() {
                 table.draw();
             });
         });

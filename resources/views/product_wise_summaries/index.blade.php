@@ -51,6 +51,14 @@
                                         <input type="text" class="form-control" id="fuel_grade_id" name="fuel_grade_id" placeholder="Search Fuel Grade">
                                     </div>
                                 </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="station_id">Station</label>
+                                        <select class="form-control" id="station_id" name="station_id">
+                                            <option value="">All Stations</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                       
                             <div class="row">
@@ -121,6 +129,7 @@
                         d.to_time = $('#to_time').val();
                         d.shift_id = $('#shift_id').val();
                         d.fuel_grade_id = $('#fuel_grade_id').val();
+                        d.station_id = $('#station_id').val();
                     }
                 },
                 'order': [0, 'desc'],
@@ -187,6 +196,7 @@
                 $('#to_time').val('');
                 $('#shift_id').val('');
                 $('#fuel_grade_id').val('');
+                $('#station_id').val('');
                 table.draw();
             });
 
@@ -198,7 +208,8 @@
                     start_time: $('#from_time').val(),
                     end_time: $('#to_time').val(),
                     shift_id: $('#shift_id').val(),
-                    fuel_grade_id: $('#fuel_grade_id').val()
+                    fuel_grade_id: $('#fuel_grade_id').val(),
+                    station_id: $('#station_id').val()
                 };
                 const queryString = $.param(filters);
                 window.location.href = '{{ route('product_wise_summaries.export.excel') }}?' + queryString;
@@ -212,7 +223,8 @@
                     start_time: $('#from_time').val(),
                     end_time: $('#to_time').val(),
                     shift_id: $('#shift_id').val(),
-                    fuel_grade_id: $('#fuel_grade_id').val()
+                    fuel_grade_id: $('#fuel_grade_id').val(),
+                    station_id: $('#station_id').val()
                 };
                 const queryString = $.param(filters);
                 window.location.href = '{{ route('product_wise_summaries.export.pdf') }}?' + queryString;
@@ -224,6 +236,27 @@
                     e.preventDefault();
                     table.draw();
                 }
+            });
+
+            // Load stations for dropdown
+            $.ajax({
+                url: '{{ route('product_wise_summaries') }}',
+                method: 'GET',
+                data: { get_stations: true },
+                success: function(response) {
+                    if (response.stations) {
+                        response.stations.forEach(function(station) {
+                            $('#station_id').append(
+                                $('<option></option>').val(station.id).text(station.site_name)
+                            );
+                        });
+                    }
+                }
+            });
+
+            // Auto-filter on station dropdown change
+            $('#station_id').on('change', function() {
+                table.draw();
             });
         });
     </script>

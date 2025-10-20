@@ -40,6 +40,10 @@ class TankMeasurementExport implements FromQuery, WithHeadings, WithMapping, Wit
             $query->where('tank_id', $this->filters['tank_id']);
         }
 
+        if (!empty($this->filters['station_id'])) {
+            $query->where('station_id', $this->filters['station_id']);
+        }
+
         return $query->orderBy('created_at', 'desc');
     }
 

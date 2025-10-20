@@ -15,12 +15,12 @@
                     <div class="card-body">
                         <form id="filter-form">
                             <div class="row">
-                                <div class="col-md-6">
+                                <!-- <div class="col-md-4">
                                     <div class="form-group">
                                         <label for="login">Login</label>
                                         <input type="text" class="form-control" id="login" name="login" placeholder="Search by login">
                                     </div>
-                                </div>
+                                </div> -->
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="is_active">Status</label>
@@ -28,6 +28,14 @@
                                             <option value="">All Status</option>
                                             <option value="1">Active</option>
                                             <option value="0">Inactive</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="station_id">Station</label>
+                                        <select class="form-control" id="station_id" name="station_id">
+                                            <option value="">All Stations</option>
                                         </select>
                                     </div>
                                 </div>
@@ -100,6 +108,7 @@
                     'data': function(d) {
                         d.login = $('#login').val();
                         d.is_active = $('#is_active').val();
+                        d.station_id = $('#station_id').val();
                     }
                 },
                 'order': [0, 'desc'],
@@ -174,6 +183,7 @@
             $('#reset-btn').on('click', function() {
                 $('#login').val('');
                 $('#is_active').val('');
+                $('#station_id').val('');
                 table.draw();
             });
 
@@ -185,7 +195,8 @@
                     active_status: $('#is_active').val(),
                     permissions: $('input[name="permissions[]"]:checked').map(function() {
                         return $(this).val();
-                    }).get()
+                    }).get(),
+                    station_id: $('#station_id').val()
                 };
                 const queryString = $.param(filters);
                 window.location.href = '{{ route('pts_users.export.excel') }}?' + queryString;
@@ -198,7 +209,8 @@
                     active_status: $('#is_active').val(),
                     permissions: $('input[name="permissions[]"]:checked').map(function() {
                         return $(this).val();
-                    }).get()
+                    }).get(),
+                    station_id: $('#station_id').val()
                 };
                 const queryString = $.param(filters);
                 window.location.href = '{{ route('pts_users.export.pdf') }}?' + queryString;
@@ -214,6 +226,27 @@
 
             // Auto-filter on status dropdown change
             $('#is_active').on('change', function() {
+                table.draw();
+            });
+
+            // Load stations for dropdown
+            $.ajax({
+                url: '{{ route('pts_users') }}',
+                method: 'GET',
+                data: { get_stations: true },
+                success: function(response) {
+                    if (response.stations) {
+                        response.stations.forEach(function(station) {
+                            $('#station_id').append(
+                                $('<option></option>').val(station.id).text(station.site_name)
+                            );
+                        });
+                    }
+                }
+            });
+
+            // Auto-filter on station dropdown change
+            $('#station_id').on('change', function() {
                 table.draw();
             });
         });

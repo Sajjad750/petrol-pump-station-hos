@@ -16,6 +16,13 @@ class PumpTransactionListController extends Controller
     public function __invoke(Request $request)
     {
         if (request()->ajax()) {
+            // Return stations for dropdown
+            if ($request->has('get_stations')) {
+                return response()->json([
+                    'stations' => \App\Models\Station::select('id', 'site_name')->orderBy('site_name')->get()
+                ]);
+            }
+
             return response()->json($this->showData(request()));
         }
 
@@ -32,6 +39,7 @@ class PumpTransactionListController extends Controller
             'to_date' => $request->input('to_date'),
             'from_time' => $request->input('from_time'),
             'to_time' => $request->input('to_time'),
+            'station_id' => $request->input('station_id'),
         ];
 
         $filename = 'pump_transactions_' . now()->format('Y-m-d_His') . '.xlsx';
@@ -49,9 +57,10 @@ class PumpTransactionListController extends Controller
             'to_date' => $request->input('to_date'),
             'from_time' => $request->input('from_time'),
             'to_time' => $request->input('to_time'),
+            'station_id' => $request->input('station_id'),
         ];
 
-        $query = PumpTransaction::query()->with(['pump', 'shift']);
+        $query = PumpTransaction::query()->with(['pump', 'shift', 'station']);
 
         // Apply same filters as export
         if (!empty($filters['from_date'])) {
@@ -65,6 +74,10 @@ class PumpTransactionListController extends Controller
         if (!empty($filters['from_time']) && !empty($filters['to_time'])) {
             $query->whereTime('created_at', '>=', $filters['from_time'])
                   ->whereTime('created_at', '<=', $filters['to_time']);
+        }
+
+        if (!empty($filters['station_id'])) {
+            $query->where('station_id', $filters['station_id']);
         }
 
         $transactions = $query->orderBy('created_at', 'desc')->get();
@@ -134,6 +147,11 @@ class PumpTransactionListController extends Controller
                 $to_datetime = $to_date.' '.$to_time;
                 $query->where('date_time_start', '<=', $to_datetime);
             }
+        }
+
+        // Station Filter
+        if ($request->filled('station_id')) {
+            $query->where('station_id', $request->input('station_id'));
         }
 
         // Global search for all columns

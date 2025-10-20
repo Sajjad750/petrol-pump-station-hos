@@ -45,6 +45,10 @@ class TankDeliveryExport implements FromQuery, WithHeadings, WithMapping, WithSt
             $query->where('tank', 'like', '%' . $this->filters['tank_id'] . '%');
         }
 
+        if (!empty($this->filters['station_id'])) {
+            $query->where('station_id', $this->filters['station_id']);
+        }
+
         return $query->orderBy('start_datetime', 'desc');
     }
 

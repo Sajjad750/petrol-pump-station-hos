@@ -55,9 +55,10 @@ Route::middleware('auth')->group(function () {
     Route::get('fuel_grades/export-pdf', [\App\Http\Controllers\FuelGradeListController::class, 'exportPdf'])->name('fuel_grades.export.pdf');
 
     // Shifts
-    Route::get('shifts', \App\Http\Controllers\ShiftListController::class)->name('shifts');
+    Route::get('shifts', \App\Http\Controllers\ShiftListController::class)->name('shifts.index');
     Route::get('shifts/export-excel', [\App\Http\Controllers\ShiftListController::class, 'exportExcel'])->name('shifts.export.excel');
     Route::get('shifts/export-pdf', [\App\Http\Controllers\ShiftListController::class, 'exportPdf'])->name('shifts.export.pdf');
+    Route::get('shifts/{id}/summary', [\App\Http\Controllers\ShiftSummaryController::class, 'show'])->name('shifts.summary');
 
     // Shift Templates
     Route::get('shift_templates', \App\Http\Controllers\ShiftTemplateListController::class)->name('shift_templates');

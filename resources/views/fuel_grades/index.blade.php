@@ -15,22 +15,30 @@
                     <div class="card-body">
                         <form id="filter-form">
                             <div class="row">
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="form-group">
                                         <label for="name">Fuel Grade Name</label>
                                         <input type="text" class="form-control" id="name" name="name" placeholder="Search by name">
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="form-group">
                                         <label for="min_price">Minimum Price</label>
                                         <input type="number" step="0.01" class="form-control" id="min_price" name="min_price" placeholder="Min Price">
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="form-group">
                                         <label for="max_price">Maximum Price</label>
                                         <input type="number" step="0.01" class="form-control" id="max_price" name="max_price" placeholder="Max Price">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="station_id">Station</label>
+                                        <select class="form-control" id="station_id" name="station_id">
+                                            <option value="">All Stations</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
@@ -106,6 +114,7 @@
                         d.name = $('#name').val();
                         d.min_price = $('#min_price').val();
                         d.max_price = $('#max_price').val();
+                        d.station_id = $('#station_id').val();
                     }
                 },
                 'order': [0, 'desc'],
@@ -193,6 +202,7 @@
                 $('#name').val('');
                 $('#min_price').val('');
                 $('#max_price').val('');
+                $('#station_id').val('');
                 table.draw();
             });
 
@@ -201,7 +211,8 @@
                 const filters = {
                     fuel_grade_name: $('#name').val(),
                     min_price: $('#min_price').val(),
-                    max_price: $('#max_price').val()
+                    max_price: $('#max_price').val(),
+                    station_id: $('#station_id').val()
                 };
                 const queryString = $.param(filters);
                 window.location.href = '{{ route('fuel_grades.export.excel') }}?' + queryString;
@@ -212,7 +223,8 @@
                 const filters = {
                     fuel_grade_name: $('#name').val(),
                     min_price: $('#min_price').val(),
-                    max_price: $('#max_price').val()
+                    max_price: $('#max_price').val(),
+                    station_id: $('#station_id').val()
                 };
                 const queryString = $.param(filters);
                 window.location.href = '{{ route('fuel_grades.export.pdf') }}?' + queryString;
@@ -224,6 +236,27 @@
                     e.preventDefault();
                     table.draw();
                 }
+            });
+
+            // Load stations for dropdown
+            $.ajax({
+                url: '{{ route('fuel_grades') }}',
+                method: 'GET',
+                data: { get_stations: true },
+                success: function(response) {
+                    if (response.stations) {
+                        response.stations.forEach(function(station) {
+                            $('#station_id').append(
+                                $('<option></option>').val(station.id).text(station.site_name)
+                            );
+                        });
+                    }
+                }
+            });
+
+            // Auto-filter on station dropdown change
+            $('#station_id').on('change', function() {
+                table.draw();
             });
         });
     </script>
