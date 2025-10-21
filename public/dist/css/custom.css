@@ -164,11 +164,13 @@ textarea {
 /* Info Button (using primary color) */
 .btn-info {
     background-color: #5051F9 !important;
+    color:#fff !important;
     border-color: #5051F9 !important;
 }
 
 .btn-info:hover {
-    background-color: #3f40d4 !important;
+    background-color: #ffffff !important;
+    color:#5051F9 !important;
     border-color: #3f40d4 !important;
 }
 
