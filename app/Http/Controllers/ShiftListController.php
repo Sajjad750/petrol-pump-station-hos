@@ -16,6 +16,13 @@ class ShiftListController extends Controller
     public function __invoke(Request $request)
     {
         if (request()->ajax()) {
+            // Return stations if requested
+            if ($request->has('get_stations')) {
+                return response()->json([
+                    'stations' => \App\Models\Station::select('id', 'site_name')->orderBy('site_name')->get()
+                ]);
+            }
+
             // Return filter options if requested
             if ($request->has('get_filter_options')) {
                 return response()->json($this->getFilterOptions());
@@ -32,7 +39,7 @@ class ShiftListController extends Controller
      */
     public function exportExcel(Request $request): \Symfony\Component\HttpFoundation\BinaryFileResponse
     {
-        $filters = $request->only(['start_date', 'end_date', 'start_time', 'end_time', 'status', 'close_type', 'user_id']);
+        $filters = $request->only(['start_date', 'end_date', 'start_time', 'end_time', 'status', 'close_type', 'user_id', 'station_id']);
 
         return Excel::download(new ShiftExport($filters), 'shifts_' . now()->format('Y-m-d_His') . '.xlsx');
     }
@@ -42,7 +49,7 @@ class ShiftListController extends Controller
      */
     public function exportPdf(Request $request): \Illuminate\Http\Response
     {
-        $filters = $request->only(['start_date', 'end_date', 'start_time', 'end_time', 'status', 'close_type', 'user_id']);
+        $filters = $request->only(['start_date', 'end_date', 'start_time', 'end_time', 'status', 'close_type', 'user_id', 'station_id']);
 
         $query = Shift::query()->with('user');
 
@@ -64,6 +71,10 @@ class ShiftListController extends Controller
 
         if (!empty($filters['user_id'])) {
             $query->where('user_id', 'like', '%' . $filters['user_id'] . '%');
+        }
+
+        if (!empty($filters['station_id'])) {
+            $query->where('station_id', $filters['station_id']);
         }
 
         $shifts = $query->orderBy('start_time', 'desc')->get();
@@ -157,6 +168,11 @@ class ShiftListController extends Controller
         // User ID Search Filter
         if ($request->filled('user_id')) {
             $query->where('user_id', $request->input('user_id'));
+        }
+
+        // Station Filter
+        if ($request->filled('station_id')) {
+            $query->where('station_id', $request->input('station_id'));
         }
 
         // Global search for all columns
