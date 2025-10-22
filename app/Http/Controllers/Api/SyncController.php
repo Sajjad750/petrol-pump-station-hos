@@ -13,6 +13,7 @@ use App\Models\ShiftPumpTotal;
 use App\Models\Station;
 use App\Models\SyncLog;
 use App\Models\TankDelivery;
+use App\Models\TankInventory;
 use App\Models\TankMeasurement;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -1384,6 +1385,159 @@ class SyncController extends Controller
             'recorded_at' => $bosData['recorded_at'] ?? null,
             'station_id' => $stationId,
             'bos_shift_pump_total_id' => $bosData['id'],
+            'bos_uuid' => $bosData['uuid'],
+            'created_at_bos' => $bosData['created_at'] ?? null,
+            'updated_at_bos' => $bosData['updated_at'] ?? null,
+        ];
+    }
+
+    /**
+     * Sync tank inventories from BOS
+     */
+    public function syncTankInventories(Request $request): JsonResponse
+    {
+        Log::debug("syncTankInventories: ", (array)$request->all());
+
+        $station = $request->get('station');
+        $ptsId = $request->input('pts_id');
+        $tankInventories = $request->input('data', []);
+        Log::debug("tank_inventories: ", (array)$tankInventories);
+
+        $created = 0;
+        $updated = 0;
+        $failed = 0;
+        $errors = [];
+
+        DB::beginTransaction();
+
+        try {
+            foreach ($tankInventories as $inventoryData) {
+                try {
+                    // Create sync log entry
+                    $syncLog = SyncLog::createLog(
+                        $station->id,
+                        'tank_inventories',
+                        'create',
+                        $inventoryData,
+                        'pending'
+                    );
+
+                    // Prepare tank inventory data for HOS
+                    $hosInventoryData = $this->prepareTankInventoryData($inventoryData, $station->id);
+
+                    // Use updateOrCreate to handle duplicates
+                    $inventory = TankInventory::updateOrCreate(
+                        [
+                            'station_id' => $station->id,
+                            'bos_tank_inventory_id' => $inventoryData['id'],
+                        ],
+                        array_merge($hosInventoryData, [
+                            'synced_at' => now(),
+                        ])
+                    );
+
+                    // Mark sync log as successful
+                    $syncLog->markAsSuccessful([
+                        'tank_inventory_id' => $inventory->id,
+                        'action' => $inventory->wasRecentlyCreated ? 'created' : 'updated',
+                    ]);
+
+                    if ($inventory->wasRecentlyCreated) {
+                        $created++;
+                    } else {
+                        $updated++;
+                    }
+                } catch (\Exception $e) {
+                    $failed++;
+                    $errors[] = [
+                        'tank_inventory_id' => $inventoryData['id'] ?? 'unknown',
+                        'error' => $e->getMessage(),
+                    ];
+
+                    // Mark sync log as failed
+                    if (isset($syncLog)) {
+                        $syncLog->markAsFailed($e->getMessage());
+                    }
+
+                    Log::error('Failed to sync tank inventory', [
+                        'station_id' => $station->id,
+                        'pts_id' => $ptsId,
+                        'inventory_data' => $inventoryData,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            // Update station's last sync time
+            $station->updateLastSync();
+
+            DB::commit();
+
+            $totalItems = $created + $updated + $failed;
+            $allFailed = $totalItems > 0 && $failed === $totalItems;
+
+            return response()->json([
+                'success' => !$allFailed,
+                'message' => $allFailed
+                    ? "All {$failed} tank inventories failed to sync"
+                    : "Synced {$created} created, {$updated} updated, {$failed} failed tank inventories",
+                'data' => [
+                    'created' => $created,
+                    'updated' => $updated,
+                    'failed' => $failed,
+                    'errors' => $errors,
+                ],
+            ], $allFailed ? 422 : 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Sync tank inventories failed', [
+                'station_id' => $station->id,
+                'pts_id' => $ptsId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Sync operation failed: ' . $e->getMessage(),
+                'data' => [
+                    'created' => $created,
+                    'updated' => $updated,
+                    'failed' => $failed,
+                    'errors' => $errors,
+                ],
+            ], 500);
+        }
+    }
+
+    /**
+     * Prepare tank inventory data for HOS storage
+     */
+    private function prepareTankInventoryData(array $bosData, int $stationId): array
+    {
+        return [
+            'uuid' => Str::uuid7(),
+            'request_id' => $bosData['request_id'] ?? null,
+            'pts_id' => $bosData['pts_id'],
+            'date_time' => $bosData['date_time'],
+            'tank' => $bosData['tank'],
+            'fuel_grade_id' => $bosData['fuel_grade_id'] ?? null,
+            'fuel_grade_name' => $bosData['fuel_grade_name'] ?? null,
+            'status' => $bosData['status'] ?? null,
+            'alarms' => $bosData['alarms'] ?? [],
+            'product_height' => $bosData['product_height'] ?? null,
+            'water_height' => $bosData['water_height'] ?? null,
+            'temperature' => $bosData['temperature'] ?? null,
+            'product_volume' => $bosData['product_volume'] ?? null,
+            'water_volume' => $bosData['water_volume'] ?? null,
+            'product_ullage' => $bosData['product_ullage'] ?? null,
+            'product_tc_volume' => $bosData['product_tc_volume'] ?? null,
+            'product_density' => $bosData['product_density'] ?? null,
+            'product_mass' => $bosData['product_mass'] ?? null,
+            'tank_filling_percentage' => $bosData['tank_filling_percentage'] ?? null,
+            'configuration_id' => $bosData['configuration_id'] ?? null,
+            'station_id' => $stationId,
+            'bos_tank_inventory_id' => $bosData['id'],
             'bos_uuid' => $bosData['uuid'],
             'created_at_bos' => $bosData['created_at'] ?? null,
             'updated_at_bos' => $bosData['updated_at'] ?? null,
