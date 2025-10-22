@@ -14,10 +14,12 @@ class TankInventory extends Model
 
     protected $casts = [
         'snapshot_datetime' => 'datetime',
+        'date_time' => 'datetime',
         'synced_at' => 'datetime',
         'created_at_bos' => 'datetime',
         'updated_at_bos' => 'datetime',
         'probe_data' => 'array',
+        'alarms' => 'array',
         'absolute_product_height' => 'decimal:3',
         'absolute_water_height' => 'decimal:3',
         'absolute_temperature' => 'decimal:2',
@@ -26,6 +28,16 @@ class TankInventory extends Model
         'absolute_product_density' => 'decimal:3',
         'absolute_product_mass' => 'decimal:3',
         'pumps_dispensed_volume' => 'decimal:3',
+        'product_height' => 'decimal:3',
+        'water_height' => 'decimal:3',
+        'temperature' => 'decimal:2',
+        'product_volume' => 'decimal:3',
+        'water_volume' => 'decimal:3',
+        'product_ullage' => 'decimal:3',
+        'product_tc_volume' => 'decimal:3',
+        'product_density' => 'decimal:3',
+        'product_mass' => 'decimal:3',
+        'tank_filling_percentage' => 'decimal:2',
     ];
 
     /**
