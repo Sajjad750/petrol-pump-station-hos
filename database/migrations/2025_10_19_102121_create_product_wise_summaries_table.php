@@ -12,6 +12,7 @@ return new class () extends Migration {
     {
         Schema::create('product_wise_summaries', function (Blueprint $table) {
             $table->id();
+            $table->uuid()->nullable()->unique();
 
             // BOS fields (mirroring BOS structure)
             $table->unsignedBigInteger('shift_id');
