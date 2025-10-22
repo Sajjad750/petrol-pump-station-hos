@@ -19,5 +19,6 @@ Route::prefix('sync')->middleware(['bos.api.key', 'throttle:120,1'])->group(func
     Route::post('/shifts', [SyncController::class, 'syncShifts']);
     Route::post('/product-wise-summaries', [SyncController::class, 'syncProductWiseSummaries']);
     Route::post('/payment-mode-wise-summaries', [SyncController::class, 'syncPaymentModeWiseSummaries']);
+    Route::post('/shift-pump-totals', [SyncController::class, 'syncShiftPumpTotals']);
     // Future endpoints: alert-records
 });

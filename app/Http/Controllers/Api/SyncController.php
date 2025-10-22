@@ -9,6 +9,7 @@ use App\Models\ProductWiseSummary;
 use App\Models\Pump;
 use App\Models\PumpTransaction;
 use App\Models\Shift;
+use App\Models\ShiftPumpTotal;
 use App\Models\Station;
 use App\Models\SyncLog;
 use App\Models\TankDelivery;
@@ -1239,6 +1240,150 @@ class SyncController extends Controller
             'amount' => $bosData['amount'],
             'station_id' => $stationId,
             'bos_payment_mode_wise_summary_id' => $bosData['id'],
+            'bos_uuid' => $bosData['uuid'],
+            'created_at_bos' => $bosData['created_at'] ?? null,
+            'updated_at_bos' => $bosData['updated_at'] ?? null,
+        ];
+    }
+
+    /**
+     * Sync shift pump totals from BOS
+     */
+    public function syncShiftPumpTotals(Request $request): JsonResponse
+    {
+        Log::debug("syncShiftPumpTotals: ", (array)$request->all());
+
+        $station = $request->get('station');
+        $ptsId = $request->input('pts_id');
+        $shiftPumpTotals = $request->input('data', []);
+        Log::debug("shift_pump_totals: ", (array)$shiftPumpTotals);
+
+        $created = 0;
+        $updated = 0;
+        $failed = 0;
+        $errors = [];
+
+        DB::beginTransaction();
+
+        try {
+            foreach ($shiftPumpTotals as $totalData) {
+                try {
+                    // Create sync log entry
+                    $syncLog = SyncLog::createLog(
+                        $station->id,
+                        'shift_pump_totals',
+                        'create',
+                        $totalData,
+                        'pending'
+                    );
+
+                    // Prepare shift pump total data for HOS
+                    $hosTotalData = $this->prepareShiftPumpTotalData($totalData, $station->id);
+
+                    // Use updateOrCreate to handle duplicates
+                    $total = ShiftPumpTotal::updateOrCreate(
+                        [
+                            'station_id' => $station->id,
+                            'bos_shift_pump_total_id' => $totalData['id'],
+                        ],
+                        array_merge($hosTotalData, [
+                            'synced_at' => now(),
+                        ])
+                    );
+
+                    // Mark sync log as successful
+                    $syncLog->markAsSuccessful([
+                        'shift_pump_total_id' => $total->id,
+                        'action' => $total->wasRecentlyCreated ? 'created' : 'updated',
+                    ]);
+
+                    if ($total->wasRecentlyCreated) {
+                        $created++;
+                    } else {
+                        $updated++;
+                    }
+                } catch (\Exception $e) {
+                    $failed++;
+                    $errors[] = [
+                        'shift_pump_total_id' => $totalData['id'] ?? 'unknown',
+                        'error' => $e->getMessage(),
+                    ];
+
+                    // Mark sync log as failed
+                    if (isset($syncLog)) {
+                        $syncLog->markAsFailed($e->getMessage());
+                    }
+
+                    Log::error('Failed to sync shift pump total', [
+                        'station_id' => $station->id,
+                        'pts_id' => $ptsId,
+                        'total_data' => $totalData,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            // Update station's last sync time
+            $station->updateLastSync();
+
+            DB::commit();
+
+            $totalItems = $created + $updated + $failed;
+            $allFailed = $totalItems > 0 && $failed === $totalItems;
+
+            return response()->json([
+                'success' => !$allFailed,
+                'message' => $allFailed
+                    ? "All {$failed} shift pump totals failed to sync"
+                    : "Synced {$created} created, {$updated} updated, {$failed} failed shift pump totals",
+                'data' => [
+                    'created' => $created,
+                    'updated' => $updated,
+                    'failed' => $failed,
+                    'errors' => $errors,
+                ],
+            ], $allFailed ? 422 : 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Sync shift pump totals failed', [
+                'station_id' => $station->id,
+                'pts_id' => $ptsId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Sync operation failed: ' . $e->getMessage(),
+                'data' => [
+                    'created' => $created,
+                    'updated' => $updated,
+                    'failed' => $failed,
+                    'errors' => $errors,
+                ],
+            ], 500);
+        }
+    }
+
+    /**
+     * Prepare shift pump total data for HOS storage
+     */
+    private function prepareShiftPumpTotalData(array $bosData, int $stationId): array
+    {
+        return [
+            'uuid' => Str::uuid7(),
+            'shift_id' => $bosData['shift_id'],
+            'pump_id' => $bosData['pump_id'],
+            'nozzle_id' => $bosData['nozzle_id'],
+            'fuel_grade_id' => $bosData['fuel_grade_id'],
+            'volume' => $bosData['volume'],
+            'amount' => $bosData['amount'],
+            'transaction_count' => $bosData['transaction_count'],
+            'user' => $bosData['user'] ?? null,
+            'type' => $bosData['type'] ?? null,
+            'recorded_at' => $bosData['recorded_at'] ?? null,
+            'station_id' => $stationId,
+            'bos_shift_pump_total_id' => $bosData['id'],
             'bos_uuid' => $bosData['uuid'],
             'created_at_bos' => $bosData['created_at'] ?? null,
             'updated_at_bos' => $bosData['updated_at'] ?? null,
