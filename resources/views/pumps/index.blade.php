@@ -28,11 +28,6 @@
                                         <th>PTS Pump ID</th>
                                         <th>PTS Port ID</th>
                                         <th>PTS Address ID</th>
-                                        <th>Synced At</th>
-                                        <th>Created At BOS</th>
-                                        <th>Updated At BOS</th>
-                                        <th>Created At</th>
-                                        <th>Updated At</th>
                                     </tr>
                                 </thead>
                             </table>
@@ -127,21 +122,7 @@
                         data: 'pts_address_id',
                         defaultContent: '-'
                     },
-                    {
-                        data: 'synced_at'
-                    },
-                    {
-                        data: 'created_at_bos'
-                    },
-                    {
-                        data: 'updated_at_bos'
-                    },
-                    {
-                        data: 'created_at'
-                    },
-                    {
-                        data: 'updated_at'
-                    }
+                   
                 ]
             });
 

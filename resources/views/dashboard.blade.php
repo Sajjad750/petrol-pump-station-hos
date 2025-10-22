@@ -181,6 +181,35 @@
                 </div>
             </div>
 
+            <!-- Sales Summary Cards -->
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="small-box bg-primary">
+                        <div class="inner">
+                            <h3>{{ number_format($salesData['total_volume'], 2) }} L</h3>
+                            <p>Total Volume (Last 7 Days)</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-tint"></i>
+                        </div>
+                        <a href="#" class="small-box-footer">View Details <i class="fas fa-arrow-circle-right"></i></a>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="small-box bg-success">
+                        <div class="inner">
+                            <h3>${{ number_format($salesData['total_amount'], 2) }}</h3>
+                            <p>Total Amount (Last 7 Days)</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <a href="#" class="small-box-footer">View Details <i class="fas fa-arrow-circle-right"></i></a>
+                    </div>
+                </div>
+            </div>
+
             <!-- Map View and Site Status -->
             <div class="row">
                 <div class="col-lg-8">
@@ -332,7 +361,7 @@
                                                 <td><span class="badge badge-success">0</span></td>
                                                 <td>
                                                     <button class="btn btn-sm btn-primary station-details-btn" data-station-id="{{ $station->id }}">
-                                                        <i class="fas fa-eye"></i> View Details
+                                                        <i class="fas fa-eye"></i> View
                                                     </button>
                                                 </td>
                                             </tr>
@@ -460,16 +489,37 @@
                 `);
             });
 
-            // Inventory Forecast Chart (Horizontal Bar Chart)
+            // Calculate dynamic low stock data based on tank measurements
+            var criticalLowTanks = {{ $stations->sum(function($station) { 
+                return $station->tankMeasurements->filter(function($measurement) { 
+                    return $measurement->tank_filling_percentage !== null && $measurement->tank_filling_percentage < 20; 
+                })->count(); 
+            }) }};
+            
+            var lowStockTanks = {{ $stations->sum(function($station) { 
+                return $station->tankMeasurements->filter(function($measurement) { 
+                    return $measurement->tank_filling_percentage !== null && $measurement->tank_filling_percentage >= 20 && $measurement->tank_filling_percentage < 50; 
+                })->count(); 
+            }) }};
+            
+            var normalStockTanks = {{ $stations->sum(function($station) { 
+                return $station->tankMeasurements->filter(function($measurement) { 
+                    return $measurement->tank_filling_percentage !== null && $measurement->tank_filling_percentage >= 50; 
+                })->count(); 
+            }) }};
+
+            // Inventory Forecast Chart (Horizontal Bar Chart) - Dynamic Data
             var inventoryCtx = document.getElementById('inventoryForecastChart').getContext('2d');
             console.log('Initializing inventory forecast chart...');
+            
+            // Use the same dynamic data as low stock chart
             new Chart(inventoryCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['1-2 Days (Critical)', '3-5 Days (Warning)', '5+ Days (Normal)'],
+                    labels: ['Critical Low (<20%)', 'Low Stock (20-50%)', 'Normal Stock (50%+)'],
                     datasets: [{
                         label: 'Number of Tanks',
-                        data: [3, 8, 15],
+                        data: [criticalLowTanks, lowStockTanks, normalStockTanks],
                         backgroundColor: ['#dc3545', '#ffc107', '#28a745'],
                         borderColor: ['#dc3545', '#ffc107', '#28a745'],
                         borderWidth: 1
@@ -492,22 +542,24 @@
                 }
             });
 
-            // Sales Summary Chart (Line Chart)
+            // Sales Summary Chart (Line Chart) - Dynamic Data
             var salesCtx = document.getElementById('salesSummaryChart').getContext('2d');
+            console.log('Initializing sales summary chart with dynamic data...');
+            
             new Chart(salesCtx, {
                 type: 'line',
                 data: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    labels: @json($salesData['labels']),
                     datasets: [{
                         label: 'Volume (Liters)',
-                        data: [12000, 15000, 18000, 16000, 20000, 22000, 19000],
+                        data: @json($salesData['volume']),
                         borderColor: '#007bff',
                         backgroundColor: 'rgba(0, 123, 255, 0.1)',
                         tension: 0.4,
                         fill: true
                     }, {
                         label: 'Amount ($)',
-                        data: [24000, 30000, 36000, 32000, 40000, 44000, 38000],
+                        data: @json($salesData['amount']),
                         borderColor: '#28a745',
                         backgroundColor: 'rgba(40, 167, 69, 0.1)',
                         tension: 0.4,
@@ -517,24 +569,54 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.dataset.label.includes('Volume')) {
+                                        label += context.parsed.y.toFixed(2) + ' L';
+                                    } else {
+                                        label += '$' + context.parsed.y.toFixed(2);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
                     scales: {
                         y: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString();
+                                }
+                            }
                         }
                     }
                 }
             });
 
-            // Product Sales Chart (Doughnut Chart)
+            // Product Sales Chart (Doughnut Chart) - Dynamic Data
             var productCtx = document.getElementById('productSalesChart').getContext('2d');
+            console.log('Initializing product sales chart with dynamic data...');
+            
             new Chart(productCtx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Petrol 95', 'Petrol 92', 'Diesel', 'Kerosene'],
+                    labels: @json($productDistributionData['labels']),
                     datasets: [{
-                        data: [45, 25, 20, 10],
-                        backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545'],
-                        borderWidth: 2
+                        data: @json($productDistributionData['data']),
+                        backgroundColor: @json($productDistributionData['colors']),
+                        borderWidth: 2,
+                        borderColor: '#fff'
                     }]
                 },
                 options: {
@@ -542,7 +624,25 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            position: 'bottom'
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                    label += context.parsed.toFixed(2) + ' L (' + percentage + '%)';
+                                    return label;
+                                }
+                            }
                         }
                     }
                 }
@@ -580,15 +680,16 @@
                 }
             });
 
-            // Low Stock Chart (Doughnut Chart)
+            // Low Stock Chart (Doughnut Chart) - Dynamic Data
             var lowStockCtx = document.getElementById('lowStockChart').getContext('2d');
             console.log('Initializing low stock chart...');
+            
             new Chart(lowStockCtx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Critical (1-2 days)', 'Warning (3-5 days)', 'Normal (5+ days)'],
+                    labels: ['Critical Low (<20%)', 'Low Stock (20-50%)', 'Normal Stock (50%+)'],
                     datasets: [{
-                        data: [3, 8, 15],
+                        data: [criticalLowTanks, lowStockTanks, normalStockTanks],
                         backgroundColor: ['#dc3545', '#ffc107', '#28a745'],
                         borderWidth: 2
                     }]

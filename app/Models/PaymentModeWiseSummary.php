@@ -53,6 +53,14 @@ class PaymentModeWiseSummary extends Model
     }
 
     /**
+     * Scope to get payment mode wise summaries by BOS shift id and station
+     */
+    public function scopeForBosShiftAtStation($query, int $bosShiftId, int $stationId)
+    {
+        return $query->where('bos_shift_id', $bosShiftId)->where('station_id', $stationId);
+    }
+
+    /**
      * Scope to get payment mode wise summaries by payment mode
      */
     public function scopeByPaymentMode($query, string $mop)

@@ -105,12 +105,7 @@
                                         <th>Pumps Dispensed Volume</th>
                                         <th>Probe Data</th>
                                         <th>BOS Inventory ID</th>
-                                        <th>BOS UUID</th>
-                                        <th>Synced At</th>
-                                        <th>Created At BOS</th>
-                                        <th>Updated At BOS</th>
-                                        <th>Created At</th>
-                                        <th>Updated At</th>
+                                        
                                     </tr>
                                 </thead>
                             </table>
@@ -210,25 +205,7 @@
                         data: 'bos_tank_inventory_id',
                         defaultContent: '-'
                     },
-                    {
-                        data: 'bos_uuid',
-                        defaultContent: '-'
-                    },
-                    {
-                        data: 'synced_at'
-                    },
-                    {
-                        data: 'created_at_bos'
-                    },
-                    {
-                        data: 'updated_at_bos'
-                    },
-                    {
-                        data: 'created_at'
-                    },
-                    {
-                        data: 'updated_at'
-                    }
+                   
                 ],
                 'scrollX': true
             });

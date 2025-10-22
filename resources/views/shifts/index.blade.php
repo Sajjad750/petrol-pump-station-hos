@@ -109,11 +109,7 @@
                                         <th>Auto Close Time UTC</th>
                                         <th>Notes</th>
                                         <th>BOS Shift ID</th>
-                                        <th>Synced At</th>
-                                        <th>Created At BOS</th>
-                                        <th>Updated At BOS</th>
-                                        <th>Created At</th>
-                                        <th>Updated At</th>
+                              
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -197,21 +193,7 @@
                         data: 'bos_shift_id',
                         defaultContent: '-'
                     },
-                    {
-                        data: 'synced_at'
-                    },
-                    {
-                        data: 'created_at_bos'
-                    },
-                    {
-                        data: 'updated_at_bos'
-                    },
-                    {
-                        data: 'created_at'
-                    },
-                    {
-                        data: 'updated_at'
-                    },
+                   
                     {
                         data: 'id',
                         orderable: false,

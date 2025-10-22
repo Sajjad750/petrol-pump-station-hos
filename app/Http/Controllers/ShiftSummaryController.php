@@ -18,13 +18,18 @@ class ShiftSummaryController extends Controller
         // Get the shift with station
         $shift = Shift::with('station')->findOrFail($id);
 
-        // Get Product Wise Summary for this shift
-        $productSummaries = ProductWiseSummary::where('shift_id', $id)
-            ->with('fuelGrade')
+        // Resolve BOS identifiers to fetch related summaries correctly
+        $bos_shift_id = $shift->bos_shift_id;
+        $station_id = $shift->station_id;
+
+        // Get Product Wise Summary for this shift using BOS shift id and station
+        $productSummaries = ProductWiseSummary::where('bos_shift_id', $bos_shift_id)
+            ->where('station_id', $station_id)
             ->get();
 
-        // Get Payment Mode Wise Summary for this shift
-        $paymentSummaries = PaymentModeWiseSummary::where('shift_id', $id)
+        // Get Payment Mode Wise Summary for this shift using BOS shift id and station
+        $paymentSummaries = PaymentModeWiseSummary::where('bos_shift_id', $bos_shift_id)
+            ->where('station_id', $station_id)
             ->get();
 
         // Get Pump Wise Summary from pump transactions

@@ -76,12 +76,7 @@
                                         <th>End Time (12h)</th>
                                         <th>Timezone</th>
                                         <th>BOS Template ID</th>
-                                        <th>BOS UUID</th>
-                                        <th>Synced At</th>
-                                        <th>Created At BOS</th>
-                                        <th>Updated At BOS</th>
-                                        <th>Created At</th>
-                                        <th>Updated At</th>
+                                    
                                     </tr>
                                 </thead>
                             </table>
@@ -139,25 +134,8 @@
                         data: 'bos_shift_template_id',
                         defaultContent: '-'
                     },
-                    {
-                        data: 'bos_uuid',
-                        defaultContent: '-'
-                    },
-                    {
-                        data: 'synced_at'
-                    },
-                    {
-                        data: 'created_at_bos'
-                    },
-                    {
-                        data: 'updated_at_bos'
-                    },
-                    {
-                        data: 'created_at'
-                    },
-                    {
-                        data: 'updated_at'
-                    }
+                    
+        
                 ],
                 'scrollX': true
             });

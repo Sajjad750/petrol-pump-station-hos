@@ -85,12 +85,7 @@
                                         <th>Blend Status</th>
                                         <th>Blend Info</th>
                                         <th>BOS Fuel Grade ID</th>
-                                        <th>BOS UUID</th>
-                                        <th>Synced At</th>
-                                        <th>Created At BOS</th>
-                                        <th>Updated At BOS</th>
-                                        <th>Created At</th>
-                                        <th>Updated At</th>
+                                        
                                     </tr>
                                 </thead>
                             </table>
@@ -169,25 +164,7 @@
                         data: 'bos_fuel_grade_id',
                         defaultContent: '-'
                     },
-                    {
-                        data: 'bos_uuid',
-                        defaultContent: '-'
-                    },
-                    {
-                        data: 'synced_at'
-                    },
-                    {
-                        data: 'created_at_bos'
-                    },
-                    {
-                        data: 'updated_at_bos'
-                    },
-                    {
-                        data: 'created_at'
-                    },
-                    {
-                        data: 'updated_at'
-                    }
+                   
                 ],
                 'scrollX': true
             });

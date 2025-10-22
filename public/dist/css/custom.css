@@ -247,6 +247,7 @@ a:hover {
 .pagination .page-item.active .page-link {
     background-color: #5051F9 !important;
     border-color: #5051F9 !important;
+    color:#ffffff !important;
 }
 
 .pagination .page-link {
@@ -430,6 +431,7 @@ body.dark-mode a:hover {
 body.dark-mode .pagination .page-item.active .page-link {
     background-color: #5051F9 !important;
     border-color: #5051F9 !important;
+    color:#ffffff !important;
 }
 
 /* ============================================

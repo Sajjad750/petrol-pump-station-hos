@@ -45,6 +45,14 @@ class ProductWiseSummary extends Model
     }
 
     /**
+     * Scope to get product wise summaries by BOS shift id and station
+     */
+    public function scopeForBosShiftAtStation($query, int $bosShiftId, int $stationId)
+    {
+        return $query->where('bos_shift_id', $bosShiftId)->where('station_id', $stationId);
+    }
+
+    /**
      * Scope to get product wise summaries by fuel grade
      */
     public function scopeByFuelGrade($query, int $fuelGradeId)

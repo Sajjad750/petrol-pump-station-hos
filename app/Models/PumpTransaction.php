@@ -32,6 +32,14 @@ class PumpTransaction extends Model
     }
 
     /**
+     * Get the fuel grade for this transaction
+     */
+    public function fuelGrade(): BelongsTo
+    {
+        return $this->belongsTo(FuelGrade::class, 'pts_fuel_grade_id', 'id');
+    }
+
+    /**
      * Scope to get transactions for a specific station
      */
     public function scopeForStation($query, int $stationId)
