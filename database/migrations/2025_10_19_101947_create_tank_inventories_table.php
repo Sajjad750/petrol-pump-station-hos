@@ -12,9 +12,9 @@ return new class () extends Migration {
     {
         Schema::create('tank_inventories', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->nullable()->unique();
 
             // BOS fields (mirroring BOS structure)
-            $table->uuid('uuid')->unique();
             $table->unsignedBigInteger('request_id')->nullable();
             $table->string('pts_id', 255)->nullable();
             $table->integer('tank');

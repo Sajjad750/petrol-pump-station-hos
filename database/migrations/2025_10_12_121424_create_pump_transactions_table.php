@@ -12,9 +12,9 @@ return new class () extends Migration {
     {
         Schema::create('pump_transactions', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->nullable()->unique();
 
             // BOS fields (mirroring BOS structure)
-            $table->uuid('uuid')->unique();
             $table->string('pts2_device_id')->nullable();
             $table->string('pts_id', 50)->index();
             $table->integer('request_id')->nullable();

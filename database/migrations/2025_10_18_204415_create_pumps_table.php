@@ -12,6 +12,7 @@ return new class () extends Migration {
     {
         Schema::create('pumps', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->nullable()->unique();
 
             // HOS-specific additions
             $table->foreignId('station_id')->constrained()->onDelete('cascade');
