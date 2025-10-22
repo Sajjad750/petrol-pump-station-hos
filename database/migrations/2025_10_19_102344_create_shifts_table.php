@@ -12,6 +12,7 @@ return new class () extends Migration {
     {
         Schema::create('shifts', function (Blueprint $table) {
             $table->id();
+            $table->uuid()->nullable()->unique();
 
             // BOS fields (mirroring BOS structure)
             $table->dateTime('start_time')->nullable();

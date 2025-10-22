@@ -12,7 +12,8 @@ return new class () extends Migration {
     {
         Schema::create('shift_pump_totals', function (Blueprint $table) {
             $table->id();
-            $table->uuid('uuid')->unique();
+            $table->uuid('uuid')->nullable()->unique();
+
             $table->foreignId('station_id')->constrained()->onDelete('cascade');
             $table->foreignId('shift_id')->constrained()->onDelete('cascade');
             $table->integer('pump_id');

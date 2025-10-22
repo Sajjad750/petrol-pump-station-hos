@@ -12,9 +12,9 @@ return new class () extends Migration {
     {
         Schema::create('fuel_grades', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->nullable()->unique();
 
             // BOS fields (mirroring BOS structure)
-            $table->uuid('uuid')->unique();
             $table->string('pts_fuel_grade_id', 255)->nullable();
             $table->string('name', 255);
             $table->decimal('price', 8, 2);
