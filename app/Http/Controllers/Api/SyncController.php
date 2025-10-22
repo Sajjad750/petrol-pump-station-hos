@@ -169,7 +169,7 @@ class SyncController extends Controller
             'tag' => $bosData['tag'],
             'pts_user_id' => $bosData['pts_user_id'],
             'pts_configuration_id' => $bosData['pts_configuration_id'],
-            'shift_id' => $bosData['shift_id'],
+            'bos_shift_id' => $bosData['shift_id'],
 //            'fuel_grade_id' => $bosData['fuel_grade_id'],
 //            'pump_id' =>$bosData['pump_id'],
 //            'tank_id' => $bosData['tank_id'],
@@ -1097,8 +1097,8 @@ class SyncController extends Controller
     {
         return [
             'uuid' => Str::uuid7(),
-            'shift_id' => $bosData['shift_id'],
-            'fuel_grade_id' => $bosData['fuel_grade_id'],
+            'bos_shift_id' => $bosData['shift_id'],
+            'bos_fuel_grade_id' => $bosData['fuel_grade_id'],
             'volume' => $bosData['volume'],
             'amount' => $bosData['amount'],
             'station_id' => $stationId,
@@ -1235,7 +1235,7 @@ class SyncController extends Controller
     {
         return [
             'uuid' => Str::uuid7(),
-            'shift_id' => $bosData['shift_id'],
+            'bos_shift_id' => $bosData['shift_id'],
             'mop' => $bosData['mop'],
             'volume' => $bosData['volume'],
             'amount' => $bosData['amount'],
@@ -1373,7 +1373,7 @@ class SyncController extends Controller
     {
         return [
             'uuid' => Str::uuid7(),
-            'shift_id' => $bosData['shift_id'],
+            'bos_shift_id' => $bosData['shift_id'],
             'pump_id' => $bosData['pump_id'],
             'nozzle_id' => $bosData['nozzle_id'],
             'fuel_grade_id' => $bosData['fuel_grade_id'],

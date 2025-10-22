@@ -15,7 +15,7 @@ return new class () extends Migration {
             $table->uuid('uuid')->nullable()->unique();
 
             $table->foreignId('station_id')->constrained()->onDelete('cascade');
-            $table->unsignedBigInteger('shift_id');
+            $table->unsignedBigInteger('shift_id')->nullable();
             $table->unsignedBigInteger('pump_id');
             $table->unsignedBigInteger('nozzle_id');
             $table->unsignedBigInteger('fuel_grade_id');
@@ -26,15 +26,22 @@ return new class () extends Migration {
             $table->string('type')->nullable();
             $table->timestamp('recorded_at')->nullable();
             $table->timestamp('synced_at')->nullable();
+
+// HOS-specific additions
             $table->unsignedBigInteger('bos_shift_pump_total_id');
             $table->string('bos_uuid')->nullable();
+            $table->unsignedBigInteger('bos_shift_id')->nullable()->comment('Original BOS shifts ID');
+
             $table->timestamp('created_at_bos')->nullable();
             $table->timestamp('updated_at_bos')->nullable();
+
             $table->timestamps();
 
             $table->index(['station_id', 'bos_shift_pump_total_id']);
             $table->index(['shift_id', 'pump_id']);
             $table->index('recorded_at');
+            $table->index('bos_shift_id');
+            $table->index(['bos_shift_id','station_id']);
         });
     }
 
