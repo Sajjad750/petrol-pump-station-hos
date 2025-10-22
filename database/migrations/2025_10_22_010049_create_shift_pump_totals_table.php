@@ -16,9 +16,9 @@ return new class () extends Migration {
 
             $table->foreignId('station_id')->constrained()->onDelete('cascade');
             $table->unsignedBigInteger('shift_id');
-            $table->integer('pump_id');
-            $table->integer('nozzle_id');
-            $table->integer('fuel_grade_id');
+            $table->unsignedBigInteger('pump_id');
+            $table->unsignedBigInteger('nozzle_id');
+            $table->unsignedBigInteger('fuel_grade_id');
             $table->decimal('volume', 10, 3)->default(0);
             $table->decimal('amount', 10, 2)->default(0);
             $table->integer('transaction_count')->default(0);
@@ -26,7 +26,7 @@ return new class () extends Migration {
             $table->string('type')->nullable();
             $table->timestamp('recorded_at')->nullable();
             $table->timestamp('synced_at')->nullable();
-            $table->integer('bos_shift_pump_total_id');
+            $table->unsignedBigInteger('bos_shift_pump_total_id');
             $table->string('bos_uuid')->nullable();
             $table->timestamp('created_at_bos')->nullable();
             $table->timestamp('updated_at_bos')->nullable();
