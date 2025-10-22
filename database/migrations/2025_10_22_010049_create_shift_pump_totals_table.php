@@ -15,7 +15,7 @@ return new class () extends Migration {
             $table->uuid('uuid')->nullable()->unique();
 
             $table->foreignId('station_id')->constrained()->onDelete('cascade');
-            $table->foreign('shift_id');
+            $table->unsignedBigInteger('shift_id');
             $table->integer('pump_id');
             $table->integer('nozzle_id');
             $table->integer('fuel_grade_id');
