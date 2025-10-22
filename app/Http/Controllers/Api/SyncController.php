@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\FuelGrade;
+use App\Models\PaymentModeWiseSummary;
+use App\Models\ProductWiseSummary;
 use App\Models\Pump;
 use App\Models\PumpTransaction;
+use App\Models\Shift;
 use App\Models\Station;
 use App\Models\SyncLog;
 use App\Models\TankDelivery;
@@ -816,6 +819,426 @@ class SyncController extends Controller
             'blend_tank2_id' => $bosData['blend_tank2_id'] ?? null,
             'station_id' => $stationId,
             'bos_fuel_grade_id' => $bosData['id'],
+            'bos_uuid' => $bosData['uuid'],
+            'created_at_bos' => $bosData['created_at'] ?? null,
+            'updated_at_bos' => $bosData['updated_at'] ?? null,
+        ];
+    }
+
+    /**
+     * Sync shifts from BOS
+     */
+    public function syncShifts(Request $request): JsonResponse
+    {
+        Log::debug("syncShifts: ", (array)$request->all());
+
+        $station = $request->get('station');
+        $ptsId = $request->input('pts_id');
+        $shifts = $request->input('data', []);
+        Log::debug("shifts: ", (array)$shifts);
+
+        $created = 0;
+        $updated = 0;
+        $failed = 0;
+        $errors = [];
+
+        DB::beginTransaction();
+
+        try {
+            foreach ($shifts as $shiftData) {
+                try {
+                    // Create sync log entry
+                    $syncLog = SyncLog::createLog(
+                        $station->id,
+                        'shifts',
+                        'create',
+                        $shiftData,
+                        'pending'
+                    );
+
+                    // Prepare shift data for HOS
+                    $hosShiftData = $this->prepareShiftData($shiftData, $station->id);
+
+                    // Use updateOrCreate to handle duplicates
+                    $shift = Shift::updateOrCreate(
+                        [
+                            'station_id' => $station->id,
+                            'bos_shift_id' => $shiftData['id'],
+                        ],
+                        array_merge($hosShiftData, [
+                            'synced_at' => now(),
+                        ])
+                    );
+
+                    // Mark sync log as successful
+                    $syncLog->markAsSuccessful([
+                        'shift_id' => $shift->id,
+                        'action' => $shift->wasRecentlyCreated ? 'created' : 'updated',
+                    ]);
+
+                    if ($shift->wasRecentlyCreated) {
+                        $created++;
+                    } else {
+                        $updated++;
+                    }
+                } catch (\Exception $e) {
+                    $failed++;
+                    $errors[] = [
+                        'shift_id' => $shiftData['id'] ?? 'unknown',
+                        'error' => $e->getMessage(),
+                    ];
+
+                    // Mark sync log as failed
+                    if (isset($syncLog)) {
+                        $syncLog->markAsFailed($e->getMessage());
+                    }
+
+                    Log::error('Failed to sync shift', [
+                        'station_id' => $station->id,
+                        'pts_id' => $ptsId,
+                        'shift_data' => $shiftData,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            // Update station's last sync time
+            $station->updateLastSync();
+
+            DB::commit();
+
+            $totalItems = $created + $updated + $failed;
+            $allFailed = $totalItems > 0 && $failed === $totalItems;
+
+            return response()->json([
+                'success' => !$allFailed,
+                'message' => $allFailed
+                    ? "All {$failed} shifts failed to sync"
+                    : "Synced {$created} created, {$updated} updated, {$failed} failed shifts",
+                'data' => [
+                    'created' => $created,
+                    'updated' => $updated,
+                    'failed' => $failed,
+                    'errors' => $errors,
+                ],
+            ], $allFailed ? 422 : 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Sync shifts failed', [
+                'station_id' => $station->id,
+                'pts_id' => $ptsId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Sync operation failed: ' . $e->getMessage(),
+                'data' => [
+                    'created' => $created,
+                    'updated' => $updated,
+                    'failed' => $failed,
+                    'errors' => $errors,
+                ],
+            ], 500);
+        }
+    }
+
+    /**
+     * Prepare shift data for HOS storage
+     */
+    private function prepareShiftData(array $bosData, int $stationId): array
+    {
+        return [
+            'uuid' => Str::uuid7(),
+            'start_time' => $bosData['start_time'],
+            'end_time' => $bosData['end_time'] ?? null,
+            'user_id' => $bosData['user_id'],
+            'notes' => $bosData['notes'] ?? null,
+            'close_type' => $bosData['close_type'],
+            'status' => $bosData['status'],
+            'auto_close_time' => $bosData['auto_close_time'] ?? null,
+            'start_time_utc' => $bosData['start_time_utc'] ?? null,
+            'end_time_utc' => $bosData['end_time_utc'] ?? null,
+            'auto_close_time_utc' => $bosData['auto_close_time_utc'] ?? null,
+            'station_id' => $stationId,
+            'bos_shift_id' => $bosData['id'],
+            'bos_uuid' => $bosData['uuid'],
+            'created_at_bos' => $bosData['created_at'] ?? null,
+            'updated_at_bos' => $bosData['updated_at'] ?? null,
+        ];
+    }
+
+    /**
+     * Sync product wise summaries from BOS
+     */
+    public function syncProductWiseSummaries(Request $request): JsonResponse
+    {
+        Log::debug("syncProductWiseSummaries: ", (array)$request->all());
+
+        $station = $request->get('station');
+        $ptsId = $request->input('pts_id');
+        $productWiseSummaries = $request->input('data', []);
+        Log::debug("product_wise_summaries: ", (array)$productWiseSummaries);
+
+        $created = 0;
+        $updated = 0;
+        $failed = 0;
+        $errors = [];
+
+        DB::beginTransaction();
+
+        try {
+            foreach ($productWiseSummaries as $summaryData) {
+                try {
+                    // Create sync log entry
+                    $syncLog = SyncLog::createLog(
+                        $station->id,
+                        'product_wise_summaries',
+                        'create',
+                        $summaryData,
+                        'pending'
+                    );
+
+                    // Prepare product wise summary data for HOS
+                    $hosSummaryData = $this->prepareProductWiseSummaryData($summaryData, $station->id);
+
+                    // Use updateOrCreate to handle duplicates
+                    $summary = ProductWiseSummary::updateOrCreate(
+                        [
+                            'station_id' => $station->id,
+                            'bos_product_wise_summary_id' => $summaryData['id'],
+                        ],
+                        array_merge($hosSummaryData, [
+                            'synced_at' => now(),
+                        ])
+                    );
+
+                    // Mark sync log as successful
+                    $syncLog->markAsSuccessful([
+                        'product_wise_summary_id' => $summary->id,
+                        'action' => $summary->wasRecentlyCreated ? 'created' : 'updated',
+                    ]);
+
+                    if ($summary->wasRecentlyCreated) {
+                        $created++;
+                    } else {
+                        $updated++;
+                    }
+                } catch (\Exception $e) {
+                    $failed++;
+                    $errors[] = [
+                        'product_wise_summary_id' => $summaryData['id'] ?? 'unknown',
+                        'error' => $e->getMessage(),
+                    ];
+
+                    // Mark sync log as failed
+                    if (isset($syncLog)) {
+                        $syncLog->markAsFailed($e->getMessage());
+                    }
+
+                    Log::error('Failed to sync product wise summary', [
+                        'station_id' => $station->id,
+                        'pts_id' => $ptsId,
+                        'summary_data' => $summaryData,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            // Update station's last sync time
+            $station->updateLastSync();
+
+            DB::commit();
+
+            $totalItems = $created + $updated + $failed;
+            $allFailed = $totalItems > 0 && $failed === $totalItems;
+
+            return response()->json([
+                'success' => !$allFailed,
+                'message' => $allFailed
+                    ? "All {$failed} product wise summaries failed to sync"
+                    : "Synced {$created} created, {$updated} updated, {$failed} failed product wise summaries",
+                'data' => [
+                    'created' => $created,
+                    'updated' => $updated,
+                    'failed' => $failed,
+                    'errors' => $errors,
+                ],
+            ], $allFailed ? 422 : 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Sync product wise summaries failed', [
+                'station_id' => $station->id,
+                'pts_id' => $ptsId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Sync operation failed: ' . $e->getMessage(),
+                'data' => [
+                    'created' => $created,
+                    'updated' => $updated,
+                    'failed' => $failed,
+                    'errors' => $errors,
+                ],
+            ], 500);
+        }
+    }
+
+    /**
+     * Prepare product wise summary data for HOS storage
+     */
+    private function prepareProductWiseSummaryData(array $bosData, int $stationId): array
+    {
+        return [
+            'uuid' => Str::uuid7(),
+            'shift_id' => $bosData['shift_id'],
+            'fuel_grade_id' => $bosData['fuel_grade_id'],
+            'total_volume' => $bosData['total_volume'],
+            'total_amount' => $bosData['total_amount'],
+            'station_id' => $stationId,
+            'bos_product_wise_summary_id' => $bosData['id'],
+            'bos_uuid' => $bosData['uuid'],
+            'created_at_bos' => $bosData['created_at'] ?? null,
+            'updated_at_bos' => $bosData['updated_at'] ?? null,
+        ];
+    }
+
+    /**
+     * Sync payment mode wise summaries from BOS
+     */
+    public function syncPaymentModeWiseSummaries(Request $request): JsonResponse
+    {
+        Log::debug("syncPaymentModeWiseSummaries: ", (array)$request->all());
+
+        $station = $request->get('station');
+        $ptsId = $request->input('pts_id');
+        $paymentModeWiseSummaries = $request->input('data', []);
+        Log::debug("payment_mode_wise_summaries: ", (array)$paymentModeWiseSummaries);
+
+        $created = 0;
+        $updated = 0;
+        $failed = 0;
+        $errors = [];
+
+        DB::beginTransaction();
+
+        try {
+            foreach ($paymentModeWiseSummaries as $summaryData) {
+                try {
+                    // Create sync log entry
+                    $syncLog = SyncLog::createLog(
+                        $station->id,
+                        'payment_mode_wise_summaries',
+                        'create',
+                        $summaryData,
+                        'pending'
+                    );
+
+                    // Prepare payment mode wise summary data for HOS
+                    $hosSummaryData = $this->preparePaymentModeWiseSummaryData($summaryData, $station->id);
+
+                    // Use updateOrCreate to handle duplicates
+                    $summary = PaymentModeWiseSummary::updateOrCreate(
+                        [
+                            'station_id' => $station->id,
+                            'bos_payment_mode_wise_summary_id' => $summaryData['id'],
+                        ],
+                        array_merge($hosSummaryData, [
+                            'synced_at' => now(),
+                        ])
+                    );
+
+                    // Mark sync log as successful
+                    $syncLog->markAsSuccessful([
+                        'payment_mode_wise_summary_id' => $summary->id,
+                        'action' => $summary->wasRecentlyCreated ? 'created' : 'updated',
+                    ]);
+
+                    if ($summary->wasRecentlyCreated) {
+                        $created++;
+                    } else {
+                        $updated++;
+                    }
+                } catch (\Exception $e) {
+                    $failed++;
+                    $errors[] = [
+                        'payment_mode_wise_summary_id' => $summaryData['id'] ?? 'unknown',
+                        'error' => $e->getMessage(),
+                    ];
+
+                    // Mark sync log as failed
+                    if (isset($syncLog)) {
+                        $syncLog->markAsFailed($e->getMessage());
+                    }
+
+                    Log::error('Failed to sync payment mode wise summary', [
+                        'station_id' => $station->id,
+                        'pts_id' => $ptsId,
+                        'summary_data' => $summaryData,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            // Update station's last sync time
+            $station->updateLastSync();
+
+            DB::commit();
+
+            $totalItems = $created + $updated + $failed;
+            $allFailed = $totalItems > 0 && $failed === $totalItems;
+
+            return response()->json([
+                'success' => !$allFailed,
+                'message' => $allFailed
+                    ? "All {$failed} payment mode wise summaries failed to sync"
+                    : "Synced {$created} created, {$updated} updated, {$failed} failed payment mode wise summaries",
+                'data' => [
+                    'created' => $created,
+                    'updated' => $updated,
+                    'failed' => $failed,
+                    'errors' => $errors,
+                ],
+            ], $allFailed ? 422 : 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Sync payment mode wise summaries failed', [
+                'station_id' => $station->id,
+                'pts_id' => $ptsId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Sync operation failed: ' . $e->getMessage(),
+                'data' => [
+                    'created' => $created,
+                    'updated' => $updated,
+                    'failed' => $failed,
+                    'errors' => $errors,
+                ],
+            ], 500);
+        }
+    }
+
+    /**
+     * Prepare payment mode wise summary data for HOS storage
+     */
+    private function preparePaymentModeWiseSummaryData(array $bosData, int $stationId): array
+    {
+        return [
+            'uuid' => Str::uuid7(),
+            'shift_id' => $bosData['shift_id'],
+            'mop' => $bosData['mop'],
+            'volume' => $bosData['volume'],
+            'amount' => $bosData['amount'],
+            'station_id' => $stationId,
+            'bos_payment_mode_wise_summary_id' => $bosData['id'],
             'bos_uuid' => $bosData['uuid'],
             'created_at_bos' => $bosData['created_at'] ?? null,
             'updated_at_bos' => $bosData['updated_at'] ?? null,

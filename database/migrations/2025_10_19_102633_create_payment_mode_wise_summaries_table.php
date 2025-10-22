@@ -22,6 +22,7 @@ return new class () extends Migration {
             // HOS-specific additions
             $table->foreignId('station_id')->constrained()->onDelete('cascade');
             $table->unsignedBigInteger('bos_payment_mode_wise_summary_id')->comment('Original BOS payment mode wise summary ID');
+            $table->string('bos_uuid')->index()->nullable()->comment('Original BOS payment mode wise summary UUID');
             $table->timestamp('synced_at')->nullable();
             $table->timestamp('created_at_bos')->nullable()->comment('Original creation time in BOS');
             $table->timestamp('updated_at_bos')->nullable()->comment('Original update time in BOS');
