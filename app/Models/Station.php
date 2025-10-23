@@ -15,6 +15,15 @@ class Station extends Model
     protected $fillable = [
         'pts_id',
         'site_name',
+        'latitude',
+        'longitude',
+        'battery_voltage',
+        'cpu_temperature',
+        'unique_identifier',
+        'firmware_information',
+        'network_settings',
+        'remote_server_configuration',
+        'utc_offset',
         'type',
         'dealer',
         'country',
@@ -34,6 +43,14 @@ class Station extends Model
     protected $casts = [
         'is_active' => 'boolean',
         'last_sync_at' => 'datetime',
+        'latitude' => 'decimal:7',
+        'longitude' => 'decimal:7',
+        'battery_voltage' => 'integer',
+        'cpu_temperature' => 'integer',
+        'utc_offset' => 'integer',
+        'firmware_information' => 'array',
+        'network_settings' => 'array',
+        'remote_server_configuration' => 'array',
     ];
 
     protected $hidden = [
@@ -57,6 +74,22 @@ class Station extends Model
     public function pumpTransactions(): HasMany
     {
         return $this->hasMany(PumpTransaction::class);
+    }
+
+    /**
+     * Get all pumps for this station
+     */
+    public function pumps(): HasMany
+    {
+        return $this->hasMany(Pump::class);
+    }
+
+    /**
+     * Get all tank measurements for this station
+     */
+    public function tankMeasurements(): HasMany
+    {
+        return $this->hasMany(TankMeasurement::class);
     }
 
     /**
@@ -142,5 +175,51 @@ class Station extends Model
     public function isOffline(): bool
     {
         return !$this->last_sync_at || $this->last_sync_at->diffInMinutes(now()) > 30;
+    }
+
+    /**
+     * Check if station has coordinates
+     */
+    public function hasCoordinates(): bool
+    {
+        return !is_null($this->latitude) && !is_null($this->longitude);
+    }
+
+    /**
+     * Get coordinates as array
+     */
+    public function getCoordinates(): ?array
+    {
+        if (!$this->hasCoordinates()) {
+            return null;
+        }
+
+        return [
+            'latitude' => (float) $this->latitude,
+            'longitude' => (float) $this->longitude,
+        ];
+    }
+
+    /**
+     * Get coordinates for map display
+     */
+    public function getMapCoordinates(): ?array
+    {
+        if (!$this->hasCoordinates()) {
+            return null;
+        }
+
+        return [
+            'lat' => (float) $this->latitude,
+            'lng' => (float) $this->longitude,
+        ];
+    }
+
+    /**
+     * Scope to get stations with coordinates
+     */
+    public function scopeWithCoordinates($query)
+    {
+        return $query->whereNotNull('latitude')->whereNotNull('longitude');
     }
 }

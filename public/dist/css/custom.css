@@ -1,0 +1,495 @@
+/* ============================================
+   Custom Branding Styles
+   ============================================ */
+
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ============================================
+   Global Font Styles
+   ============================================ */
+
+/* Main Titles - DM Sans */
+h1, h2, h3, h4, h5, h6,
+.content-header h1,
+.card-title,
+.brand-text,
+.page-title {
+    font-family: 'DM Sans', sans-serif !important;
+}
+
+/* Paragraphs, Tables, and General Text - Inter */
+body,
+p, span, div, a,
+.table,
+.form-control,
+.btn,
+.nav-link,
+.breadcrumb,
+.badge,
+.alert,
+label,
+input,
+select,
+textarea {
+    font-family: 'Inter', sans-serif !important;
+}
+
+/* ============================================
+   Sidebar Styles
+   ============================================ */
+
+/* Main Sidebar Background */
+.main-sidebar,
+.main-sidebar::before {
+    background-color: #253F9C !important;
+    background-image: none !important;
+}
+
+/* Brand Link */
+.main-sidebar .brand-link {
+    background-color: #1e3280 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.main-sidebar .brand-text {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+}
+
+/* User Panel */
+.main-sidebar .user-panel {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.main-sidebar .user-panel .info a {
+    color: #ffffff !important;
+}
+
+/* Sidebar Navigation Links */
+.main-sidebar .nav-sidebar .nav-link {
+    color: rgba(255, 255, 255, 0.8) !important;
+    transition: all 0.3s ease !important;
+}
+
+.main-sidebar .nav-sidebar .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
+}
+
+.main-sidebar .nav-sidebar .nav-link.active {
+    background-color: #ffffff !important;
+    color: #5051F9 !important;
+    box-shadow: 0 2px 4px rgba(80, 81, 249, 0.3) !important;
+}
+
+.main-sidebar .nav-sidebar .nav-link.active .nav-icon {
+    color: #5051f9 !important;
+}
+
+/* Sidebar Icons */
+.main-sidebar .nav-sidebar .nav-icon {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.main-sidebar .nav-sidebar .nav-link:hover .nav-icon {
+    color: #ffffff !important;
+}
+
+/* Sidebar Treeview */
+.main-sidebar .nav-treeview > .nav-item > .nav-link {
+    padding-left: 3rem !important;
+}
+
+.main-sidebar .nav-treeview > .nav-item > .nav-link.active {
+    background-color: rgba(80, 81, 249, 0.8) !important;
+}
+
+/* ============================================
+   Button Styles
+   ============================================ */
+
+/* Primary Button */
+.btn-primary {
+    background-color: #5051F9 !important;
+    border-color: #5051F9 !important;
+    color: #ffffff !important;
+    transition: all 0.3s ease !important;
+}
+
+.btn-primary:hover {
+    background-color: #3f40d4 !important;
+    border-color: #3f40d4 !important;
+    box-shadow: 0 4px 8px rgba(80, 81, 249, 0.3) !important;
+}
+
+.btn-primary:focus,
+.btn-primary.focus {
+    background-color: #3f40d4 !important;
+    border-color: #3f40d4 !important;
+    box-shadow: 0 0 0 0.2rem rgba(80, 81, 249, 0.5) !important;
+}
+
+.btn-primary:not(:disabled):not(.disabled):active,
+.btn-primary:not(:disabled):not(.disabled).active {
+    background-color: #3536b8 !important;
+    border-color: #3536b8 !important;
+}
+
+/* Outline Primary Button */
+.btn-outline-primary {
+    color: #5051F9 !important;
+    border-color: #5051F9 !important;
+}
+
+.btn-outline-primary:hover {
+    background-color: #5051F9 !important;
+    border-color: #5051F9 !important;
+    color: #ffffff !important;
+}
+
+/* Link Button with Primary Color */
+.btn-link {
+    color: #5051F9 !important;
+}
+
+.btn-link:hover {
+    color: #3f40d4 !important;
+}
+
+/* ============================================
+   Additional Button Variants
+   ============================================ */
+
+/* Info Button (using primary color) */
+.btn-info {
+    background-color: #5051F9 !important;
+    color:#fff !important;
+    border-color: #5051F9 !important;
+}
+
+.btn-info:hover {
+    background-color: #ffffff !important;
+    color:#5051F9 !important;
+    border-color: #3f40d4 !important;
+}
+
+/* ============================================
+   Form Elements with Brand Colors
+   ============================================ */
+
+/* Form Control Focus */
+.form-control:focus {
+    border-color: #5051F9 !important;
+    box-shadow: 0 0 0 0.2rem rgba(80, 81, 249, 0.25) !important;
+}
+
+/* Custom Checkbox and Radio */
+.custom-control-input:checked ~ .custom-control-label::before {
+    background-color: #5051F9 !important;
+    border-color: #5051F9 !important;
+}
+
+.custom-control-input:focus ~ .custom-control-label::before {
+    box-shadow: 0 0 0 0.2rem rgba(80, 81, 249, 0.25) !important;
+}
+
+/* ============================================
+   Links and Anchor Tags
+   ============================================ */
+
+a {
+    color: #5051F9 !important;
+}
+
+a:hover {
+    color: #3f40d4 !important;
+}
+
+/* ============================================
+   Navbar with Brand Colors
+   ============================================ */
+
+.main-header.navbar {
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #dee2e6 !important;
+}
+
+.main-header.navbar .nav-link {
+    color: #253F9C !important;
+}
+
+.main-header.navbar .nav-link:hover {
+    color: #5051F9 !important;
+}
+
+/* ============================================
+   Cards and Content
+   ============================================ */
+
+.card-primary.card-outline {
+    border-top: 3px solid #5051F9 !important;
+}
+
+.card-primary:not(.card-outline) > .card-header {
+    background-color: #5051F9 !important;
+}
+
+.card-primary:not(.card-outline) > .card-header,
+.card-primary:not(.card-outline) > .card-header a {
+    color: #ffffff !important;
+}
+
+/* ============================================
+   Pagination
+   ============================================ */
+
+.pagination .page-item.active .page-link {
+    background-color: #5051F9 !important;
+    border-color: #5051F9 !important;
+    color:#ffffff !important;
+}
+
+.pagination .page-link {
+    color: #5051F9 !important;
+}
+
+.pagination .page-link:hover {
+    color: #3f40d4 !important;
+}
+
+/* ============================================
+   Badges with Brand Colors
+   ============================================ */
+
+.badge-primary {
+    background-color: #5051F9 !important;
+}
+
+/* ============================================
+   DataTables Custom Styling
+   ============================================ */
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: #5051F9 !important;
+    border-color: #5051F9 !important;
+    color: #ffffff !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: #3f40d4 !important;
+    border-color: #3f40d4 !important;
+    color: #ffffff !important;
+}
+
+/* ============================================
+   Progress Bars
+   ============================================ */
+
+.progress-bar {
+    background-color: #5051F9 !important;
+}
+
+/* ============================================
+   Small Boxes / Info Boxes
+   ============================================ */
+
+.small-box.bg-primary {
+    background-color: #5051F9 !important;
+}
+
+.info-box .info-box-icon.bg-primary {
+    background-color: #5051F9 !important;
+}
+
+/* ============================================
+   Modals
+   ============================================ */
+
+.modal-header.bg-primary {
+    background-color: #5051F9 !important;
+    color: #ffffff !important;
+}
+
+/* ============================================
+   Select2 Custom Styling
+   ============================================ */
+
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: #5051F9 !important;
+}
+
+.select2-container--default .select2-results__option[aria-selected=true] {
+    background-color: rgba(80, 81, 249, 0.1) !important;
+}
+
+.select2-container--default.select2-container--focus .select2-selection--single,
+.select2-container--default.select2-container--focus .select2-selection--multiple {
+    border-color: #5051F9 !important;
+}
+
+/* ============================================
+   Custom Scrollbar (Webkit Browsers)
+   ============================================ */
+
+.main-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.main-sidebar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.main-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.main-sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* ============================================
+   Loading Spinner
+   ============================================ */
+
+.spinner-border.text-primary {
+    color: #5051F9 !important;
+}
+
+.spinner-grow.text-primary {
+    color: #5051F9 !important;
+}
+
+/* ============================================
+   Alert Primary
+   ============================================ */
+
+.alert-primary {
+    background-color: rgba(80, 81, 249, 0.1) !important;
+    border-color: #5051F9 !important;
+    color: #253F9C !important;
+}
+
+/* ============================================
+   Tab Navigation
+   ============================================ */
+
+.nav-pills .nav-link.active {
+    background-color: #5051F9 !important;
+}
+
+.nav-tabs .nav-link.active {
+    color: #5051F9 !important;
+    border-color: #dee2e6 #dee2e6 #fff !important;
+}
+
+.nav-tabs .nav-link:hover {
+    border-color: #e9ecef #e9ecef #dee2e6 !important;
+    color: #5051F9 !important;
+}
+
+/* ============================================
+   Dark Mode Overrides
+   ============================================ */
+
+/* Dark Mode Sidebar */
+body.dark-mode .main-sidebar,
+body.dark-mode .main-sidebar::before {
+    background-color: #253F9C !important;
+}
+
+body.dark-mode .main-sidebar .brand-link {
+    background-color: #1e3280 !important;
+}
+
+body.dark-mode .main-sidebar .nav-sidebar .nav-link.active {
+    background-color: #5051F9 !important;
+}
+
+/* Dark Mode Buttons */
+body.dark-mode .btn-primary {
+    background-color: #5051F9 !important;
+    border-color: #5051F9 !important;
+}
+
+body.dark-mode .btn-primary:hover {
+    background-color: #3f40d4 !important;
+    border-color: #3f40d4 !important;
+}
+
+/* Dark Mode Links */
+body.dark-mode a {
+    color: #5051F9 !important;
+}
+
+body.dark-mode a:hover {
+    color: #7172fc !important;
+}
+
+/* Dark Mode Pagination */
+body.dark-mode .pagination .page-item.active .page-link {
+    background-color: #5051F9 !important;
+    border-color: #5051F9 !important;
+    color:#ffffff !important;
+}
+
+/* ============================================
+   Responsive Adjustments
+   ============================================ */
+
+@media (max-width: 767.98px) {
+    .main-sidebar {
+        background-color: #253F9C !important;
+    }
+}
+
+/* ============================================
+   Animation Enhancements
+   ============================================ */
+
+.btn,
+.nav-link,
+.page-link {
+    transition: all 0.3s ease !important;
+}
+
+/* ============================================
+   Focus Outlines for Accessibility
+   ============================================ */
+
+.btn:focus,
+.form-control:focus,
+.custom-select:focus {
+    outline: 2px solid #5051F9 !important;
+    outline-offset: 2px !important;
+}
+
+/* ============================================
+   Custom Class Utilities
+   ============================================ */
+
+.bg-brand-primary {
+    background-color: #5051F9 !important;
+}
+
+.bg-brand-sidebar {
+    background-color: #253F9C !important;
+}
+
+.text-brand-primary {
+    color: #5051F9 !important;
+}
+
+.text-brand-sidebar {
+    color: #253F9C !important;
+}
+
+.border-brand-primary {
+    border-color: #5051F9 !important;
+}
+
+.border-brand-sidebar {
+    border-color: #253F9C !important;
+}
+

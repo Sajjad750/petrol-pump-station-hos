@@ -115,6 +115,21 @@ protected function isAccessible(User $user, ?string $path = null): bool
 ## Enums
 - Typically, keys in an Enum should be TitleCase. For example: `FavoritePerson`, `BestLake`, `Monthly`.
 
+### Naming Conventions
+- **Variables**: Use snake_case for all variable names, including properties, parameters, and local variables.
+  - <code-snippet>public string $user_name = 'john';</code-snippet>
+  - <code-snippet>function processUserData(string $user_id, array $user_data): void</code-snippet>
+- **Methods**: Use camelCase for all method names, including public, protected, and private methods.
+  - <code-snippet>public function getUserData(): array</code-snippet>
+  - <code-snippet>private function processTransactionData(): void</code-snippet>
+- **Constants**: Use UPPER_SNAKE_CASE for constants.
+  - <code-snippet>public const MAX_RETRY_ATTEMPTS = 3;</code-snippet>
+- **Classes**: Use PascalCase for class names.
+  - <code-snippet>class UserController extends Controller</code-snippet>
+- **Database columns**: Use snake_case for database column names to match Laravel conventions.
+  - <code-snippet>$table->string('user_name');</code-snippet>
+  - <code-snippet>$table->timestamp('created_at');</code-snippet>
+
 
 === laravel/core rules ===
 
