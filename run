@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Function to clear all caches in a Laravel project
+clear_cache() {
+    echo "Clearing all caches..."
+    php artisan cache:clear
+    php artisan config:clear
+    php artisan route:clear
+    php artisan view:clear
+    echo "All caches cleared."
+}
+
+# Function to build a production-ready Laravel project
+build_production() {
+    echo "Building production-ready project..."
+    # Run necessary Laravel commands to prepare the project for production
+    php artisan config:cache
+    php artisan route:cache
+    php artisan view:cache
+    php artisan optimize
+    # Add any other build steps you need here
+    echo "Production build complete."
+}
+
+# Function to build a production-ready Laravel project
+format() {
+    echo "formatting..."
+    ./vendor/bin/pint
+    prettier --write resources/views/
+}
+
+# Main script logic
+if [ "$1" == "clear" ]; then
+    clear_cache
+elif [ "$1" == "build" ]; then
+    build_production
+elif [ "$1" == "format" ]; then
+    format
+else
+    echo "Invalid argument. Use 'clear' to clear caches or 'build' to build the project."
+    exit 1
+fi
