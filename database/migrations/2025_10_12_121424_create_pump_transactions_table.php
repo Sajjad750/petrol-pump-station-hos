@@ -12,9 +12,9 @@ return new class () extends Migration {
     {
         Schema::create('pump_transactions', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->nullable()->unique();
 
             // BOS fields (mirroring BOS structure)
-            $table->uuid('uuid')->unique();
             $table->string('pts2_device_id')->nullable();
             $table->string('pts_id', 50)->index();
             $table->integer('request_id')->nullable();
@@ -40,6 +40,7 @@ return new class () extends Migration {
 
             // HOS-specific additions
             $table->foreignId('station_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('bos_shift_id')->nullable()->comment('Original BOS shifts ID');
             $table->unsignedBigInteger('bos_transaction_id')->comment('Original BOS transaction ID');
             $table->uuid('bos_uuid')->nullable()->comment('Original BOS UUID');
             $table->timestamp('synced_at')->nullable();
@@ -52,6 +53,8 @@ return new class () extends Migration {
             $table->index(['station_id', 'date_time_start']);
             $table->index('date_time_start');
             $table->index('bos_transaction_id');
+            $table->index('bos_shift_id');
+            $table->index(['bos_shift_id','station_id']);
 
             // Unique constraint to prevent duplicates
             $table->unique(['station_id', 'bos_transaction_id'], 'unique_station_bos_transaction');

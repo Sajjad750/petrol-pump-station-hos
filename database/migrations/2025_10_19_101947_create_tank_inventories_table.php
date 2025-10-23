@@ -12,9 +12,9 @@ return new class () extends Migration {
     {
         Schema::create('tank_inventories', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->nullable()->unique();
 
             // BOS fields (mirroring BOS structure)
-            $table->uuid('uuid')->unique();
             $table->unsignedBigInteger('request_id')->nullable();
             $table->string('pts_id', 255)->nullable();
             $table->integer('tank');
@@ -22,6 +22,9 @@ return new class () extends Migration {
             $table->string('fuel_grade_name', 20)->nullable();
             $table->string('configuration_id', 8)->nullable();
             $table->dateTime('snapshot_datetime')->nullable();
+            $table->dateTime('date_time')->nullable();
+            $table->string('status', 255)->nullable();
+            $table->json('alarms')->nullable();
             $table->float('absolute_product_height')->nullable();
             $table->float('absolute_water_height')->nullable();
             $table->float('absolute_temperature')->nullable();
@@ -31,6 +34,18 @@ return new class () extends Migration {
             $table->float('absolute_product_mass')->nullable();
             $table->float('pumps_dispensed_volume')->nullable();
             $table->json('probe_data')->nullable();
+
+            // Additional fields for sync compatibility
+            $table->float('product_height')->nullable();
+            $table->float('water_height')->nullable();
+            $table->float('temperature')->nullable();
+            $table->float('product_volume')->nullable();
+            $table->float('water_volume')->nullable();
+            $table->float('product_ullage')->nullable();
+            $table->float('product_tc_volume')->nullable();
+            $table->float('product_density')->nullable();
+            $table->float('product_mass')->nullable();
+            $table->float('tank_filling_percentage')->nullable();
 
             // HOS-specific additions
             $table->foreignId('station_id')->constrained()->onDelete('cascade');

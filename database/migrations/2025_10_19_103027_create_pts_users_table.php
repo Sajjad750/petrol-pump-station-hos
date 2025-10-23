@@ -12,6 +12,7 @@ return new class () extends Migration {
     {
         Schema::create('pts_users', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->nullable()->unique();
 
             // BOS fields (mirroring BOS structure)
             $table->integer('pts_user_id');

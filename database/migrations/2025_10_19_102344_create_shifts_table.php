@@ -12,6 +12,7 @@ return new class () extends Migration {
     {
         Schema::create('shifts', function (Blueprint $table) {
             $table->id();
+            $table->uuid()->nullable()->unique();
 
             // BOS fields (mirroring BOS structure)
             $table->dateTime('start_time')->nullable();
@@ -28,6 +29,7 @@ return new class () extends Migration {
             // HOS-specific additions
             $table->foreignId('station_id')->constrained()->onDelete('cascade');
             $table->unsignedBigInteger('bos_shift_id')->comment('Original BOS shift ID');
+            $table->string('bos_uuid')->index()->nullable()->comment('Original BOS shift UUID');
             $table->timestamp('synced_at')->nullable();
             $table->timestamp('created_at_bos')->nullable()->comment('Original creation time in BOS');
             $table->timestamp('updated_at_bos')->nullable()->comment('Original update time in BOS');

@@ -12,9 +12,10 @@ return new class () extends Migration {
     {
         Schema::create('payment_mode_wise_summaries', function (Blueprint $table) {
             $table->id();
+            $table->uuid()->nullable()->index();
 
             // BOS fields (mirroring BOS structure)
-            $table->unsignedBigInteger('shift_id');
+            $table->unsignedBigInteger('shift_id')->nullable();
             $table->string('mop', 255);
             $table->decimal('volume', 12, 2)->default(0.00);
             $table->decimal('amount', 12, 2)->default(0.00);
@@ -22,6 +23,8 @@ return new class () extends Migration {
             // HOS-specific additions
             $table->foreignId('station_id')->constrained()->onDelete('cascade');
             $table->unsignedBigInteger('bos_payment_mode_wise_summary_id')->comment('Original BOS payment mode wise summary ID');
+            $table->string('bos_uuid')->index()->nullable()->comment('Original BOS payment mode wise summary UUID');
+            $table->unsignedBigInteger('bos_shift_id')->nullable()->comment('Original BOS shifts ID');
             $table->timestamp('synced_at')->nullable();
             $table->timestamp('created_at_bos')->nullable()->comment('Original creation time in BOS');
             $table->timestamp('updated_at_bos')->nullable()->comment('Original update time in BOS');
@@ -33,6 +36,8 @@ return new class () extends Migration {
             $table->index(['station_id', 'mop']);
             $table->index('shift_id');
             $table->index('mop');
+            $table->index('bos_shift_id');
+            $table->index(['bos_shift_id','station_id']);
             $table->index('bos_payment_mode_wise_summary_id', 'idx_pmws_bos_id');
 
             // Unique constraint to prevent duplicates

@@ -14,7 +14,7 @@ return new class () extends Migration {
             $table->id();
 
             // BOS fields (mirroring BOS structure)
-            $table->uuid('uuid')->unique();
+            $table->uuid('uuid')->nullable()->unique();
             $table->unsignedBigInteger('request_id');
             $table->string('pts_id', 255);
             $table->string('pts_delivery_id', 255)->nullable();
