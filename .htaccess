@@ -1,9 +1,13 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # If the request is not already pointing to /public
+    # Prevent infinite redirect loop
     RewriteCond %{REQUEST_URI} !^/public/
 
-    # Redirect everything to the public folder
-    RewriteRule ^(.*)$ public/$1 [L]
+    # Check if file or directory exists before redirecting
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Redirect all other requests to public/
+    RewriteRule ^(.*)$ public/$1 [L,QSA]
 </IfModule>
