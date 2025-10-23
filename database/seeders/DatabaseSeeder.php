@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             GenerateApiKeyForTestSiteSeeder::class,
-            FuelGradeSeeder::class,
+//            FuelGradeSeeder::class,
         ]);
     }
 }
