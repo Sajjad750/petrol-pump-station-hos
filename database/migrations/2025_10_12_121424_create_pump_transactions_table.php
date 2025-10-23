@@ -15,7 +15,7 @@ return new class () extends Migration {
 
             // BOS fields (mirroring BOS structure)
             $table->uuid('uuid')->unique();
-            $table->string('pts2_device_id');
+            $table->string('pts2_device_id')->nullable();
             $table->string('pts_id', 50)->index();
             $table->integer('request_id')->nullable();
             $table->dateTime('date_time_start')->nullable();
@@ -29,12 +29,14 @@ return new class () extends Migration {
             $table->float('tc_volume')->nullable();
             $table->float('price')->nullable();
             $table->float('amount')->nullable();
+            $table->float('starting_totalizer')->nullable();
             $table->float('total_volume')->nullable();
             $table->float('total_amount')->nullable();
             $table->text('tag')->nullable();
             $table->integer('pts_user_id')->nullable();
             $table->text('pts_configuration_id')->nullable();
             $table->unsignedBigInteger('shift_id')->nullable()->index();
+            $table->string('mode_of_payment')->nullable()->index();
 
             // HOS-specific additions
             $table->foreignId('station_id')->constrained()->onDelete('cascade');

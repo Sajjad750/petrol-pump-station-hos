@@ -11,6 +11,10 @@ Route::get('/user', function (Request $request) {
 // BOS Sync API Routes
 Route::prefix('sync')->middleware(['bos.api.key', 'throttle:120,1'])->group(function () {
     Route::post('/pump-transactions', [SyncController::class, 'syncPumpTransactions']);
+    Route::post('/pumps', [SyncController::class, 'syncPumps']);
     Route::get('/status', [SyncController::class, 'getSyncStatus']);
-    // Future endpoints: tank-measurements, tank-deliveries, alert-records
+    Route::post('/tank-measurements', [SyncController::class, 'syncTankMeasurements']);
+    Route::post('/tank-deliveries', [SyncController::class, 'syncTankDeliveries']);
+    Route::post('/fuel-grades', [SyncController::class, 'syncFuelGrades']);
+    // Future endpoints: alert-records
 });

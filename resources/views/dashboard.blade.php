@@ -42,7 +42,7 @@
             padding: 10px;
             border-left: 4px solid;
             margin-bottom: 10px;
-            background-color: #f8f9fa;
+            /* background-color: #f8f9fa; */
             border-radius: 4px;
         }
 
@@ -131,7 +131,7 @@
                 <div class="col-lg-3 col-6">
                     <div class="small-box bg-info">
                         <div class="inner">
-                            <h3>25</h3>
+                            <h3>{{ $totalStations }}</h3>
                             <p>Total Sites</p>
                         </div>
                         <div class="icon">
@@ -144,7 +144,7 @@
                 <div class="col-lg-3 col-6">
                     <div class="small-box bg-success">
                         <div class="inner">
-                            <h3>22</h3>
+                            <h3>{{ $onlineStations }}</h3>
                             <p>Online Sites</p>
                         </div>
                         <div class="icon">
@@ -157,7 +157,7 @@
                 <div class="col-lg-3 col-6">
                     <div class="small-box bg-warning">
                         <div class="inner">
-                            <h3>2</h3>
+                            <h3>{{ $warningStations }}</h3>
                             <p>Warning Sites</p>
                         </div>
                         <div class="icon">
@@ -170,11 +170,40 @@
                 <div class="col-lg-3 col-6">
                     <div class="small-box bg-danger">
                         <div class="inner">
-                            <h3>1</h3>
+                            <h3>{{ $offlineStations }}</h3>
                             <p>Offline Sites</p>
                         </div>
                         <div class="icon">
                             <i class="fas fa-times-circle"></i>
+                        </div>
+                        <a href="#" class="small-box-footer">View Details <i class="fas fa-arrow-circle-right"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sales Summary Cards -->
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="small-box bg-primary">
+                        <div class="inner">
+                            <h3>{{ number_format($salesData['total_volume'], 2) }} L</h3>
+                            <p>Total Volume (Last 7 Days)</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-tint"></i>
+                        </div>
+                        <a href="#" class="small-box-footer">View Details <i class="fas fa-arrow-circle-right"></i></a>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="small-box bg-success">
+                        <div class="inner">
+                            <h3>${{ number_format($salesData['total_amount'], 2) }}</h3>
+                            <p>Total Amount (Last 7 Days)</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-dollar-sign"></i>
                         </div>
                         <a href="#" class="small-box-footer">View Details <i class="fas fa-arrow-circle-right"></i></a>
                     </div>
@@ -307,82 +336,40 @@
                                             <th>Last Connected</th>
                                             <th>Pumps (Online/Total)</th>
                                             <th>Tanks (Online/Total)</th>
-                                            <th>Last Transaction</th>
+                                            <!-- <th>Last Transaction</th> -->
                                             <th>Alerts</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <td>ST001</td>
-                                            <td>Downtown Station</td>
-                                            <td><span class="status-indicator status-online"></span>Online</td>
-                                            <td>2 min ago</td>
-                                            <td>8/8</td>
-                                            <td>4/4</td>
-                                            <td>1 min ago</td>
-                                            <td><span class="badge badge-success">0</span></td>
-                                            <td>
-                                                <button class="btn btn-sm btn-primary">View</button>
-                                                <button class="btn btn-sm btn-warning">Close Shift</button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>ST002</td>
-                                            <td>Highway Station</td>
-                                            <td><span class="status-indicator status-warning"></span>Warning</td>
-                                            <td>5 min ago</td>
-                                            <td>6/8</td>
-                                            <td>3/4</td>
-                                            <td>3 min ago</td>
-                                            <td><span class="badge badge-warning">2</span></td>
-                                            <td>
-                                                <button class="btn btn-sm btn-primary">View</button>
-                                                <button class="btn btn-sm btn-warning">Close Shift</button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>ST003</td>
-                                            <td>Airport Station</td>
-                                            <td><span class="status-indicator status-online"></span>Online</td>
-                                            <td>1 min ago</td>
-                                            <td>12/12</td>
-                                            <td>6/6</td>
-                                            <td>30 sec ago</td>
-                                            <td><span class="badge badge-success">0</span></td>
-                                            <td>
-                                                <button class="btn btn-sm btn-primary">View</button>
-                                                <button class="btn btn-sm btn-warning">Close Shift</button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>ST004</td>
-                                            <td>Mall Station</td>
-                                            <td><span class="status-indicator status-offline"></span>Offline</td>
-                                            <td>2 hours ago</td>
-                                            <td>0/6</td>
-                                            <td>0/3</td>
-                                            <td>2 hours ago</td>
-                                            <td><span class="badge badge-danger">5</span></td>
-                                            <td>
-                                                <button class="btn btn-sm btn-primary">View</button>
-                                                <button class="btn btn-sm btn-warning">Close Shift</button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>ST005</td>
-                                            <td>Suburb Station</td>
-                                            <td><span class="status-indicator status-online"></span>Online</td>
-                                            <td>30 sec ago</td>
-                                            <td>4/4</td>
-                                            <td>2/2</td>
-                                            <td>1 min ago</td>
-                                            <td><span class="badge badge-success">0</span></td>
-                                            <td>
-                                                <button class="btn btn-sm btn-primary">View</button>
-                                                <button class="btn btn-sm btn-warning">Close Shift</button>
-                                            </td>
-                                        </tr>
+                                        @forelse($stations as $station)
+                                            @php
+                                                $status = $station->isOnline() ? ['class' => 'status-online', 'text' => 'Online'] : 
+                                                         ($station->hasWarning() ? ['class' => 'status-warning', 'text' => 'Warning'] : 
+                                                         ['class' => 'status-offline', 'text' => 'Offline']);
+                                                $lastSync = $station->last_sync_at ? $station->last_sync_at->diffForHumans() : 'Never';
+                                                $pumpCount = $station->pumps->count();
+                                                $activePumps = $station->pumps->where('is_active', true)->count();
+                                            @endphp
+                                            <tr>
+                                                <td>{{ $station->pts_id ?? 'N/A' }}</td>
+                                                <td>{{ $station->site_name }}</td>
+                                                <td><span class="status-indicator {{ $status['class'] }}"></span>{{ $status['text'] }}</td>
+                                                <td>{{ $lastSync }}</td>
+                                                <td>{{ $activePumps }}/{{ $pumpCount }}</td>
+                                                <td>{{ $station->tankMeasurements->count() }}/{{ $station->tankMeasurements->count() }}</td>
+                                                <td><span class="badge badge-success">0</span></td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-primary station-details-btn" data-station-id="{{ $station->id }}">
+                                                        <i class="fas fa-eye"></i> View
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="9" class="text-center">No stations found</td>
+                                            </tr>
+                                        @endforelse
                                     </tbody>
                                 </table>
                             </div>
@@ -393,6 +380,32 @@
 
         </div>
     </section>
+
+    <!-- Station Details Modal -->
+    <div class="modal fade" id="stationDetailsModal" tabindex="-1" role="dialog" aria-labelledby="stationDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="stationDetailsModalLabel">Station Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="stationDetailsContent">
+                        <div class="text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="sr-only">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('js')
@@ -401,6 +414,8 @@
 
     <script>
         $(document).ready(function() {
+            console.log('Dashboard JavaScript initialized');
+            
             // Initialize DataTable
             $('#sitesTable').DataTable({
                 "responsive": true,
@@ -412,45 +427,43 @@
                 ]
             });
 
-            // Initialize Map
-            var map = L.map('map').setView([40.7128, -74.0060], 10);
+            // Initialize Map with dynamic center based on station locations
+            @if($stations->filter(function($station) { return $station->hasCoordinates(); })->count() > 0)
+                @php
+                    $stationsWithCoords = $stations->filter(function($station) { return $station->hasCoordinates(); });
+                    $avgLat = $stationsWithCoords->avg('latitude');
+                    $avgLng = $stationsWithCoords->avg('longitude');
+                @endphp
+                var map = L.map('map').setView([{{ $avgLat }}, {{ $avgLng }}], 10);
+            @else
+                // Fallback to default location if no stations have coordinates
+                var map = L.map('map').setView([40.7128, -74.0060], 10);
+            @endif
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(map);
 
-            // Add sample markers for sites
-            var sites = [{
-                    name: "Downtown Station",
-                    lat: 40.7589,
-                    lng: -73.9851,
-                    status: "online"
-                },
-                {
-                    name: "Highway Station",
-                    lat: 40.6892,
-                    lng: -74.0445,
-                    status: "warning"
-                },
-                {
-                    name: "Airport Station",
-                    lat: 40.6413,
-                    lng: -73.7781,
-                    status: "online"
-                },
-                {
-                    name: "Mall Station",
-                    lat: 40.7505,
-                    lng: -73.9934,
-                    status: "offline"
-                },
-                {
-                    name: "Suburb Station",
-                    lat: 40.6782,
-                    lng: -73.9442,
-                    status: "online"
-                }
+            // Add dynamic markers for stations with coordinates
+            var sites = [
+                @foreach($stations as $station)
+                    @if($station->hasCoordinates())
+                    {
+                        id: {{ $station->id }},
+                        name: "{{ $station->site_name }}",
+                        lat: {{ $station->latitude }},
+                        lng: {{ $station->longitude }},
+                        status: "{{ $station->isOnline() ? 'online' : ($station->hasWarning() ? 'warning' : 'offline') }}",
+                        pts_id: "{{ $station->pts_id ?? 'N/A' }}",
+                        lastSync: "{{ $station->last_sync_at ? $station->last_sync_at->diffForHumans() : 'Never' }}",
+                        battery: {{ $station->battery_voltage ?? 'null' }},
+                        cpuTemp: {{ $station->cpu_temperature ?? 'null' }}
+                    },
+                    @endif
+                @endforeach
             ];
+
+            console.log('Loading ' + sites.length + ' stations on map');
 
             sites.forEach(function(site) {
                 var color = site.status === 'online' ? 'green' : site.status === 'warning' ? 'orange' : 'red';
@@ -461,18 +474,52 @@
                     radius: 8
                 }).addTo(map);
 
-                marker.bindPopup('<b>' + site.name + '</b><br>Status: ' + site.status);
+                marker.bindPopup(`
+                    <div style="min-width: 200px;">
+                        <h6><strong>${site.name}</strong></h6>
+                        <p><strong>Site Code:</strong> ${site.pts_id}</p>
+                        <p><strong>Status:</strong> <span style="color: ${color}; font-weight: bold;">${site.status.charAt(0).toUpperCase() + site.status.slice(1)}</span></p>
+                        <p><strong>Last Sync:</strong> ${site.lastSync}</p>
+                        ${site.battery ? `<p><strong>Battery:</strong> ${site.battery} mV</p>` : ''}
+                        ${site.cpuTemp ? `<p><strong>CPU Temp:</strong> ${site.cpuTemp}°C</p>` : ''}
+                        <button class="btn btn-sm btn-primary station-details-btn" data-station-id="${site.id}" style="margin-top: 5px; width: 100%;">
+                            <i class="fas fa-eye"></i> View Full Details
+                        </button>
+                    </div>
+                `);
             });
 
-            // Inventory Forecast Chart (Horizontal Bar Chart)
+            // Calculate dynamic low stock data based on tank measurements
+            var criticalLowTanks = {{ $stations->sum(function($station) { 
+                return $station->tankMeasurements->filter(function($measurement) { 
+                    return $measurement->tank_filling_percentage !== null && $measurement->tank_filling_percentage < 20; 
+                })->count(); 
+            }) }};
+            
+            var lowStockTanks = {{ $stations->sum(function($station) { 
+                return $station->tankMeasurements->filter(function($measurement) { 
+                    return $measurement->tank_filling_percentage !== null && $measurement->tank_filling_percentage >= 20 && $measurement->tank_filling_percentage < 50; 
+                })->count(); 
+            }) }};
+            
+            var normalStockTanks = {{ $stations->sum(function($station) { 
+                return $station->tankMeasurements->filter(function($measurement) { 
+                    return $measurement->tank_filling_percentage !== null && $measurement->tank_filling_percentage >= 50; 
+                })->count(); 
+            }) }};
+
+            // Inventory Forecast Chart (Horizontal Bar Chart) - Dynamic Data
             var inventoryCtx = document.getElementById('inventoryForecastChart').getContext('2d');
+            console.log('Initializing inventory forecast chart...');
+            
+            // Use the same dynamic data as low stock chart
             new Chart(inventoryCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['1-2 Days (Critical)', '3-5 Days (Warning)', '5+ Days (Normal)'],
+                    labels: ['Critical Low (<20%)', 'Low Stock (20-50%)', 'Normal Stock (50%+)'],
                     datasets: [{
                         label: 'Number of Tanks',
-                        data: [3, 8, 15],
+                        data: [criticalLowTanks, lowStockTanks, normalStockTanks],
                         backgroundColor: ['#dc3545', '#ffc107', '#28a745'],
                         borderColor: ['#dc3545', '#ffc107', '#28a745'],
                         borderWidth: 1
@@ -495,22 +542,24 @@
                 }
             });
 
-            // Sales Summary Chart (Line Chart)
+            // Sales Summary Chart (Line Chart) - Dynamic Data
             var salesCtx = document.getElementById('salesSummaryChart').getContext('2d');
+            console.log('Initializing sales summary chart with dynamic data...');
+            
             new Chart(salesCtx, {
                 type: 'line',
                 data: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    labels: @json($salesData['labels']),
                     datasets: [{
                         label: 'Volume (Liters)',
-                        data: [12000, 15000, 18000, 16000, 20000, 22000, 19000],
+                        data: @json($salesData['volume']),
                         borderColor: '#007bff',
                         backgroundColor: 'rgba(0, 123, 255, 0.1)',
                         tension: 0.4,
                         fill: true
                     }, {
                         label: 'Amount ($)',
-                        data: [24000, 30000, 36000, 32000, 40000, 44000, 38000],
+                        data: @json($salesData['amount']),
                         borderColor: '#28a745',
                         backgroundColor: 'rgba(40, 167, 69, 0.1)',
                         tension: 0.4,
@@ -520,24 +569,54 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.dataset.label.includes('Volume')) {
+                                        label += context.parsed.y.toFixed(2) + ' L';
+                                    } else {
+                                        label += '$' + context.parsed.y.toFixed(2);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
                     scales: {
                         y: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString();
+                                }
+                            }
                         }
                     }
                 }
             });
 
-            // Product Sales Chart (Doughnut Chart)
+            // Product Sales Chart (Doughnut Chart) - Dynamic Data
             var productCtx = document.getElementById('productSalesChart').getContext('2d');
+            console.log('Initializing product sales chart with dynamic data...');
+            
             new Chart(productCtx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Petrol 95', 'Petrol 92', 'Diesel', 'Kerosene'],
+                    labels: @json($productDistributionData['labels']),
                     datasets: [{
-                        data: [45, 25, 20, 10],
-                        backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545'],
-                        borderWidth: 2
+                        data: @json($productDistributionData['data']),
+                        backgroundColor: @json($productDistributionData['colors']),
+                        borderWidth: 2,
+                        borderColor: '#fff'
                     }]
                 },
                 options: {
@@ -545,7 +624,25 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            position: 'bottom'
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                    label += context.parsed.toFixed(2) + ' L (' + percentage + '%)';
+                                    return label;
+                                }
+                            }
                         }
                     }
                 }
@@ -553,6 +650,7 @@
 
             // Top Sites Chart (Horizontal Bar Chart)
             var topSitesCtx = document.getElementById('topSitesChart').getContext('2d');
+            console.log('Initializing top sites chart...');
             new Chart(topSitesCtx, {
                 type: 'bar',
                 data: {
@@ -582,14 +680,16 @@
                 }
             });
 
-            // Low Stock Chart (Doughnut Chart)
+            // Low Stock Chart (Doughnut Chart) - Dynamic Data
             var lowStockCtx = document.getElementById('lowStockChart').getContext('2d');
+            console.log('Initializing low stock chart...');
+            
             new Chart(lowStockCtx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Critical (1-2 days)', 'Warning (3-5 days)', 'Normal (5+ days)'],
+                    labels: ['Critical Low (<20%)', 'Low Stock (20-50%)', 'Normal Stock (50%+)'],
                     datasets: [{
-                        data: [3, 8, 15],
+                        data: [criticalLowTanks, lowStockTanks, normalStockTanks],
                         backgroundColor: ['#dc3545', '#ffc107', '#28a745'],
                         borderWidth: 2
                     }]
@@ -612,5 +712,162 @@
                 // In a real implementation, this would make AJAX calls to update the data
             }, 30000);
         });
+
+        // Station Details Modal functionality
+        $(document).on('click', '.station-details-btn', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const stationId = $(this).data('station-id');
+            console.log('Station details button clicked for station ID:', stationId);
+            
+            $('#stationDetailsModal').modal('show');
+            
+            // Load station details
+            $.ajax({
+                url: '{{ route("dashboard.station.details", ":id") }}'.replace(':id', stationId),
+                method: 'GET',
+                success: function(response) {
+                    console.log('Station details loaded:', response);
+                    displayStationDetails(response);
+                },
+                error: function(xhr) {
+                    console.error('Error loading station details:', xhr);
+                    $('#stationDetailsContent').html(`
+                        <div class="alert alert-danger">
+                            <h5>Error Loading Station Details</h5>
+                            <p>Unable to load station information. Please try again.</p>
+                            <p>Error: ${xhr.status} - ${xhr.statusText}</p>
+                        </div>
+                    `);
+                }
+            });
+        });
+
+        function displayStationDetails(data) {
+            const station = data.station;
+            const status = data.status;
+            
+            let html = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><strong>Basic Information</strong></h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>Site Code:</strong></td><td>${station.pts_id || 'N/A'}</td></tr>
+                            <tr><td><strong>Site Name:</strong></td><td>${station.site_name}</td></tr>
+                            <tr><td><strong>Status:</strong></td><td><span class="status-indicator ${status.class}"></span>${status.text}</td></tr>
+                            <tr><td><strong>Last Sync:</strong></td><td>${data.lastSync}</td></tr>
+                            <tr><td><strong>Pumps:</strong></td><td>${data.activePumps}/${data.pumpCount}</td></tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><strong>Location Information</strong></h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>Address:</strong></td><td>${station.address || 'N/A'}</td></tr>
+                            <tr><td><strong>City:</strong></td><td>${station.city || 'N/A'}</td></tr>
+                            <tr><td><strong>Region:</strong></td><td>${station.region || 'N/A'}</td></tr>
+                            <tr><td><strong>Country:</strong></td><td>${station.country || 'N/A'}</td></tr>
+                            <tr><td><strong>Phone:</strong></td><td>${station.phone || 'N/A'}</td></tr>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            // Add device information if available
+            if (station.battery_voltage || station.cpu_temperature || station.unique_identifier || station.utc_offset) {
+                // Determine badge classes for battery and CPU
+                const batteryClass = station.battery_voltage ? 
+                    (station.battery_voltage > 12000 ? 'badge-success' : 
+                     station.battery_voltage > 11000 ? 'badge-warning' : 'badge-danger') : '';
+                
+                const cpuClass = station.cpu_temperature ? 
+                    (station.cpu_temperature < 60 ? 'badge-success' : 
+                     station.cpu_temperature < 80 ? 'badge-warning' : 'badge-danger') : '';
+
+                html += `
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6><strong>Device Information</strong></h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Battery Voltage:</strong></td>
+                                    <td>
+                                        ${station.battery_voltage ? 
+                                            `<span class="badge ${batteryClass}">${station.battery_voltage} mV</span>` : 
+                                            '<span class="text-muted">N/A</span>'
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>CPU Temperature:</strong></td>
+                                    <td>
+                                        ${station.cpu_temperature ? 
+                                            `<span class="badge ${cpuClass}">${station.cpu_temperature}°C</span>` : 
+                                            '<span class="text-muted">N/A</span>'
+                                        }
+                                    </td>
+                                </tr>
+                                <tr><td><strong>Unique ID:</strong></td><td>${station.unique_identifier || 'N/A'}</td></tr>
+                                <tr><td><strong>UTC Offset:</strong></td><td>${station.utc_offset || 'N/A'}</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Add firmware information if available
+            if (station.firmware_information) {
+                html += `
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6><strong>Firmware Information</strong></h6>
+                            <div class="card">
+                                <div class="card-body">
+                                    <pre class="mb-0" style="max-height: 200px; overflow-y: auto;">${JSON.stringify(station.firmware_information, null, 2)}</pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Add network settings if available
+            if (station.network_settings) {
+                html += `
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6><strong>Network Settings</strong></h6>
+                            <div class="card">
+                                <div class="card-body">
+                                    <pre class="mb-0" style="max-height: 200px; overflow-y: auto;">${JSON.stringify(station.network_settings, null, 2)}</pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Add server configuration if available
+            if (station.remote_server_configuration) {
+                html += `
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6><strong>Remote Server Configuration</strong></h6>
+                            <div class="card">
+                                <div class="card-body">
+                                    <pre class="mb-0" style="max-height: 200px; overflow-y: auto;">${JSON.stringify(station.remote_server_configuration, null, 2)}</pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            $('#stationDetailsContent').html(html);
+        }
     </script>
 @endpush

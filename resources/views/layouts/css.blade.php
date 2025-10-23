@@ -19,6 +19,9 @@
 <!-- Laravel Echo -->
 @vite(['resources/js/app.js'])
 
+<!-- Custom Branding Styles -->
+<link rel="stylesheet" href="{{ asset('dist/css/custom.css') }}">
+
 <!-- Custom Dark Mode Styles -->
 <style>
     /* Dark Mode Variables */
