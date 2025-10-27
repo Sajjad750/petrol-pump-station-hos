@@ -67,6 +67,9 @@ Route::middleware('auth')->group(function () {
     Route::get('pts_users', \App\Http\Controllers\PtsUserListController::class)->name('pts_users');
     Route::get('pts_users/export-excel', [\App\Http\Controllers\PtsUserListController::class, 'exportExcel'])->name('pts_users.export.excel');
     Route::get('pts_users/export-pdf', [\App\Http\Controllers\PtsUserListController::class, 'exportPdf'])->name('pts_users.export.pdf');
+
+    // User Management
+    Route::resource('users', \App\Http\Controllers\UserController::class);
 });
 
 require __DIR__.'/auth.php';
