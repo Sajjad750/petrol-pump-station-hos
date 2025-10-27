@@ -67,6 +67,21 @@ Route::middleware('auth')->group(function () {
     Route::get('pts_users', \App\Http\Controllers\PtsUserListController::class)->name('pts_users');
     Route::get('pts_users/export-excel', [\App\Http\Controllers\PtsUserListController::class, 'exportExcel'])->name('pts_users.export.excel');
     Route::get('pts_users/export-pdf', [\App\Http\Controllers\PtsUserListController::class, 'exportPdf'])->name('pts_users.export.pdf');
+
+    // HOS Reports
+    Route::get('hos-reports', \App\Http\Controllers\HosReportsController::class)->name('hos-reports');
+    Route::get('hos-reports/stations', [\App\Http\Controllers\HosReportsController::class, 'getStations'])->name('hos-reports.stations');
+    Route::get('hos-reports/sales', [\App\Http\Controllers\HosReportsController::class, 'sales'])->name('hos-reports.sales');
+    Route::get('hos-reports/sales/export-excel', [\App\Http\Controllers\HosReportsController::class, 'exportSalesExcel'])->name('hos-reports.sales.export.excel');
+    Route::get('hos-reports/sales/export-pdf', [\App\Http\Controllers\HosReportsController::class, 'exportSalesPdf'])->name('hos-reports.sales.export.pdf');
+    Route::get('hos-reports/tank-inventory', [\App\Http\Controllers\HosReportsController::class, 'tankInventory'])->name('hos-reports.tank-inventory');
+    Route::get('hos-reports/tank-inventory/export-excel', [\App\Http\Controllers\HosReportsController::class, 'exportTankInventoryExcel'])->name('hos-reports.tank-inventory.export.excel');
+    Route::get('hos-reports/tank-inventory/export-pdf', [\App\Http\Controllers\HosReportsController::class, 'exportTankInventoryPdf'])->name('hos-reports.tank-inventory.export.pdf');
+    Route::get('hos-reports/tank-deliveries', [\App\Http\Controllers\HosReportsController::class, 'tankDeliveries'])->name('hos-reports.tank-deliveries');
+    Route::get('hos-reports/tank-deliveries/export-excel', [\App\Http\Controllers\HosReportsController::class, 'exportTankDeliveriesExcel'])->name('hos-reports.tank-deliveries.export.excel');
+    Route::get('hos-reports/tank-deliveries/export-pdf', [\App\Http\Controllers\HosReportsController::class, 'exportTankDeliveriesPdf'])->name('hos-reports.tank-deliveries.export.pdf');
+    Route::get('hos-reports/export-excel', [\App\Http\Controllers\HosReportsController::class, 'exportExcel'])->name('hos-reports.export.excel');
+    Route::get('hos-reports/export-pdf', [\App\Http\Controllers\HosReportsController::class, 'exportPdf'])->name('hos-reports.export.pdf');
 });
 
 require __DIR__.'/auth.php';
