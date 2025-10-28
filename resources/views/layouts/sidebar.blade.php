@@ -26,6 +26,12 @@
                      with font-awesome or any other icon font library -->
 
                 @if (auth()->user())
+                    <li class="nav-item {{ $route_name == 'hos-reports' ? 'menu-open' : '' }}">
+                        <a href="{{ route('hos-reports') }}" class="nav-link {{ $route_name == 'hos-reports' ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-chart-line"></i>
+                            <p>HOS Reports</p>
+                        </a>
+                    </li>
                     <li class="nav-item {{ $route_name == 'pump_transactions' ? 'menu-open' : '' }}">
                         <a href="{{ route('pump_transactions') }}" class="nav-link {{ $route_name == 'pump_transactions' ? 'active' : '' }}">
                             <i class="nav-icon fas fa-money-bill-wave"></i>

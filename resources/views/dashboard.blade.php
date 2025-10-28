@@ -6,101 +6,7 @@
     <!-- Leaflet CSS for Map -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        .status-indicator {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 5px;
-        }
-
-        .status-online {
-            background-color: #28a745;
-        }
-
-        .status-offline {
-            background-color: #dc3545;
-        }
-
-        .status-warning {
-            background-color: #ffc107;
-        }
-
-        .chart-container {
-            position: relative;
-            height: 300px;
-            margin: 20px 0;
-        }
-
-        .map-container {
-            height: 400px;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .alert-item {
-            padding: 10px;
-            border-left: 4px solid;
-            margin-bottom: 10px;
-            /* background-color: #f8f9fa; */
-            border-radius: 4px;
-        }
-
-        .alert-critical {
-            border-left-color: #dc3545;
-        }
-
-        .alert-warning {
-            border-left-color: #ffc107;
-        }
-
-        .alert-info {
-            border-left-color: #17a2b8;
-        }
-
-        .site-card {
-            transition: transform 0.2s;
-            cursor: pointer;
-        }
-
-        .site-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .metric-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .metric-value {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .metric-label {
-            font-size: 1rem;
-            opacity: 0.9;
-        }
-
-        .chart-card {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .chart-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: #333;
-        }
+        
     </style>
 @endpush
 
@@ -131,11 +37,14 @@
                 <div class="col-lg-3 col-6">
                     <div class="small-box bg-info">
                         <div class="inner">
-                            <h3>{{ $totalStations }}</h3>
                             <p>Total Sites</p>
+                            <h3>{{ $totalStations }}</h3>
+                            <p class="subtitle text-success">
+                                <i class="fas fa-arrow-up"></i> +2 this month
+                            </p>
                         </div>
                         <div class="icon">
-                            <i class="fas fa-building"></i>
+                            <i class="fas fa-map-marker-alt"></i>
                         </div>
                         <a href="#" class="small-box-footer">View All <i class="fas fa-arrow-circle-right"></i></a>
                     </div>
@@ -144,11 +53,15 @@
                 <div class="col-lg-3 col-6">
                     <div class="small-box bg-success">
                         <div class="inner">
+                            
+                            <p>Connected Sites</p>
                             <h3>{{ $onlineStations }}</h3>
-                            <p>Online Sites</p>
+                            <p class="subtitle text-success">
+                                <i class="fas fa-check-circle"></i> 93.3% uptime
+                            </p>
                         </div>
                         <div class="icon">
-                            <i class="fas fa-wifi"></i>
+                            <i class="fas fa-heartbeat"></i>
                         </div>
                         <a href="#" class="small-box-footer">View Details <i class="fas fa-arrow-circle-right"></i></a>
                     </div>
@@ -157,8 +70,12 @@
                 <div class="col-lg-3 col-6">
                     <div class="small-box bg-warning">
                         <div class="inner">
-                            <h3>{{ $warningStations }}</h3>
+                            
                             <p>Warning Sites</p>
+                            <h3>{{ $warningStations }}</h3>
+                            <p class="subtitle text-warning">
+                                <i class="fas fa-exclamation-triangle"></i> 2.7% warning
+                            </p>
                         </div>
                         <div class="icon">
                             <i class="fas fa-exclamation-triangle"></i>
@@ -170,11 +87,15 @@
                 <div class="col-lg-3 col-6">
                     <div class="small-box bg-danger">
                         <div class="inner">
-                            <h3>{{ $offlineStations }}</h3>
+                            
                             <p>Offline Sites</p>
+                            <h3>{{ $offlineStations }}</h3>
+                            <p class="subtitle text-danger">
+                                <i class="fas fa-arrow-down"></i> -1 from yesterday
+                            </p>
                         </div>
                         <div class="icon">
-                            <i class="fas fa-times-circle"></i>
+                            <i class="fas fa-exclamation-triangle"></i>
                         </div>
                         <a href="#" class="small-box-footer">View Details <i class="fas fa-arrow-circle-right"></i></a>
                     </div>
@@ -182,7 +103,7 @@
             </div>
 
             <!-- Sales Summary Cards -->
-            <div class="row">
+            <!-- <div class="row">
                 <div class="col-lg-6">
                     <div class="small-box bg-primary">
                         <div class="inner">
@@ -208,60 +129,97 @@
                         <a href="#" class="small-box-footer">View Details <i class="fas fa-arrow-circle-right"></i></a>
                     </div>
                 </div>
-            </div>
+            </div> -->
 
             <!-- Map View and Site Status -->
             <div class="row">
                 <div class="col-lg-8">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">
-                                <i class="fas fa-map-marker-alt"></i> Site Locations Map
+                    <div class="card modern-card">
+                        <div class="card-header modern-card-header">
+                            <h3 class="card-title modern-card-title">
+                                <i class="fas fa-map-marker-alt"></i> Station Network Map
                             </h3>
                             <div class="card-tools">
-                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                    <i class="fas fa-minus"></i>
+                                <button type="button" class="btn btn-tool modern-expand-btn" data-card-widget="collapse">
+                                    <i class="fas fa-expand-arrows-alt"></i>
                                 </button>
                             </div>
                         </div>
-                        <div class="card-body">
-                            <div id="map" class="map-container"></div>
+                        <div class="card-body modern-card-body">
+                            <div class="map-container">
+                                <div id="map" class="map-container-inner"></div>
+                                
+                                <!-- Status Summary Box -->
+                                <div class="status-summary-box">
+                                    <div class="summary-item">
+                                        <span class="summary-label">Active</span>
+                                        <span class="summary-value">{{ $onlineStations }}</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span class="summary-label">Offline</span>
+                                        <span class="summary-value">{{ $offlineStations }}</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Status Legend -->
+                                <div class="status-legend">
+                                    <div class="legend-item">
+                                        <div class="legend-dot online"></div>
+                                        <span>Online</span>
+                                    </div>
+                                    <div class="legend-item">
+                                        <div class="legend-dot offline"></div>
+                                        <span>Offline</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="col-lg-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">
-                                <i class="fas fa-exclamation-circle"></i> Recent Alerts
+                    <div class="card modern-card">
+                        <div class="card-header modern-card-header">
+                            <h3 class="card-title modern-card-title">
+                                <i class="fas fa-exclamation-triangle"></i> Recent Alarms
                             </h3>
                         </div>
-                        <div class="card-body">
-                            <div class="alert-item alert-critical">
-                                <strong>Site #001 - Critical</strong><br>
-                                <small>Pump 3 offline - 2 hours ago</small>
+                        <div class="card-body modern-card-body">
+                            <div class="alarm-list">
+                                <div class="alarm-item">
+                                    <div class="alarm-content">
+                                        <div class="alarm-station">Station A-001</div>
+                                        <div class="alarm-description">Low stock alert - Tank 1 (Diesel)</div>
+                                        <div class="alarm-time">10 mins ago</div>
+                                    </div>
+                                    <div class="alarm-priority high">high</div>
+                                </div>
+                                
+                                <div class="alarm-item">
+                                    <div class="alarm-content">
+                                        <div class="alarm-station">Station B-015</div>
+                                        <div class="alarm-description">Pump 3 offline</div>
+                                        <div class="alarm-time">25 mins ago</div>
+                                    </div>
+                                    <div class="alarm-priority medium">medium</div>
+                                </div>
+                                
+                                <div class="alarm-item">
+                                    <div class="alarm-content">
+                                        <div class="alarm-station">Station C-022</div>
+                                        <div class="alarm-description">Price sync required</div>
+                                        <div class="alarm-time">1 hour ago</div>
+                                    </div>
+                                    <div class="alarm-priority low">low</div>
+                                </div>
                             </div>
-                            <div class="alert-item alert-warning">
-                                <strong>Site #015 - Warning</strong><br>
-                                <small>Low fuel level in Tank 2 - 1 hour ago</small>
-                            </div>
-                            <div class="alert-item alert-info">
-                                <strong>Site #008 - Info</strong><br>
-                                <small>Shift change completed - 30 min ago</small>
-                            </div>
-                            <div class="alert-item alert-warning">
-                                <strong>Site #012 - Warning</strong><br>
-                                <small>Temperature sensor offline - 45 min ago</small>
-                            </div>
-                            <a href="#" class="btn btn-primary btn-sm btn-block">View All Alerts</a>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Analytics Charts Row 1 -->
-            <div class="row">
+            <div class="row" style=" margin-bottom:2rem; margin-top:1rem;">
                 <div class="col-lg-6">
                     <div class="chart-card">
                         <div class="chart-title">Inventory Forecast - Tank Dry Out Prediction</div>
@@ -282,7 +240,7 @@
             </div>
 
             <!-- Analytics Charts Row 2 -->
-            <div class="row">
+            <div class="row" style="margin-bottom:2rem;">
                 <div class="col-lg-4">
                     <div class="chart-card">
                         <div class="chart-title">Product Sales Distribution</div>
@@ -327,7 +285,7 @@
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table class="table-bordered table-striped table" id="sitesTable">
+                                <table class="modern-sites-table" id="sitesTable">
                                     <thead>
                                         <tr>
                                             <th>Site Code</th>
@@ -336,7 +294,6 @@
                                             <th>Last Connected</th>
                                             <th>Pumps (Online/Total)</th>
                                             <th>Tanks (Online/Total)</th>
-                                            <!-- <th>Last Transaction</th> -->
                                             <th>Alerts</th>
                                             <th>Actions</th>
                                         </tr>
@@ -344,19 +301,39 @@
                                     <tbody>
                                         @forelse($stations as $station)
                                             @php
-                                                $status = $station->isOnline() ? ['class' => 'status-online', 'text' => 'Online'] : 
-                                                         ($station->hasWarning() ? ['class' => 'status-warning', 'text' => 'Warning'] : 
-                                                         ['class' => 'status-offline', 'text' => 'Offline']);
+                                                $status = $station->isOnline() ? ['class' => 'status-online', 'text' => 'Online', 'icon' => 'fas fa-clock'] : 
+                                                         ($station->hasWarning() ? ['class' => 'status-warning', 'text' => 'Warning', 'icon' => 'fas fa-exclamation-triangle'] : 
+                                                         ['class' => 'status-offline', 'text' => 'Offline', 'icon' => 'fas fa-eye-slash']);
                                                 $lastSync = $station->last_sync_at ? $station->last_sync_at->diffForHumans() : 'Never';
                                                 $pumpCount = $station->pumps->count();
                                                 $activePumps = $station->pumps->where('is_active', true)->count();
+                                                $pumpPercentage = $pumpCount > 0 ? round(($activePumps / $pumpCount) * 100) : 0;
+                                                $progressColor = $pumpPercentage >= 80 ? '#3b82f6' : ($pumpPercentage >= 50 ? '#f59e0b' : '#ef4444');
                                             @endphp
                                             <tr>
-                                                <td>{{ $station->pts_id ?? 'N/A' }}</td>
+                                                <td>
+                                                    <div class="site-code">
+                                                        <div class="site-code-primary">{{ $station->pts_id ?? 'N/A' }}</div>
+                                                        <div class="site-code-ref">Ref: {{ str_pad($station->id, 3, '0', STR_PAD_LEFT) }}</div>
+                                                    </div>
+                                                </td>
                                                 <td>{{ $station->site_name }}</td>
-                                                <td><span class="status-indicator {{ $status['class'] }}"></span>{{ $status['text'] }}</td>
+                                                <td>
+                                                    <span class="status-badge {{ $status['class'] }}">
+                                                        <i class="{{ $status['icon'] }}"></i>
+                                                        {{ $status['text'] }}
+                                                    </span>
+                                                </td>
                                                 <td>{{ $lastSync }}</td>
-                                                <td>{{ $activePumps }}/{{ $pumpCount }}</td>
+                                                <td>
+                                                    <div class="pumps-info">
+                                                        <span class="pumps-count">{{ $activePumps }}/{{ $pumpCount }}</span>
+                                                        <div class="pumps-progress">
+                                                            <div class="progress-bar" style="width: {{ $pumpPercentage }}%; background-color: {{ $progressColor }};"></div>
+                                                        </div>
+                                                        <span class="pumps-percentage">{{ $pumpPercentage }}%</span>
+                                                    </div>
+                                                </td>
                                                 <td>{{ $station->tankMeasurements->count() }}/{{ $station->tankMeasurements->count() }}</td>
                                                 <td><span class="badge badge-success">0</span></td>
                                                 <td>
@@ -367,7 +344,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="9" class="text-center">No stations found</td>
+                                                <td colspan="8" class="text-center">No stations found</td>
                                             </tr>
                                         @endforelse
                                     </tbody>
@@ -658,9 +635,17 @@
                     datasets: [{
                         label: 'Sales Volume (Liters)',
                         data: [25000, 22000, 18000, 15000, 12000],
-                        backgroundColor: '#17a2b8',
-                        borderColor: '#17a2b8',
-                        borderWidth: 1
+                        backgroundColor: '#3b82f6',
+                        borderColor: '#3b82f6',
+                        borderWidth: 0,
+                        borderRadius: 4
+                    }, {
+                        label: 'Remaining',
+                        data: [75000, 78000, 82000, 85000, 88000],
+                        backgroundColor: '#e5e7eb',
+                        borderColor: '#e5e7eb',
+                        borderWidth: 0,
+                        borderRadius: 4
                     }]
                 },
                 options: {
@@ -670,11 +655,37 @@
                     plugins: {
                         legend: {
                             display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    if (context.datasetIndex === 0) {
+                                        return context.parsed.x.toLocaleString() + ' L';
+                                    }
+                                    return '';
+                                }
+                            }
                         }
                     },
                     scales: {
                         x: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            max: 100000,
+                            grid: {
+                                display: true,
+                                color: '#e5e7eb',
+                                lineWidth: 1
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value / 1000 + 'K';
+                                }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                display: false
+                            }
                         }
                     }
                 }

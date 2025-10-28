@@ -16,11 +16,13 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'user@hos.com',
-            'password' => Hash::make('user'),
-        ]);
+        User::firstOrCreate(
+            ['email' => 'user@hos.com'],
+            [
+                'name' => 'Test User',
+                'password' => Hash::make('user'),
+            ]
+        );
 
         $this->call([
             GenerateApiKeyForTestSiteSeeder::class,

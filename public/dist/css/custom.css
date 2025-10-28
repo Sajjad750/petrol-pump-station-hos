@@ -42,13 +42,13 @@ textarea {
 /* Main Sidebar Background */
 .main-sidebar,
 .main-sidebar::before {
-    background-color: #253F9C !important;
+    background-color: #F8F8F8 !important;
     background-image: none !important;
 }
 
 /* Brand Link */
 .main-sidebar .brand-link {
-    background-color: #1e3280 !important;
+    background-color: #F8F8F8 !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
@@ -68,32 +68,32 @@ textarea {
 
 /* Sidebar Navigation Links */
 .main-sidebar .nav-sidebar .nav-link {
-    color: rgba(255, 255, 255, 0.8) !important;
+    color: #666666 !important;
     transition: all 0.3s ease !important;
 }
 
 .main-sidebar .nav-sidebar .nav-link:hover {
     background-color: rgba(255, 255, 255, 0.1) !important;
-    color: #ffffff !important;
+    color: #7a7a7a !important;
 }
 
 .main-sidebar .nav-sidebar .nav-link.active {
-    background-color: #ffffff !important;
-    color: #5051F9 !important;
+    background-color: #8a8888 !important;
+    color: #fff !important;
     box-shadow: 0 2px 4px rgba(80, 81, 249, 0.3) !important;
 }
 
 .main-sidebar .nav-sidebar .nav-link.active .nav-icon {
-    color: #5051f9 !important;
+    color: #fff !important;
 }
 
 /* Sidebar Icons */
 .main-sidebar .nav-sidebar .nav-icon {
-    color: rgba(255, 255, 255, 0.8) !important;
+    color: #666666 !important;
 }
 
 .main-sidebar .nav-sidebar .nav-link:hover .nav-icon {
-    color: #ffffff !important;
+    color: #7a7a7a !important;
 }
 
 /* Sidebar Treeview */
@@ -400,7 +400,7 @@ body.dark-mode .main-sidebar::before {
 }
 
 body.dark-mode .main-sidebar .brand-link {
-    background-color: #1e3280 !important;
+    background-color: #F8F8F8 !important;
 }
 
 body.dark-mode .main-sidebar .nav-sidebar .nav-link.active {
@@ -491,5 +491,1074 @@ body.dark-mode .pagination .page-item.active .page-link {
 
 .border-brand-sidebar {
     border-color: #253F9C !important;
+}
+
+/* ============================================
+   Modern Small Box Cards (Dashboard Cards)
+   ============================================ */
+
+.small-box {
+    background: #ffffff !important;
+    border-radius: 25px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+    border: 1px solid #ccc !important;
+    transition: all 0.3s ease !important;
+    overflow: hidden !important;
+    /* height: 100% !important; */
+    position: relative !important;
+    padding: 0 !important;
+}
+
+.small-box:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+    transform: translateY(-2px) !important;
+}
+
+.small-box .inner {
+    padding: 20px !important;
+    position: relative !important;
+    z-index: 2 !important;
+}
+
+.small-box .inner h3 {
+    font-family: 'DM Sans', sans-serif !important;
+    font-size: 32px !important;
+    font-weight: 700 !important;
+    color: #1f2937 !important;
+    margin: 0 0 8px 0 !important;
+    line-height: 1.2 !important;
+}
+
+.small-box .inner p {
+    font-family: 'Inter', sans-serif !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #6b7280 !important;
+    margin: 0 !important;
+    line-height: 1.4 !important;
+}
+
+.small-box .icon {
+    /* position: absolute !important;
+    top: 20px !important;
+    right: 20px !important;
+    width: 40px !important;
+    height: 40px !important; */
+    background-color: #f3f4f6 !important;
+    border-radius: 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #000 !important;
+    font-size: 16px !important;
+    z-index: 1 !important;
+}
+.small-box .icon>i{
+    font-size:22px !important;
+    margin-right:18px !important;
+    color: #000 !important;
+    top:40px !important;
+}
+
+.small-box .small-box-footer {
+    background: transparent !important;
+    color: #6b7280 !important;
+    padding: 12px 20px !important;
+    border-top: 1px solid #f0f0f0 !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    transition: all 0.3s ease !important;
+}
+
+.small-box .small-box-footer:hover {
+    background: #f8f9fa !important;
+    color: #5051F9 !important;
+}
+
+/* Remove background colors from small-box variants */
+.small-box.bg-info,
+.small-box.bg-success,
+.small-box.bg-warning,
+.small-box.bg-danger,
+.small-box.bg-primary {
+    background: #ffffff !important;
+}
+
+/* Add subtitle styles for additional info */
+.small-box .inner .subtitle {
+    font-family: 'Inter', sans-serif !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    margin: 8px 0 0 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+}
+
+.small-box .inner .subtitle i {
+    font-size: 12px !important;
+}
+
+.small-box .inner .subtitle.text-success {
+    color: #10b981 !important;
+}
+
+.small-box .inner .subtitle.text-danger {
+    color: #ef4444 !important;
+}
+
+.small-box .inner .subtitle.text-warning {
+    color: #f59e0b !important;
+}
+
+.small-box .inner .subtitle.text-info {
+    color: #3b82f6 !important;
+}
+
+/* Dark mode support for small-box cards */
+body.dark-mode .small-box {
+    background: #1f2937 !important;
+    border-color: #374151 !important;
+}
+
+body.dark-mode .small-box:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+}
+
+body.dark-mode .small-box .inner h3 {
+    color: #f9fafb !important;
+}
+
+body.dark-mode .small-box .inner p {
+    color: #9ca3af !important;
+}
+
+body.dark-mode .small-box .icon {
+    background-color: #374151 !important;
+    color: #9ca3af !important;
+}
+
+body.dark-mode .small-box .small-box-footer {
+    border-top-color: #374151 !important;
+    color: #9ca3af !important;
+}
+
+body.dark-mode .small-box .small-box-footer:hover {
+    background: #374151 !important;
+    color: #5051F9 !important;
+}
+
+/* Responsive adjustments for small-box cards */
+@media (max-width: 768px) {
+    .small-box .inner {
+        padding: 16px !important;
+    }
+    
+    .small-box .inner h3 {
+        font-size: 28px !important;
+    }
+    
+    .small-box .icon {
+        width: 36px !important;
+        height: 36px !important;
+        font-size: 14px !important;
+        top: 16px !important;
+        right: 16px !important;
+    }
+    
+    .small-box .small-box-footer {
+        padding: 10px 16px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .small-box .inner h3 {
+        font-size: 24px !important;
+    }
+    
+    .small-box .inner p {
+        font-size: 13px !important;
+    }
+    
+    .small-box .inner .subtitle {
+        font-size: 12px !important;
+    }
+}
+
+/* ============================================
+   Modern Cards (Station Network Map & Recent Alarms)
+   ============================================ */
+
+.modern-card {
+    background: #ffffff !important;
+    border-radius: 12px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+    border: 1px solid #f0f0f0 !important;
+    transition: all 0.3s ease !important;
+    overflow: hidden !important;
+}
+
+.modern-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+}
+
+.modern-card-header {
+    background: transparent !important;
+    border-bottom: 1px solid #f0f0f0 !important;
+    padding: 20px 20px 0 20px !important;
+}
+
+.modern-card-title {
+    font-family: 'DM Sans', sans-serif !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    color: #1f2937 !important;
+    margin: 0 !important;
+}
+
+.modern-card-title i {
+    color: #6b7280 !important;
+    margin-right: 8px !important;
+}
+
+.modern-expand-btn {
+    color: #6b7280 !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 8px !important;
+    border-radius: 6px !important;
+    transition: all 0.3s ease !important;
+}
+
+.modern-expand-btn:hover {
+    background: #f3f4f6 !important;
+    color: #5051F9 !important;
+}
+
+.modern-card-body {
+    padding: 20px !important;
+}
+
+/* ============================================
+   Map Container Styles
+   ============================================ */
+
+.map-container {
+    position: relative;
+    height: 400px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.map-container-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+}
+
+/* Status Summary Box */
+.status-summary-box {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 12px 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.summary-item:last-child {
+    margin-bottom: 0;
+}
+
+.summary-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: #6b7280;
+}
+
+.summary-value {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+/* Status Legend */
+.status-legend {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    display: flex;
+    gap: 16px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.legend-dot.online {
+    background-color: #10b981;
+}
+
+.legend-dot.offline {
+    background-color: #ef4444;
+}
+
+.legend-item span {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: #6b7280;
+}
+
+/* ============================================
+   Alarm List Styles
+   ============================================ */
+
+.alarm-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.alarm-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    transition: all 0.3s ease;
+}
+
+.alarm-item:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+}
+
+.alarm-content {
+    flex: 1;
+    margin-right: 12px;
+}
+
+.alarm-station {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 4px;
+}
+
+.alarm-description {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    color: #6b7280;
+    margin-bottom: 4px;
+    line-height: 1.4;
+}
+
+.alarm-time {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: #9ca3af;
+}
+
+.alarm-priority {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #ffffff;
+    min-width: 50px;
+    text-align: center;
+}
+
+.alarm-priority.high {
+    background-color: #ef4444;
+}
+
+.alarm-priority.medium {
+    background-color: #f59e0b;
+}
+
+.alarm-priority.low {
+    background-color: #10b981;
+}
+
+/* Dark mode support for modern cards */
+body.dark-mode .modern-card {
+    background: #1f2937 !important;
+    border-color: #374151 !important;
+}
+
+body.dark-mode .modern-card-header {
+    border-bottom-color: #374151 !important;
+}
+
+body.dark-mode .modern-card-title {
+    color: #f9fafb !important;
+}
+
+body.dark-mode .modern-card-title i {
+    color: #9ca3af !important;
+}
+
+body.dark-mode .modern-expand-btn {
+    color: #9ca3af !important;
+}
+
+body.dark-mode .modern-expand-btn:hover {
+    background: #374151 !important;
+    color: #5051F9 !important;
+}
+
+body.dark-mode .map-container {
+    background: #374151 !important;
+}
+
+body.dark-mode .map-container-inner {
+    background: #374151 !important;
+}
+
+body.dark-mode .status-summary-box {
+    background: #1f2937 !important;
+    border-color: #4b5563 !important;
+}
+
+body.dark-mode .summary-label {
+    color: #9ca3af !important;
+}
+
+body.dark-mode .summary-value {
+    color: #f9fafb !important;
+}
+
+body.dark-mode .legend-item span {
+    color: #9ca3af !important;
+}
+
+body.dark-mode .alarm-item {
+    background: #374151 !important;
+    border-color: #4b5563 !important;
+}
+
+body.dark-mode .alarm-item:hover {
+    background: #4b5563 !important;
+    border-color: #6b7280 !important;
+}
+
+body.dark-mode .alarm-station {
+    color: #f9fafb !important;
+}
+
+body.dark-mode .alarm-description {
+    color: #d1d5db !important;
+}
+
+body.dark-mode .alarm-time {
+    color: #9ca3af !important;
+}
+
+/* ============================================
+   Top Sites Chart - Modern Design
+   ============================================ */
+
+/* Add Statistics subtitle and Top Sites in Sales title */
+.chart-card:has(#topSitesChart)::before {
+    content: 'Statistics\A Top Sites in Sales';
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+    white-space: pre;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.4;
+    font-weight: 500;
+}
+
+/* Add Month dropdown */
+.chart-card:has(#topSitesChart)::after {
+    content: 'Month ▼';
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.chart-card:has(#topSitesChart)::after:hover {
+    background: #e5e7eb;
+    border-color: #9ca3af;
+}
+
+/* Style the chart container */
+.chart-card:has(#topSitesChart) {
+    position: relative;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    padding: 60px 20px 20px 20px;
+}
+
+/* Dark mode support */
+body.dark-mode .chart-card:has(#topSitesChart)::before {
+    color: #9ca3af;
+}
+
+body.dark-mode .chart-card:has(#topSitesChart)::after {
+    background: #374151;
+    border-color: #4b5563;
+    color: #d1d5db;
+}
+
+body.dark-mode .chart-card:has(#topSitesChart)::after:hover {
+    background: #4b5563;
+    border-color: #6b7280;
+}
+
+body.dark-mode .chart-card:has(#topSitesChart) {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+/* ============================================
+   Product Sales Chart - Modern Design
+   ============================================ */
+
+/* Add Statistics subtitle and Product Sales title */
+.chart-card:has(#productSalesChart)::before {
+    content: 'Statistics\A Product Sales';
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+    white-space: pre;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.4;
+    font-weight: 500;
+}
+
+/* Add Weekly dropdown */
+.chart-card:has(#productSalesChart)::after {
+    content: 'Weekly ▼';
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.chart-card:has(#productSalesChart)::after:hover {
+    background: #e5e7eb;
+    border-color: #9ca3af;
+}
+
+/* Style the chart container */
+.chart-card:has(#productSalesChart) {
+    position: relative;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    padding: 60px 20px 20px 20px;
+}
+
+/* Dark mode support */
+body.dark-mode .chart-card:has(#productSalesChart)::before {
+    color: #9ca3af;
+}
+
+body.dark-mode .chart-card:has(#productSalesChart)::after {
+    background: #374151;
+    border-color: #4b5563;
+    color: #d1d5db;
+}
+
+body.dark-mode .chart-card:has(#productSalesChart)::after:hover {
+    background: #4b5563;
+    border-color: #6b7280;
+}
+
+body.dark-mode .chart-card:has(#productSalesChart) {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+/* ============================================
+   Low Stock Chart - Modern Design
+   ============================================ */
+
+/* Add Statistics subtitle and Low Stock Alert Distribution title */
+.chart-card:has(#lowStockChart)::before {
+    content: 'Statistics\A Low Stock Alert Distribution';
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+    white-space: pre;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.4;
+    font-weight: 500;
+}
+
+/* Add Monthly dropdown */
+.chart-card:has(#lowStockChart)::after {
+    content: 'Monthly ▼';
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.chart-card:has(#lowStockChart)::after:hover {
+    background: #e5e7eb;
+    border-color: #9ca3af;
+}
+
+/* Style the chart container */
+.chart-card:has(#lowStockChart) {
+    position: relative;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    padding: 60px 20px 20px 20px;
+}
+
+/* Dark mode support */
+body.dark-mode .chart-card:has(#lowStockChart)::before {
+    color: #9ca3af;
+}
+
+body.dark-mode .chart-card:has(#lowStockChart)::after {
+    background: #374151;
+    border-color: #4b5563;
+    color: #d1d5db;
+}
+
+body.dark-mode .chart-card:has(#lowStockChart)::after:hover {
+    background: #4b5563;
+    border-color: #6b7280;
+}
+
+body.dark-mode .chart-card:has(#lowStockChart) {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+/* ============================================
+   Chart Cards - Uniform Height
+   ============================================ */
+
+/* Ensure all chart cards have the same height */
+.chart-card:has(#productSalesChart),
+.chart-card:has(#topSitesChart),
+.chart-card:has(#lowStockChart) {
+    height: 400px !important;
+    min-height: 400px !important;
+    max-height: 400px !important;
+}
+
+/* Ensure chart containers fill the available space */
+.chart-card:has(#productSalesChart) .chart-container,
+.chart-card:has(#topSitesChart) .chart-container,
+.chart-card:has(#lowStockChart) .chart-container {
+    height: calc(100% - 80px) !important;
+    min-height: 300px !important;
+}
+
+/* Ensure canvas elements fill their containers */
+.chart-card:has(#productSalesChart) canvas,
+.chart-card:has(#topSitesChart) canvas,
+.chart-card:has(#lowStockChart) canvas {
+    height: 100% !important;
+    max-height: 100% !important;
+}
+
+/* ============================================
+   Inventory Forecast Chart - Card Design
+   ============================================ */
+
+/* Add Activity subtitle and Inventory forecast title */
+.chart-card:has(#inventoryForecastChart)::before {
+    content: 'Activity\A Inventory forecast';
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+    white-space: pre;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.4;
+    font-weight: 500;
+}
+
+/* Style the chart container */
+.chart-card:has(#inventoryForecastChart) {
+    position: relative;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    padding: 60px 20px 20px 20px;
+    height: 400px !important;
+    min-height: 400px !important;
+    max-height: 400px !important;
+}
+
+/* Make chart container full width and height */
+.chart-card:has(#inventoryForecastChart) .chart-container {
+    width: 100% !important;
+    height: calc(100% - 80px) !important;
+    min-height: 300px !important;
+    position: relative;
+}
+
+/* Make canvas full width and height */
+.chart-card:has(#inventoryForecastChart) canvas {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+}
+
+/* Dark mode support */
+body.dark-mode .chart-card:has(#inventoryForecastChart)::before {
+    color: #9ca3af;
+}
+
+body.dark-mode .chart-card:has(#inventoryForecastChart) {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+/* ============================================
+   Sales Summary Chart - Modern Design
+   ============================================ */
+
+/* Add Statistics subtitle and Sales Summary title */
+.chart-card:has(#salesSummaryChart)::before {
+    content: 'Statistics\A Sales Summary';
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+    white-space: pre;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.4;
+    font-weight: 500;
+}
+
+/* Add Weekly dropdown */
+.chart-card:has(#salesSummaryChart)::after {
+    content: 'Weekly ▼';
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.chart-card:has(#salesSummaryChart)::after:hover {
+    background: #e5e7eb;
+    border-color: #9ca3af;
+}
+
+/* Style the chart container */
+.chart-card:has(#salesSummaryChart) {
+    position: relative;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    padding: 60px 20px 20px 20px;
+    height: 400px !important;
+    min-height: 400px !important;
+    max-height: 400px !important;
+}
+
+/* Make chart container full width and height */
+.chart-card:has(#salesSummaryChart) .chart-container {
+    width: 100% !important;
+    height: calc(100% - 80px) !important;
+    min-height: 300px !important;
+    position: relative;
+}
+
+/* Make canvas full width and height */
+.chart-card:has(#salesSummaryChart) canvas {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+}
+
+/* Dark mode support */
+body.dark-mode .chart-card:has(#salesSummaryChart)::before {
+    color: #9ca3af;
+}
+
+body.dark-mode .chart-card:has(#salesSummaryChart)::after {
+    background: #374151;
+    border-color: #4b5563;
+    color: #d1d5db;
+}
+
+body.dark-mode .chart-card:has(#salesSummaryChart)::after:hover {
+    background: #4b5563;
+    border-color: #6b7280;
+}
+
+body.dark-mode .chart-card:has(#salesSummaryChart) {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+/* ============================================
+   Modern Sites Table Design
+   ============================================ */
+
+.modern-sites-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+}
+
+.modern-sites-table thead th {
+    background: white;
+    color: #374151;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 16px 20px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+    position: relative;
+}
+
+.modern-sites-table thead th i {
+    margin-left: 8px;
+    color: #9ca3af;
+    font-size: 11px;
+}
+
+.modern-sites-table tbody tr {
+    border-bottom: 1px solid #f3f4f6;
+    transition: background-color 0.2s ease;
+}
+
+.modern-sites-table tbody tr:hover {
+    background-color: #f9fafb;
+}
+
+.modern-sites-table tbody td {
+    padding: 16px 20px;
+    vertical-align: middle;
+    color: #374151;
+}
+
+/* Site Code Styling */
+.site-code {
+    display: flex;
+    flex-direction: column;
+}
+
+.site-code-primary {
+    font-weight: 700;
+    font-size: 14px;
+    color: #1f2937;
+    margin-bottom: 2px;
+}
+
+.site-code-ref {
+    font-size: 12px;
+    color: #9ca3af;
+    font-weight: 500;
+}
+
+/* Status Badge Styling */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid;
+}
+
+.status-badge i {
+    margin-right: 6px;
+    font-size: 10px;
+}
+
+.status-badge.status-online {
+    background-color: #fef3c7;
+    border-color: #f59e0b;
+    color: #d97706;
+}
+
+.status-badge.status-warning {
+    background-color: #fef3c7;
+    border-color: #f59e0b;
+    color: #d97706;
+}
+
+.status-badge.status-offline {
+    background-color: #fee2e2;
+    border-color: #ef4444;
+    color: #dc2626;
+}
+
+/* Pumps Info Styling */
+.pumps-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.pumps-count {
+    font-weight: 700;
+    font-size: 16px;
+    color: #1f2937;
+    min-width: 30px;
+}
+
+.pumps-progress {
+    flex: 1;
+    height: 8px;
+    background-color: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.pumps-progress .progress-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.pumps-percentage {
+    font-size: 12px;
+    color: #9ca3af;
+    font-weight: 500;
+    min-width: 35px;
+    text-align: right;
+}
+
+/* Dark mode support */
+body.dark-mode .modern-sites-table {
+    background: #1f2937;
+    color: #f9fafb;
+}
+
+body.dark-mode .modern-sites-table thead th {
+    background: #1f2937;
+    color: #d1d5db;
+    border-bottom-color: #374151;
+}
+
+body.dark-mode .modern-sites-table tbody tr {
+    border-bottom-color: #374151;
+}
+
+body.dark-mode .modern-sites-table tbody tr:hover {
+    background-color: #374151;
+}
+
+body.dark-mode .modern-sites-table tbody td {
+    color: #d1d5db;
+}
+
+body.dark-mode .site-code-primary {
+    color: #f9fafb;
+}
+
+body.dark-mode .site-code-ref {
+    color: #9ca3af;
+}
+
+body.dark-mode .pumps-count {
+    color: #f9fafb;
+}
+
+body.dark-mode .pumps-percentage {
+    color: #9ca3af;
+}
+
+body.dark-mode .pumps-progress {
+    background-color: #374151;
 }
 
