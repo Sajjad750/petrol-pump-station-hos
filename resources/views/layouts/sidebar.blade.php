@@ -92,6 +92,24 @@
                             <p>PTS Users</p>
                         </a>
                     </li>
+                    
+                    @if(auth()->user()->hasPermission('view-users'))
+                    <li class="nav-item {{ in_array($route_name, ['users.index', 'users.create', 'users.edit', 'users.show']) ? 'menu-open' : '' }}">
+                        <a href="{{ route('users.index') }}" class="nav-link {{ in_array($route_name, ['users.index', 'users.create', 'users.edit', 'users.show']) ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-users"></i>
+                            <p>User Management</p>
+                        </a>
+                    </li>
+                    @endif
+                    
+                    @if(auth()->user()->hasPermission('view-roles'))
+                    <li class="nav-item {{ in_array($route_name, ['roles.index', 'roles.create', 'roles.edit', 'roles.show']) ? 'menu-open' : '' }}">
+                        <a href="{{ route('roles.index') }}" class="nav-link {{ in_array($route_name, ['roles.index', 'roles.create', 'roles.edit', 'roles.show']) ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-user-shield"></i>
+                            <p>Role Management</p>
+                        </a>
+                    </li>
+                    @endif
                 @endif
 
             </ul>

@@ -92,18 +92,20 @@
                                             <td>{{ $user->name }}</td>
                                             <td>{{ $user->email }}</td>
                                             <td>
-                                                @forelse ($user->roles as $role)
-                                                    <span class="badge badge-primary">{{ $role->display_name ?? $role->name }}</span>
-                                                @empty
-                                                    <span class="text-muted">No roles</span>
-                                                @endforelse
+                                                @if($user->role)
+                                                    <span class="badge badge-primary">{{ $user->role->display_name ?? $user->role->name }}</span>
+                                                @else
+                                                    <span class="text-muted">No role assigned</span>
+                                                @endif
                                             </td>
                                             <td>
-                                                @forelse ($user->permissions as $permission)
-                                                    <span class="badge badge-info">{{ $permission->display_name ?? $permission->name }}</span>
-                                                @empty
-                                                    <span class="text-muted">No direct permissions</span>
-                                                @endforelse
+                                                @if($user->role && !empty($user->role->permissions))
+                                                    @foreach ($user->role->permissions as $permission)
+                                                        <span class="badge badge-info">{{ $permission }}</span>
+                                                    @endforeach
+                                                @else
+                                                    <span class="text-muted">No permissions</span>
+                                                @endif
                                             </td>
                                             <td>{{ $user->created_at->format('Y-m-d H:i') }}</td>
                                             <td>

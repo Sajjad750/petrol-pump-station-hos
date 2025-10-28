@@ -21,6 +21,12 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'edit-users', 'display_name' => 'Edit Users', 'description' => 'Can edit existing users'],
             ['name' => 'delete-users', 'display_name' => 'Delete Users', 'description' => 'Can delete users'],
 
+            // Role Management
+            ['name' => 'view-roles', 'display_name' => 'View Roles', 'description' => 'Can view role list'],
+            ['name' => 'create-roles', 'display_name' => 'Create Roles', 'description' => 'Can create new roles'],
+            ['name' => 'edit-roles', 'display_name' => 'Edit Roles', 'description' => 'Can edit existing roles'],
+            ['name' => 'delete-roles', 'display_name' => 'Delete Roles', 'description' => 'Can delete roles'],
+
             // Dashboard
             ['name' => 'view-dashboard', 'display_name' => 'View Dashboard', 'description' => 'Can view dashboard'],
 
@@ -88,6 +94,8 @@ class RolePermissionSeeder extends Seeder
                     'view-pumps',
                     'view-shift-templates',
                     'view-pts-users',
+                    'view-users',
+                    'view-roles',
                 ],
             ],
             [
@@ -119,20 +127,14 @@ class RolePermissionSeeder extends Seeder
 
         // Create roles and assign permissions
         foreach ($roles as $roleData) {
-            $role = Role::firstOrCreate(
+            $role = Role::updateOrCreate(
                 ['name' => $roleData['name']],
                 [
                     'display_name' => $roleData['display_name'],
                     'description' => $roleData['description'],
+                    'permissions' => $roleData['permissions'],
                 ]
             );
-
-            // Assign permissions to role
-            foreach ($roleData['permissions'] as $permissionName) {
-                if (isset($createdPermissions[$permissionName])) {
-                    $role->givePermissionTo($createdPermissions[$permissionName]);
-                }
-            }
         }
 
         $this->command->info('Roles and permissions seeded successfully!');

@@ -41,45 +41,28 @@
                                         <h5 class="mb-0">Assigned Roles</h5>
                                     </div>
                                     <div class="card-body">
-                                        @forelse ($user->roles as $role)
+                                        @if($user->role)
                                             <div class="mb-2">
-                                                <span class="badge badge-primary badge-lg">{{ $role->display_name ?? $role->name }}</span>
-                                                @if ($role->description)
-                                                    <small class="text-muted d-block">{{ $role->description }}</small>
+                                                <span class="badge badge-primary badge-lg">{{ $user->role->display_name ?? $user->role->name }}</span>
+                                                @if ($user->role->description)
+                                                    <small class="text-muted d-block">{{ $user->role->description }}</small>
                                                 @endif
                                                 
-                                                @if ($role->permissions->count() > 0)
+                                                @if (!empty($user->role->permissions))
                                                     <div class="mt-1 ml-3">
                                                         <small class="text-muted">Permissions via this role:</small><br>
-                                                        @foreach ($role->permissions as $permission)
-                                                            <span class="badge badge-light badge-sm">{{ $permission->display_name ?? $permission->name }}</span>
+                                                        @foreach ($user->role->permissions as $permission)
+                                                            <span class="badge badge-light badge-sm">{{ $permission }}</span>
                                                         @endforeach
                                                     </div>
                                                 @endif
                                             </div>
-                                        @empty
-                                            <p class="text-muted">No roles assigned</p>
-                                        @endforelse
+                                        @else
+                                            <p class="text-muted">No role assigned</p>
+                                        @endif
                                     </div>
                                 </div>
 
-                                <div class="card mt-3">
-                                    <div class="card-header">
-                                        <h5 class="mb-0">Direct Permissions</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        @forelse ($user->permissions as $permission)
-                                            <div class="mb-2">
-                                                <span class="badge badge-info">{{ $permission->display_name ?? $permission->name }}</span>
-                                                @if ($permission->description)
-                                                    <small class="text-muted d-block">{{ $permission->description }}</small>
-                                                @endif
-                                            </div>
-                                        @empty
-                                            <p class="text-muted">No direct permissions assigned</p>
-                                        @endforelse
-                                    </div>
-                                </div>
                             </div>
                         </div>
 

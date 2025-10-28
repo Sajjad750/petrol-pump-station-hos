@@ -20,6 +20,7 @@ class RoleFactory extends Factory
             'name' => fake()->unique()->slug(2),
             'display_name' => fake()->jobTitle(),
             'description' => fake()->sentence(),
+            'permissions' => [],
         ];
     }
 }

@@ -67,63 +67,26 @@
                                     <div class="form-group">
                                         <label>Roles</label>
                                         <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
-                                            @forelse ($roles as $role)
-                                                <div class="custom-control custom-checkbox mb-2">
-                                                    <input type="checkbox" 
-                                                           class="custom-control-input" 
-                                                           id="role_{{ $role->id }}" 
-                                                           name="roles[]" 
-                                                           value="{{ $role->id }}"
-                                                           {{ in_array($role->id, old('roles', $user->roles->pluck('id')->toArray())) ? 'checked' : '' }}>
-                                                    <label class="custom-control-label" for="role_{{ $role->id }}">
-                                                        <strong>{{ $role->display_name ?? $role->name }}</strong>
+                                            <select class="form-control" name="role_id" id="role_id">
+                                                <option value="">Select a role</option>
+                                                @foreach ($roles as $role)
+                                                    <option value="{{ $role->id }}" 
+                                                            {{ old('role_id', $user->role_id) == $role->id ? 'selected' : '' }}>
+                                                        {{ $role->display_name ?? $role->name }}
                                                         @if ($role->description)
-                                                            <br>
-                                                            <small class="text-muted">{{ $role->description }}</small>
+                                                            - {{ $role->description }}
                                                         @endif
-                                                    </label>
-                                                </div>
-                                            @empty
-                                                <p class="text-muted">No roles available</p>
-                                            @endforelse
+                                                    </option>
+                                                @endforeach
+                                            </select>
                                         </div>
-                                        <small class="form-text text-muted">Select one or more roles</small>
-                                        @error('roles')
+                                        <small class="form-text text-muted">Select a role for this user</small>
+                                        @error('role_id')
                                             <div class="text-danger mt-1">{{ $message }}</div>
                                         @enderror
                                     </div>
                                 </div>
 
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Direct Permissions</label>
-                                        <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
-                                            @forelse ($permissions as $permission)
-                                                <div class="custom-control custom-checkbox mb-2">
-                                                    <input type="checkbox" 
-                                                           class="custom-control-input" 
-                                                           id="permission_{{ $permission->id }}" 
-                                                           name="permissions[]" 
-                                                           value="{{ $permission->id }}"
-                                                           {{ in_array($permission->id, old('permissions', $user->permissions->pluck('id')->toArray())) ? 'checked' : '' }}>
-                                                    <label class="custom-control-label" for="permission_{{ $permission->id }}">
-                                                        <strong>{{ $permission->display_name ?? $permission->name }}</strong>
-                                                        @if ($permission->description)
-                                                            <br>
-                                                            <small class="text-muted">{{ $permission->description }}</small>
-                                                        @endif
-                                                    </label>
-                                                </div>
-                                            @empty
-                                                <p class="text-muted">No permissions available</p>
-                                            @endforelse
-                                        </div>
-                                        <small class="form-text text-muted">Select specific permissions for this user</small>
-                                        @error('permissions')
-                                            <div class="text-danger mt-1">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
                             </div>
 
                             <div class="form-group">

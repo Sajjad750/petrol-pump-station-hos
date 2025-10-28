@@ -4,11 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
-use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class UserController extends Controller
@@ -18,7 +18,7 @@ class UserController extends Controller
      */
     public function index(Request $request): View
     {
-        $query = User::query()->with(['roles', 'permissions']);
+        $query = User::query()->with('role');
 
         // Search functionality
         if ($request->filled('search')) {
@@ -31,9 +31,7 @@ class UserController extends Controller
 
         // Filter by role
         if ($request->filled('role')) {
-            $query->whereHas('roles', function ($q) use ($request) {
-                $q->where('roles.id', $request->role);
-            });
+            $query->where('role_id', $request->role);
         }
 
         $users = $query->latest()->paginate(10)->withQueryString();
@@ -49,9 +47,8 @@ class UserController extends Controller
     public function create(): View
     {
         $roles = Role::all();
-        $permissions = Permission::all();
 
-        return view('users.create', compact('roles', 'permissions'));
+        return view('users.create', compact('roles'));
     }
 
     /**
@@ -65,17 +62,8 @@ class UserController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => bcrypt($validated['password']),
+            'role_id' => $validated['role_id'] ?? null,
         ]);
-
-        // Assign roles
-        if (! empty($validated['roles'])) {
-            $user->syncRoles($validated['roles']);
-        }
-
-        // Assign permissions
-        if (! empty($validated['permissions'])) {
-            $user->syncPermissions($validated['permissions']);
-        }
 
         return redirect()
             ->route('users.index')
@@ -87,7 +75,7 @@ class UserController extends Controller
      */
     public function show(User $user): View
     {
-        $user->load(['roles.permissions', 'permissions']);
+        $user->load('role');
 
         return view('users.show', compact('user'));
     }
@@ -97,11 +85,10 @@ class UserController extends Controller
      */
     public function edit(User $user): View
     {
-        $user->load(['roles', 'permissions']);
+        $user->load('role');
         $roles = Role::all();
-        $permissions = Permission::all();
 
-        return view('users.edit', compact('user', 'roles', 'permissions'));
+        return view('users.edit', compact('user', 'roles'));
     }
 
     /**
@@ -114,6 +101,7 @@ class UserController extends Controller
         $user->update([
             'name' => $validated['name'],
             'email' => $validated['email'],
+            'role_id' => $validated['role_id'] ?? null,
         ]);
 
         // Update password if provided
@@ -121,20 +109,6 @@ class UserController extends Controller
             $user->update([
                 'password' => bcrypt($validated['password']),
             ]);
-        }
-
-        // Sync roles
-        if (isset($validated['roles'])) {
-            $user->syncRoles($validated['roles']);
-        } else {
-            $user->syncRoles([]);
-        }
-
-        // Sync permissions
-        if (isset($validated['permissions'])) {
-            $user->syncPermissions($validated['permissions']);
-        } else {
-            $user->syncPermissions([]);
         }
 
         return redirect()
@@ -148,7 +122,7 @@ class UserController extends Controller
     public function destroy(User $user): RedirectResponse
     {
         // Prevent deleting the currently authenticated user
-        if ($user->id === auth()->id()) {
+        if ($user->id === Auth::id()) {
             return redirect()
                 ->route('users.index')
                 ->with('error', 'You cannot delete your own account.');

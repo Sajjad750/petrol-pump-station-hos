@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Role extends Model
 {
@@ -14,34 +14,39 @@ class Role extends Model
         'name',
         'display_name',
         'description',
+        'permissions',
     ];
+
+    /**
+     * Get the attributes that should be cast.
+     */
+    protected function casts(): array
+    {
+        return [
+            'permissions' => 'array',
+        ];
+    }
 
     /**
      * Get the users that have this role.
      */
-    public function users(): BelongsToMany
+    public function users(): HasMany
     {
-        return $this->belongsToMany(User::class);
-    }
-
-    /**
-     * Get the permissions for this role.
-     */
-    public function permissions(): BelongsToMany
-    {
-        return $this->belongsToMany(Permission::class);
+        return $this->hasMany(User::class);
     }
 
     /**
      * Give this role a permission.
      */
-    public function givePermissionTo(Permission|string $permission): self
+    public function givePermissionTo(string $permission): self
     {
-        if (is_string($permission)) {
-            $permission = Permission::where('name', $permission)->firstOrFail();
-        }
+        $permissions = $this->permissions ?? [];
 
-        $this->permissions()->syncWithoutDetaching($permission);
+        if (! in_array($permission, $permissions)) {
+            $permissions[] = $permission;
+            $this->permissions = $permissions;
+            $this->save();
+        }
 
         return $this;
     }
@@ -49,13 +54,26 @@ class Role extends Model
     /**
      * Remove a permission from this role.
      */
-    public function revokePermissionTo(Permission|string $permission): self
+    public function revokePermissionTo(string $permission): self
     {
-        if (is_string($permission)) {
-            $permission = Permission::where('name', $permission)->firstOrFail();
+        $permissions = $this->permissions ?? [];
+
+        if (($key = array_search($permission, $permissions)) !== false) {
+            unset($permissions[$key]);
+            $this->permissions = array_values($permissions);
+            $this->save();
         }
 
-        $this->permissions()->detach($permission);
+        return $this;
+    }
+
+    /**
+     * Sync permissions with this role.
+     */
+    public function syncPermissions(array $permissions): self
+    {
+        $this->permissions = $permissions;
+        $this->save();
 
         return $this;
     }
@@ -63,12 +81,10 @@ class Role extends Model
     /**
      * Check if role has a permission.
      */
-    public function hasPermission(Permission|string $permission): bool
+    public function hasPermission(string $permission): bool
     {
-        if (is_string($permission)) {
-            return $this->permissions()->where('name', $permission)->exists();
-        }
+        $permissions = $this->permissions ?? [];
 
-        return $this->permissions()->where('id', $permission->id)->exists();
+        return in_array($permission, $permissions);
     }
 }

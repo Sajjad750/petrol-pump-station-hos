@@ -25,10 +25,7 @@ class StoreUserRequest extends FormRequest
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
-            'roles' => 'nullable|array',
-            'roles.*' => 'exists:roles,id',
-            'permissions' => 'nullable|array',
-            'permissions.*' => 'exists:permissions,id',
+            'role_id' => 'nullable|exists:roles,id',
         ];
     }
 
@@ -49,10 +46,7 @@ class StoreUserRequest extends FormRequest
             'password.required' => 'Password is required',
             'password.min' => 'Password must be at least 8 characters',
             'password.confirmed' => 'Password confirmation does not match',
-            'roles.array' => 'Roles must be an array',
-            'roles.*.exists' => 'Selected role does not exist',
-            'permissions.array' => 'Permissions must be an array',
-            'permissions.*.exists' => 'Selected permission does not exist',
+            'role_id.exists' => 'Selected role does not exist',
         ];
     }
 
@@ -67,8 +61,7 @@ class StoreUserRequest extends FormRequest
             'name' => 'name',
             'email' => 'email',
             'password' => 'password',
-            'roles' => 'roles',
-            'permissions' => 'permissions',
+            'role_id' => 'role',
         ];
     }
 }

@@ -69,7 +69,10 @@ Route::middleware('auth')->group(function () {
     Route::get('pts_users/export-pdf', [\App\Http\Controllers\PtsUserListController::class, 'exportPdf'])->name('pts_users.export.pdf');
 
     // User Management
-    Route::resource('users', \App\Http\Controllers\UserController::class);
+    Route::resource('users', \App\Http\Controllers\UserController::class)->middleware('permission:view-users');
+
+    // Role Management
+    Route::resource('roles', \App\Http\Controllers\RoleController::class)->middleware('permission:view-roles');
 });
 
 require __DIR__.'/auth.php';
