@@ -1674,7 +1674,10 @@ body.dark-mode .pumps-progress {
 #transactions-table,
 #tank-inventory-table,
 #tank-deliveries-table,
-#sales-table {
+#sales-table,
+#payment-mode-summary-table,
+#product-summary-table,
+#pump-summary-table {
     width: 100%;
     border-collapse: collapse;
     margin: 0;
@@ -1684,14 +1687,20 @@ body.dark-mode .pumps-progress {
 #transactions-table thead,
 #tank-inventory-table thead,
 #tank-deliveries-table thead,
-#sales-table thead {
+#sales-table thead,
+#payment-mode-summary-table thead,
+#product-summary-table thead,
+#pump-summary-table thead {
     background-color: #D7D7D7;
 }
 
 #transactions-table thead th,
 #tank-inventory-table thead th,
 #tank-deliveries-table thead th,
-#sales-table thead th {
+#sales-table thead th,
+#payment-mode-summary-table thead th,
+#product-summary-table thead th,
+#pump-summary-table thead th {
     background-color: #D7D7D7 !important;
     color: #333 !important;
     font-weight: bold !important;
@@ -1704,7 +1713,10 @@ body.dark-mode .pumps-progress {
 #transactions-table tbody tr,
 #tank-inventory-table tbody tr,
 #tank-deliveries-table tbody tr,
-#sales-table tbody tr {
+#sales-table tbody tr,
+#payment-mode-summary-table tbody tr,
+#product-summary-table tbody tr,
+#pump-summary-table tbody tr {
     background-color: white;
     border-bottom: 1px solid #e0e0e0;
 }
@@ -1712,19 +1724,107 @@ body.dark-mode .pumps-progress {
 #transactions-table tbody tr:hover,
 #tank-inventory-table tbody tr:hover,
 #tank-deliveries-table tbody tr:hover,
-#sales-table tbody tr:hover {
+#sales-table tbody tr:hover,
+#payment-mode-summary-table tbody tr:hover,
+#product-summary-table tbody tr:hover,
+#pump-summary-table tbody tr:hover {
     background-color: #f5f5f5;
 }
 
 #transactions-table tbody td,
 #tank-inventory-table tbody td,
 #tank-deliveries-table tbody td,
-#sales-table tbody td {
+#sales-table tbody td,
+#payment-mode-summary-table tbody td,
+#product-summary-table tbody td,
+#pump-summary-table tbody td {
     padding: 12px 15px !important;
     border: none !important;
     border-bottom: 1px solid #e0e0e0 !important;
     color: #555;
     font-size: 14px;
+}
+
+/* Summary table footer styling */
+#payment-mode-summary-table tfoot,
+#product-summary-table tfoot,
+#pump-summary-table tfoot {
+    background-color: #f5f5f5;
+}
+
+#payment-mode-summary-table tfoot td,
+#product-summary-table tfoot td,
+#pump-summary-table tfoot td {
+    font-weight: bold;
+    background-color: #f5f5f5 !important;
+    border-top: 2px solid #333 !important;
+}
+
+/* Individual shift cards styling */
+.shift-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    background: white;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.shift-card h3 {
+    color: #333;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #D7D7D7;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.shift-card .table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    background-color: white;
+}
+
+.shift-card .table thead {
+    background-color: #D7D7D7;
+}
+
+.shift-card .table thead th {
+    background-color: #D7D7D7 !important;
+    color: #333 !important;
+    font-weight: bold !important;
+    padding: 12px 15px !important;
+    text-align: left !important;
+    border: none !important;
+    font-size: 14px;
+}
+
+.shift-card .table tbody tr {
+    background-color: white;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.shift-card .table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+.shift-card .table tbody td {
+    padding: 12px 15px !important;
+    border: none !important;
+    border-bottom: 1px solid #e0e0e0 !important;
+    color: #555;
+    font-size: 14px;
+}
+
+.shift-card .table tfoot {
+    background-color: #f5f5f5;
+}
+
+.shift-card .table tfoot td {
+    font-weight: bold;
+    background-color: #f5f5f5 !important;
+    border-top: 2px solid #333 !important;
 }
 
 .transaction-link,
@@ -1820,4 +1920,20 @@ body.dark-mode .pumps-progress {
 #tank-deliveries-table_wrapper table.dataTable tbody td,
 #sales-table_wrapper table.dataTable tbody td {
     border-bottom: 1px solid #e0e0e0 !important;
+}
+
+/* Individual Shifts Section - Force visibility */
+#individual-shifts-section.show-individual-shifts,
+#individual-shifts-section.show-individual-shifts[style] {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    min-height: 50px !important;
+}
+
+#individual-shifts-section .shift-card {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: white;
 }

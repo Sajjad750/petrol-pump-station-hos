@@ -88,6 +88,11 @@
                                 <i class="fas fa-truck"></i> Tank Deliveries
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="shift-summary-tab" data-toggle="tab" href="#shift-summary" role="tab" aria-controls="shift-summary" aria-selected="false">
+                                <i class="fas fa-clipboard-list"></i> Shift Summary
+                            </a>
+                        </li>
                     </ul>
                 </div>
                 <div class="card-body">
@@ -106,6 +111,10 @@
                         </div>
                         <div class="tab-pane fade" id="tank-deliveries" role="tabpanel" aria-labelledby="tank-delivery-tab">
                             @include('hos-reports.partials.tank-deliveries')
+                        </div>
+                        <!-- Shift Summary Tab -->
+                        <div class="tab-pane fade" id="shift-summary" role="tabpanel" aria-labelledby="shift-summary-tab">
+                            @include('hos-reports.partials.shift-summary')
                         </div>
                     </div>
                 </div>
