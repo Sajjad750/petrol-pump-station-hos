@@ -1,7 +1,7 @@
 <!-- Filters Card -->
-<div class="card mb-3">
+<div class="card custom-card mb-3">
     <div class="card-header custom-card-header">
-        <h5 class="mb-0"><i class="fas fa-filter"></i> Filters</h5>
+        <h5 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-filter"></i> Filters</h5>
     </div>
     <div class="card-body">
         <form id="tank-deliveries-filter-form">
@@ -20,45 +20,59 @@
                 </div>
                 <div class="col-md-2">
                     <div class="form-group">
-                        <label for="deliveries_station_id">Station</label>
-                        <select class="form-control" id="deliveries_station_id" name="station_id">
-                            <option value="">All Stations</option>
-                        </select>
+                        <label for="deliveries_from_time">From Time</label>
+                        <input type="time" class="form-control" id="deliveries_from_time" name="from_time">
                     </div>
                 </div>
                 <div class="col-md-2">
                     <div class="form-group">
-                        <label for="deliveries_fuel_grade_id">Fuel Grade</label>
+                        <label for="deliveries_to_time">To Time</label>
+                        <input type="time" class="form-control" id="deliveries_to_time" name="to_time">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label for="deliveries_fuel_grade_id">Product</label>
                         <select class="form-control" id="deliveries_fuel_grade_id" name="fuel_grade_id">
-                            <option value="">All Fuel Grades</option>
+                            <option value="">All Products</option>
                         </select>
                     </div>
                 </div>
                 <div class="col-md-2">
                     <div class="form-group">
                         <label for="deliveries_tank">Tank</label>
-                        <input type="text" class="form-control" id="deliveries_tank" name="tank" placeholder="Tank ID">
+                        <select class="form-control" id="deliveries_tank" name="tank">
+                            <option value="">All Tanks</option>
+                        </select>
                     </div>
                 </div>
-                <div class="col-md-2">
+            </div>
+            <div class="row">
+                <div class="col-md-3">
                     <div class="form-group">
-                        <label for="deliveries_pts_delivery_id">PTS Delivery ID</label>
-                        <input type="text" class="form-control" id="deliveries_pts_delivery_id" name="pts_delivery_id" placeholder="Delivery ID">
+                        <label for="deliveries_volume_min">Volume Min (L)</label>
+                        <input type="number" step="0.01" class="form-control" id="deliveries_volume_min" name="volume_min" placeholder="Min Volume">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="deliveries_volume_max">Volume Max (L)</label>
+                        <input type="number" step="0.01" class="form-control" id="deliveries_volume_max" name="volume_max" placeholder="Max Volume">
                     </div>
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-12 d-flex justify-content-end" style="gap: 10px;">
-                    <button type="button" id="deliveries-filter-btn" class="btn btn-primary">
-                        <i class="fas fa-filter"></i> Apply Filters
+                    <button type="button" id="deliveries-filter-btn" class="btn btn-dark">
+                        <i class="fas fa-filter"></i> Search Filters
                     </button>
-                    <button type="button" id="deliveries-reset-btn" class="btn btn-secondary">
+                    <button type="button" id="deliveries-reset-btn" class="btn btn-dark">
                         <i class="fas fa-redo"></i> Reset
                     </button>
-                    <button type="button" id="deliveries-export-excel-btn" class="btn btn-success">
+                    <button type="button" id="deliveries-export-excel-btn" class="btn btn-dark">
                         <i class="fas fa-file-excel"></i> Export Excel
                     </button>
-                    <button type="button" id="deliveries-export-pdf-btn" class="btn btn-danger">
+                    <button type="button" id="deliveries-export-pdf-btn" class="btn btn-dark">
                         <i class="fas fa-file-pdf"></i> Export PDF
                     </button>
                 </div>
@@ -70,56 +84,18 @@
 <!-- Tank Deliveries Table Card -->
 <div class="card custom-card">
     <div class="card-header custom-card-header">
-        <h4 class="mb-0"><i class="fas fa-table"></i> Tank Deliveries Data</h4>
+        <h4 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-table"></i> Tank Deliveries Data</h4>
     </div>
-    <div class="card-body">
-        <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
-            <table id="tank-deliveries-table" class="table-bordered table-striped table-hover table">
-                <thead class="custom-table-header" style="position: sticky; top: 0; z-index: 10;">
+    <div class="card-body" style="padding: 0;">
+        <div class="table-responsive">
+            <table id="tank-deliveries-table" class="table">
+                <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>UUID</th>
-                        <th>Request ID</th>
-                        <th>PTS ID</th>
-                        <th>PTS Delivery ID</th>
+                        <th>Site</th>
+                        <th>Date & Time <span class="sort-indicator"><i class="fas fa-sort"></i></span></th>
                         <th>Tank</th>
-                        <th>Fuel Grade ID</th>
-                        <th>Fuel Grade Name</th>
-                        <th>Config ID</th>
-                        <th>Start DateTime</th>
-                        <th>Start Product Height</th>
-                        <th>Start Water Height</th>
-                        <th>Start Temperature</th>
-                        <th>Start Product Volume</th>
-                        <th>Start Product TC Volume</th>
-                        <th>Start Product Density</th>
-                        <th>Start Product Mass</th>
-                        <th>End DateTime</th>
-                        <th>End Product Height</th>
-                        <th>End Water Height</th>
-                        <th>End Temperature</th>
-                        <th>End Product Volume</th>
-                        <th>End Product TC Volume</th>
-                        <th>End Product Density</th>
-                        <th>End Product Mass</th>
-                        <th>Received Product Volume</th>
-                        <th>Absolute Product Height</th>
-                        <th>Absolute Water Height</th>
-                        <th>Absolute Temperature</th>
-                        <th>Absolute Product Volume</th>
-                        <th>Absolute Product TC Volume</th>
-                        <th>Absolute Product Density</th>
-                        <th>Absolute Product Mass</th>
-                        <th>Pumps Dispensed Volume</th>
-                        <th>Probe Data</th>
-                        <th>Station ID</th>
-                        <th>BOS Tank Delivery ID</th>
-                        <th>BOS UUID</th>
-                        <th>Synced At</th>
-                        <th>Created At BOS</th>
-                        <th>Updated At BOS</th>
-                        <th>Created At</th>
-                        <th>Updated At</th>
+                        <th>Product</th>
+                        <th class="text-right">Volume (L)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -136,264 +112,111 @@
             var deliveriesTable = $('#tank-deliveries-table').DataTable({
                 'processing': true,
                 'serverSide': true,
-                'responsive': true,
+                'responsive': false,
                 'lengthChange': true,
                 'autoWidth': false,
                 'pageLength': 10,
+                'dom': '<"row"<"col-sm-6"l><"col-sm-6"f>>rt<"row"<"col-sm-6"i><"col-sm-6"p>>',
                 'order': [
-                    [9, 'desc']
+                    [1, 'desc']
                 ],
+                'bInfo': true,
+                'bFilter': true,
+                'bLengthChange': true,
+                'paging': true,
+                'orderCellsTop': false,
                 'ajax': {
                     'url': '{{ route('hos-reports.tank-deliveries') }}',
+                    'type': 'GET',
+                    'error': function(xhr, error, thrown) {
+                        console.error('AJAX Error:', error);
+                        console.error('Response:', xhr.responseText);
+                        alert('Error loading data. Please check the console for details.');
+                    },
                     'data': function(d) {
                         d.from_date = $('#deliveries_from_date').val();
                         d.to_date = $('#deliveries_to_date').val();
-                        d.station_id = $('#deliveries_station_id').val();
+                        d.from_time = $('#deliveries_from_time').val();
+                        d.to_time = $('#deliveries_to_time').val();
                         d.fuel_grade_id = $('#deliveries_fuel_grade_id').val();
                         d.tank = $('#deliveries_tank').val();
-                        d.pts_delivery_id = $('#deliveries_pts_delivery_id').val();
+                        d.volume_min = $('#deliveries_volume_min').val();
+                        d.volume_max = $('#deliveries_volume_max').val();
                     }
                 },
                 'columns': [{
-                        data: 'id',
-                        name: 'id'
+                        data: 'site',
+                        name: 'site',
+                        orderable: true,
+                        render: function(data, type, row) {
+                            if (type === 'display') {
+                                var siteHtml = '<a href="#" class="tank-delivery-link">' + (data || '') + '</a>';
+                                if (row.site_ref) {
+                                    var ref = row.site_ref;
+                                    if (/^\d+$/.test(ref)) {
+                                        ref = String(ref).padStart(3, '0');
+                                    }
+                                    siteHtml += '<span class="secondary-text">Ref: ' + ref + '</span>';
+                                }
+                                return siteHtml;
+                            }
+                            return data || '';
+                        },
+                        className: 'text-left'
                     },
                     {
-                        data: 'uuid',
-                        name: 'uuid'
-                    },
-                    {
-                        data: 'request_id',
-                        name: 'request_id'
-                    },
-                    {
-                        data: 'pts_id',
-                        name: 'pts_id'
-                    },
-                    {
-                        data: 'pts_delivery_id',
-                        name: 'pts_delivery_id'
+                        data: 'date_time',
+                        name: 'date_time',
+                        orderable: true,
+                        render: function(data, type) {
+                            if (type !== 'display' || !data) return data || '';
+                            try {
+                                var date = new Date(data.replace(' ', 'T'));
+                                if (isNaN(date.getTime())) return data;
+                                var month = String(date.getMonth() + 1).padStart(2, '0');
+                                var day = String(date.getDate()).padStart(2, '0');
+                                var year = date.getFullYear();
+                                var hours = String(date.getHours()).padStart(2, '0');
+                                var minutes = String(date.getMinutes()).padStart(2, '0');
+                                var seconds = String(date.getSeconds()).padStart(2, '0');
+                                return month + '/' + day + '/' + year + ' ' + hours + ':' + minutes + ':' + seconds;
+                            } catch (e) {
+                                return data;
+                            }
+                        },
+                        className: 'text-left'
                     },
                     {
                         data: 'tank',
-                        name: 'tank'
-                    },
-                    {
-                        data: 'fuel_grade_id',
-                        name: 'fuel_grade_id'
-                    },
-                    {
-                        data: 'fuel_grade_name',
-                        name: 'fuel_grade_name'
-                    },
-                    {
-                        data: 'configuration_id',
-                        name: 'configuration_id'
-                    },
-                    {
-                        data: 'start_datetime',
-                        name: 'start_datetime'
-                    },
-                    {
-                        data: 'start_product_height',
-                        name: 'start_product_height',
+                        name: 'tank',
+                        orderable: true,
                         render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
+                            return '<a href="#" class="tank-delivery-link">' + (data || '') + '</a>';
+                        },
+                        className: 'text-left'
                     },
                     {
-                        data: 'start_water_height',
-                        name: 'start_water_height',
+                        data: 'product',
+                        name: 'product',
+                        orderable: true,
                         render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
+                            if (!data) return '';
+                            // Check if it's Diesel to show in orange, otherwise blue
+                            var isDiesel = data.toLowerCase().includes('diesel');
+                            var colorClass = isDiesel ? 'style="color: #ff6600;"' : '';
+                            return '<a href="#" class="tank-delivery-link" ' + colorClass + '>' + data + '</a>';
+                        },
+                        className: 'text-left'
                     },
                     {
-                        data: 'start_temperature',
-                        name: 'start_temperature',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'start_product_volume',
-                        name: 'start_product_volume',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'start_product_tc_volume',
-                        name: 'start_product_tc_volume',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'start_product_density',
-                        name: 'start_product_density',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'start_product_mass',
-                        name: 'start_product_mass',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'end_datetime',
-                        name: 'end_datetime'
-                    },
-                    {
-                        data: 'end_product_height',
-                        name: 'end_product_height',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'end_water_height',
-                        name: 'end_water_height',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'end_temperature',
-                        name: 'end_temperature',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'end_product_volume',
-                        name: 'end_product_volume',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'end_product_tc_volume',
-                        name: 'end_product_tc_volume',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'end_product_density',
-                        name: 'end_product_density',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'end_product_mass',
-                        name: 'end_product_mass',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'received_product_volume',
-                        name: 'received_product_volume',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'absolute_product_height',
-                        name: 'absolute_product_height',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'absolute_water_height',
-                        name: 'absolute_water_height',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'absolute_temperature',
-                        name: 'absolute_temperature',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'absolute_product_volume',
-                        name: 'absolute_product_volume',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'absolute_product_tc_volume',
-                        name: 'absolute_product_tc_volume',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'absolute_product_density',
-                        name: 'absolute_product_density',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'absolute_product_mass',
-                        name: 'absolute_product_mass',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'pumps_dispensed_volume',
-                        name: 'pumps_dispensed_volume',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'probe_data',
-                        name: 'probe_data'
-                    },
-                    {
-                        data: 'station_id',
-                        name: 'station_id'
-                    },
-                    {
-                        data: 'bos_tank_delivery_id',
-                        name: 'bos_tank_delivery_id'
-                    },
-                    {
-                        data: 'bos_uuid',
-                        name: 'bos_uuid'
-                    },
-                    {
-                        data: 'synced_at',
-                        name: 'synced_at'
-                    },
-                    {
-                        data: 'created_at_bos',
-                        name: 'created_at_bos'
-                    },
-                    {
-                        data: 'updated_at_bos',
-                        name: 'updated_at_bos'
-                    },
-                    {
-                        data: 'created_at',
-                        name: 'created_at'
-                    },
-                    {
-                        data: 'updated_at',
-                        name: 'updated_at'
+                        data: 'volume',
+                        name: 'volume',
+                        orderable: true,
+                        render: function(data, type) {
+                            if (type !== 'display' || data === null || data === undefined) return '';
+                            return parseFloat(data).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+                        },
+                        className: 'text-right'
                     }
                 ],
                 'language': {
@@ -412,10 +235,12 @@
             $('#deliveries-reset-btn').on('click', function() {
                 $('#deliveries_from_date').val('');
                 $('#deliveries_to_date').val('');
-                $('#deliveries_station_id').val('');
+                $('#deliveries_from_time').val('');
+                $('#deliveries_to_time').val('');
                 $('#deliveries_fuel_grade_id').val('');
                 $('#deliveries_tank').val('');
-                $('#deliveries_pts_delivery_id').val('');
+                $('#deliveries_volume_min').val('');
+                $('#deliveries_volume_max').val('');
                 deliveriesTable.draw();
             });
 
@@ -432,10 +257,12 @@
                 const filters = {
                     from_date: $('#deliveries_from_date').val(),
                     to_date: $('#deliveries_to_date').val(),
-                    station_id: $('#deliveries_station_id').val(),
+                    from_time: $('#deliveries_from_time').val(),
+                    to_time: $('#deliveries_to_time').val(),
                     fuel_grade_id: $('#deliveries_fuel_grade_id').val(),
                     tank: $('#deliveries_tank').val(),
-                    pts_delivery_id: $('#deliveries_pts_delivery_id').val()
+                    volume_min: $('#deliveries_volume_min').val(),
+                    volume_max: $('#deliveries_volume_max').val()
                 };
                 const queryString = $.param(filters);
                 window.location.href = '{{ route('hos-reports.tank-deliveries.export.excel') }}?' + queryString;
@@ -446,32 +273,60 @@
                 const filters = {
                     from_date: $('#deliveries_from_date').val(),
                     to_date: $('#deliveries_to_date').val(),
-                    station_id: $('#deliveries_station_id').val(),
+                    from_time: $('#deliveries_from_time').val(),
+                    to_time: $('#deliveries_to_time').val(),
                     fuel_grade_id: $('#deliveries_fuel_grade_id').val(),
                     tank: $('#deliveries_tank').val(),
-                    pts_delivery_id: $('#deliveries_pts_delivery_id').val()
+                    volume_min: $('#deliveries_volume_min').val(),
+                    volume_max: $('#deliveries_volume_max').val()
                 };
                 const queryString = $.param(filters);
                 window.location.href = '{{ route('hos-reports.tank-deliveries.export.pdf') }}?' + queryString;
             });
 
-            // Load stations for dropdown
+            // Load fuel grades for dropdown
             $.ajax({
-                url: '{{ route('hos-reports.stations') }}',
+                url: '{{ route('hos-reports.fuel-grades') }}',
                 method: 'GET',
                 success: function(response) {
-                    if (response.stations) {
-                        response.stations.forEach(function(station) {
-                            $('#deliveries_station_id').append(
-                                $('<option></option>').val(station.id).text(station.site_name)
+                    if (response.fuel_grades) {
+                        response.fuel_grades.forEach(function(grade) {
+                            $('#deliveries_fuel_grade_id').append(
+                                $('<option></option>').val(grade.id).text(grade.name)
                             );
                         });
                     }
                 }
             });
 
+            // Load tanks for dropdown
+            function loadTanksForDeliveries() {
+                $.ajax({
+                    url: '{{ route('hos-reports.tanks') }}',
+                    method: 'GET',
+                    success: function(response) {
+                        $('#deliveries_tank').empty().append('<option value="">All Tanks</option>');
+                        if (response.tanks) {
+                            response.tanks.forEach(function(tank) {
+                                $('#deliveries_tank').append(
+                                    $('<option></option>').val(tank.tank).text(tank.tank_formatted)
+                                );
+                            });
+                        }
+                    }
+                });
+            }
+
+            // Initial load
+            loadTanksForDeliveries();
+
             // Auto-filter on dropdown change
-            $('#deliveries_station_id, #deliveries_fuel_grade_id').on('change', function() {
+            $('#deliveries_fuel_grade_id, #deliveries_tank').on('change', function() {
+                deliveriesTable.draw();
+            });
+
+            // Auto-filter on volume inputs
+            $('#deliveries_volume_min, #deliveries_volume_max').on('blur', function() {
                 deliveriesTable.draw();
             });
         });

@@ -5,7 +5,7 @@
         .nav-tabs .nav-link {
             padding: 1rem 2rem;
             font-weight: 500;
-            color: #6c757d;
+            color: #6c757d !important;
             border: none;
             background: transparent;
             transition: all 0.3s;
@@ -17,9 +17,9 @@
         }
 
         .nav-tabs .nav-link.active {
-            color: #007bff;
+            color:rgb(0, 0, 0) !important;
             background-color: #fff;
-            border-bottom: 3px solid #007bff;
+            border-bottom: 3px solid rgb(0, 0, 0) !important;
             border-color: transparent #dee2e6 #fff #dee2e6;
         }
 
@@ -30,7 +30,7 @@
         }
 
         .custom-card-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg,rgb(0, 0, 0) 0%,rgb(6, 6, 6) 100%);
             color: white;
             font-weight: 600;
             padding: 1rem 1.5rem;
@@ -103,6 +103,9 @@
                         <!-- Tank Inventory Tab -->
                         <div class="tab-pane fade" id="tank-inventory" role="tabpanel" aria-labelledby="tank-inventory-tab">
                             @include('hos-reports.partials.tank-inventory')
+                        </div>
+                        <div class="tab-pane fade" id="tank-deliveries" role="tabpanel" aria-labelledby="tank-delivery-tab">
+                            @include('hos-reports.partials.tank-deliveries')
                         </div>
                     </div>
                 </div>
