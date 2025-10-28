@@ -22,15 +22,16 @@ class TankMeasurementFactory extends Factory
         $productHeight = fake()->randomFloat(3, 0.5, 15.0);
         $waterHeight = fake()->randomFloat(3, 0, 2.0);
         $temperature = fake()->randomFloat(2, 15, 35);
-        
+
         // Calculate realistic volumes based on tank capacity (assuming 5000L max capacity)
         $maxCapacity = 5000;
         $productVolume = ($tankFillingPercentage / 100) * $maxCapacity;
         $waterVolume = $waterHeight * 100; // Rough calculation
         $productUllage = $maxCapacity - $productVolume;
-        
+
         // Determine alarms based on tank level
         $alarms = null;
+
         if ($tankFillingPercentage < 15) {
             $alarms = ['CriticalLowProduct'];
         } elseif ($tankFillingPercentage < 30) {
@@ -171,7 +172,7 @@ class TankMeasurementFactory extends Factory
         ];
 
         $densityRange = $densityRanges[$fuelGrade] ?? [720, 850];
-        
+
         return $this->state(fn (array $attributes) => [
             'fuel_grade_name' => $fuelGrade,
             'product_density' => fake()->randomFloat(3, $densityRange[0], $densityRange[1]),

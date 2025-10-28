@@ -198,9 +198,9 @@ textarea {
    Links and Anchor Tags
    ============================================ */
 
-a {
+/* a {
     color: #5051F9 !important;
-}
+} */
 
 a:hover {
     color: #3f40d4 !important;
