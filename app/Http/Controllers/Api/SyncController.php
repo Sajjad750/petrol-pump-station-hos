@@ -8,6 +8,7 @@ use App\Models\PaymentModeWiseSummary;
 use App\Models\ProductWiseSummary;
 use App\Models\Pump;
 use App\Models\PumpTransaction;
+use App\Models\PtsUser;
 use App\Models\Shift;
 use App\Models\ShiftPumpTotal;
 use App\Models\Station;
@@ -1539,6 +1540,146 @@ class SyncController extends Controller
             'station_id' => $stationId,
             'bos_tank_inventory_id' => $bosData['id'],
             'bos_uuid' => $bosData['uuid'],
+            'created_at_bos' => $bosData['created_at'] ?? null,
+            'updated_at_bos' => $bosData['updated_at'] ?? null,
+        ];
+    }
+
+    /**
+     * Sync PTS users from BOS
+     */
+    public function syncPtsUsers(Request $request): JsonResponse
+    {
+        Log::debug("syncPtsUsers: ", (array)$request->all());
+
+        $station = $request->get('station');
+        $ptsId = $request->input('pts_id');
+        $ptsUsers = $request->input('data', []);
+        Log::debug("pts_users: ", (array)$ptsUsers);
+
+        $created = 0;
+        $updated = 0;
+        $failed = 0;
+        $errors = [];
+
+        DB::beginTransaction();
+
+        try {
+            foreach ($ptsUsers as $ptsUserData) {
+                try {
+                    // Create sync log entry
+                    $syncLog = SyncLog::createLog(
+                        $station->id,
+                        'pts_users',
+                        'create',
+                        $ptsUserData,
+                        'pending'
+                    );
+
+                    // Prepare PTS user data for HOS
+                    $hosPtsUserData = $this->preparePtsUserData($ptsUserData, $station->id);
+
+                    // Use updateOrCreate to handle duplicates
+                    $ptsUser = PtsUser::updateOrCreate(
+                        [
+                            'station_id' => $station->id,
+                            'bos_pts_user_id' => $ptsUserData['id'],
+                        ],
+                        array_merge($hosPtsUserData, [
+                            'synced_at' => now(),
+                        ])
+                    );
+
+                    // Mark sync log as successful
+                    $syncLog->markAsSuccessful([
+                        'pts_user_id' => $ptsUser->id,
+                        'action' => $ptsUser->wasRecentlyCreated ? 'created' : 'updated',
+                    ]);
+
+                    if ($ptsUser->wasRecentlyCreated) {
+                        $created++;
+                    } else {
+                        $updated++;
+                    }
+                } catch (\Exception $e) {
+                    $failed++;
+                    $errors[] = [
+                        'pts_user_id' => $ptsUserData['id'] ?? 'unknown',
+                        'error' => $e->getMessage(),
+                    ];
+
+                    // Mark sync log as failed
+                    if (isset($syncLog)) {
+                        $syncLog->markAsFailed($e->getMessage());
+                    }
+
+                    Log::error('Failed to sync PTS user', [
+                        'station_id' => $station->id,
+                        'pts_id' => $ptsId,
+                        'pts_user_data' => $ptsUserData,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            // Update station's last sync time
+            $station->updateLastSync();
+
+            DB::commit();
+
+            $totalItems = $created + $updated + $failed;
+            $allFailed = $totalItems > 0 && $failed === $totalItems;
+
+            return response()->json([
+                'success' => !$allFailed,
+                'message' => $allFailed
+                    ? "All {$failed} PTS users failed to sync"
+                    : "Synced {$created} created, {$updated} updated, {$failed} failed PTS users",
+                'data' => [
+                    'created' => $created,
+                    'updated' => $updated,
+                    'failed' => $failed,
+                    'errors' => $errors,
+                ],
+            ], $allFailed ? 422 : 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Sync PTS users failed', [
+                'station_id' => $station->id,
+                'pts_id' => $ptsId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Sync operation failed: ' . $e->getMessage(),
+                'data' => [
+                    'created' => $created,
+                    'updated' => $updated,
+                    'failed' => $failed,
+                    'errors' => $errors,
+                ],
+            ], 500);
+        }
+    }
+
+    /**
+     * Prepare PTS user data for HOS storage
+     */
+    private function preparePtsUserData(array $bosData, int $stationId): array
+    {
+        return [
+            'uuid' => Str::uuid7(),
+            'pts_user_id' => $bosData['pts_user_id'],
+            'login' => $bosData['login'],
+            'configuration_permission' => $bosData['configuration_permission'] ?? false,
+            'control_permission' => $bosData['control_permission'] ?? false,
+            'monitoring_permission' => $bosData['monitoring_permission'] ?? false,
+            'reports_permission' => $bosData['reports_permission'] ?? false,
+            'is_active' => $bosData['is_active'] ?? true,
+            'station_id' => $stationId,
+            'bos_pts_user_id' => $bosData['id'],
             'created_at_bos' => $bosData['created_at'] ?? null,
             'updated_at_bos' => $bosData['updated_at'] ?? null,
         ];

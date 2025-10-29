@@ -8,6 +8,16 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
+// Role Management API Routes
+Route::prefix('api')->middleware(['auth:sanctum'])->group(function () {
+    Route::get('/roles', [\App\Http\Controllers\RoleController::class, 'index']);
+    Route::post('/roles', [\App\Http\Controllers\RoleController::class, 'store']);
+    Route::get('/roles/{role}', [\App\Http\Controllers\RoleController::class, 'show']);
+    Route::put('/roles/{role}', [\App\Http\Controllers\RoleController::class, 'update']);
+    Route::delete('/roles/{role}', [\App\Http\Controllers\RoleController::class, 'destroy']);
+    Route::post('/roles/{role}/permissions', [\App\Http\Controllers\RoleController::class, 'updatePermissions']);
+});
+
 // BOS Sync API Routes
 Route::prefix('sync')->middleware(['bos.api.key', 'throttle:120,1'])->group(function () {
     Route::post('/pump-transactions', [SyncController::class, 'syncPumpTransactions']);
@@ -21,5 +31,6 @@ Route::prefix('sync')->middleware(['bos.api.key', 'throttle:120,1'])->group(func
     Route::post('/payment-mode-wise-summaries', [SyncController::class, 'syncPaymentModeWiseSummaries']);
     Route::post('/shift-pump-totals', [SyncController::class, 'syncShiftPumpTotals']);
     Route::post('/tank-inventories', [SyncController::class, 'syncTankInventories']);
+    Route::post('/pts-users', [SyncController::class, 'syncPtsUsers']);
     // Future endpoints: alert-records
 });

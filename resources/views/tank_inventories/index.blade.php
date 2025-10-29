@@ -239,7 +239,7 @@
                 const queryString = $.param(filters);
                 window.location.href = '{{ route('tank_inventories.export.excel') }}?' + queryString;
             });
-
+ 
             // Export to PDF
             $('#export-pdf-btn').on('click', function() {
                 const filters = {

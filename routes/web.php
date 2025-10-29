@@ -68,6 +68,12 @@ Route::middleware('auth')->group(function () {
     Route::get('pts_users/export-excel', [\App\Http\Controllers\PtsUserListController::class, 'exportExcel'])->name('pts_users.export.excel');
     Route::get('pts_users/export-pdf', [\App\Http\Controllers\PtsUserListController::class, 'exportPdf'])->name('pts_users.export.pdf');
 
+    // User Management
+    Route::resource('users', \App\Http\Controllers\UserController::class)->middleware('permission:view-users');
+
+    // Role Management
+    Route::resource('roles', \App\Http\Controllers\RoleController::class)->middleware('permission:view-roles');
+
     // HOS Reports
     Route::get('hos-reports', \App\Http\Controllers\HosReportsController::class)->name('hos-reports');
     Route::get('hos-reports/stations', [\App\Http\Controllers\HosReportsController::class, 'getStations'])->name('hos-reports.stations');
