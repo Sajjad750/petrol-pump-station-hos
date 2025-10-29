@@ -18,13 +18,14 @@ class FuelGradeController extends Controller
         $validated = $request->validated();
 
         // Update fuel grade in HOS database
-        $data=[];
-if(!empty($validated['scheduled_at'])){
-    $data['scheduled_price'] = $validated['price'];
-    $data['scheduled_at'] = $validated['scheduled_at'];
-}else{
-    $data['price'] = $validated['price'];
-}
+        $data = [];
+
+        if (!empty($validated['scheduled_at'])) {
+            $data['scheduled_price'] = $validated['price'];
+            $data['scheduled_at'] = $validated['scheduled_at'];
+        } else {
+            $data['price'] = $validated['price'];
+        }
 
         $fuelGrade->update($data);
 
@@ -37,7 +38,7 @@ if(!empty($validated['scheduled_at'])){
             'command_type' => $command_type,
             'command_data' => [
                 'bos_fuel_grade_id' => $fuelGrade->bos_fuel_grade_id,
-                'bos_uuid'=> $fuelGrade->bos_uuid,
+                'bos_uuid' => $fuelGrade->bos_uuid,
                 'price' => $validated['price'],
                 'scheduled_price' => $validated['scheduled_price'] ?? null,
                 'scheduled_at' => $validated['scheduled_at'] ?? null,
