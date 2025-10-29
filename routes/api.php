@@ -32,5 +32,7 @@ Route::prefix('sync')->middleware(['bos.api.key', 'throttle:120,1'])->group(func
     Route::post('/shift-pump-totals', [SyncController::class, 'syncShiftPumpTotals']);
     Route::post('/tank-inventories', [SyncController::class, 'syncTankInventories']);
     Route::post('/pts-users', [SyncController::class, 'syncPtsUsers']);
+    Route::get('/pending-commands', [SyncController::class, 'getPendingCommands']);
+    Route::post('/acknowledge-command', [SyncController::class, 'acknowledgeCommand']);
     // Future endpoints: alert-records
 });
