@@ -1,7 +1,7 @@
 <!-- Filters Card -->
 <div class="card custom-card mb-3">
     <div class="card-header custom-card-header">
-        <h5 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-filter"></i> Filters</h5>
+        <h6 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-filter"></i> Filters</h6>
     </div>
     <div class="card-body">
         <form id="shift-summary-filter-form">
@@ -67,7 +67,7 @@
     <!-- Payment Mode Wise Summary Table -->
     <div class="card custom-card mb-3">
         <div class="card-header custom-card-header">
-            <h4 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-table"></i> Payment Mode Wise Summary</h4>
+            <h6 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-table"></i> Payment Mode Wise Summary</h6>
         </div>
     <div class="card-body" style="padding: 0;">
         <div class="table-responsive">
@@ -99,7 +99,7 @@
 <!-- Product Wise Summary Table -->
 <div class="card custom-card mb-3">
     <div class="card-header custom-card-header">
-        <h4 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-table"></i> Product Wise Summary</h4>
+        <h6 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-table"></i> Product Wise Summary</h6>
     </div>
     <div class="card-body" style="padding: 0;">
         <div class="table-responsive">
@@ -131,7 +131,7 @@
 <!-- Pump Wise Summary Table -->
 <div class="card custom-card mb-3">
     <div class="card-header custom-card-header">
-        <h4 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-table"></i> Pump Wise Summary</h4>
+        <h6 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-table"></i> Pump Wise Summary</h6>
     </div>
     <div class="card-body" style="padding: 0;">
         <div class="table-responsive">
@@ -206,7 +206,7 @@
                 // Payment Mode Wise Summary
                 shiftHtml += '<div class="card custom-card mb-3 mt-3">';
                 shiftHtml += '<div class="card-header custom-card-header">';
-                shiftHtml += '<h5 class="mb-0" style="color: #D7D7D7;">Payment Mode Wise Summary</h5>';
+                shiftHtml += '<h6 class="mb-0" style="color: #D7D7D7;">Payment Mode Wise Summary</h6>';
                 shiftHtml += '</div>';
                 shiftHtml += '<div class="card-body" style="padding: 0;">';
                 shiftHtml += '<div class="table-responsive">';
@@ -234,7 +234,7 @@
                 // Product Wise Summary
                 shiftHtml += '<div class="card custom-card mb-3">';
                 shiftHtml += '<div class="card-header custom-card-header">';
-                shiftHtml += '<h5 class="mb-0" style="color: #D7D7D7;">Product Wise Summary</h5>';
+                shiftHtml += '<h6 class="mb-0" style="color: #D7D7D7;">Product Wise Summary</h6>';
                 shiftHtml += '</div>';
                 shiftHtml += '<div class="card-body" style="padding: 0;">';
                 shiftHtml += '<div class="table-responsive">';
@@ -262,7 +262,7 @@
                 // Pump Wise Summary
                 shiftHtml += '<div class="card custom-card mb-3">';
                 shiftHtml += '<div class="card-header custom-card-header">';
-                shiftHtml += '<h5 class="mb-0" style="color: #D7D7D7;">Pump Wise Summary</h5>';
+                shiftHtml += '<h6 class="mb-0" style="color: #D7D7D7;">Pump Wise Summary</h6>';
                 shiftHtml += '</div>';
                 shiftHtml += '<div class="card-body" style="padding: 0;">';
                 shiftHtml += '<div class="table-responsive">';

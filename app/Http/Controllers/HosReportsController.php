@@ -720,6 +720,218 @@ class HosReportsController extends Controller
     }
 
     /**
+     * Get analytical sales data with daily aggregation.
+     */
+    public function getAnalyticalSales(Request $request)
+    {
+        // Build query to get pump transactions based on filters
+        $query = PumpTransaction::query()
+            ->leftJoin('stations', 'pump_transactions.station_id', '=', 'stations.id')
+            ->leftJoin('fuel_grades', function ($join) {
+                $join->on('pump_transactions.pts_fuel_grade_id', '=', 'fuel_grades.id')
+                     ->on('pump_transactions.station_id', '=', 'fuel_grades.station_id');
+            });
+
+        // Station Filter
+        if ($request->filled('station_id')) {
+            $query->where('pump_transactions.station_id', $request->input('station_id'));
+        }
+
+        // Date and Time Filters
+        if ($request->filled('from_date') || $request->filled('to_date') || $request->filled('from_time') || $request->filled('to_time')) {
+            $from_date = $request->input('from_date');
+            $to_date = $request->input('to_date');
+            $from_time = $request->input('from_time') ?: '00:00:00';
+            $to_time = $request->input('to_time') ?: '23:59:59';
+
+            if ($from_date && $to_date) {
+                $from_datetime = $from_date.' '.$from_time;
+                $to_datetime = $to_date.' '.$to_time;
+                $query->whereBetween('pump_transactions.date_time_start', [$from_datetime, $to_datetime]);
+            } elseif ($from_date) {
+                $from_datetime = $from_date.' '.$from_time;
+                $query->where('pump_transactions.date_time_start', '>=', $from_datetime);
+            } elseif ($to_date) {
+                $to_datetime = $to_date.' '.$to_time;
+                $query->where('pump_transactions.date_time_start', '<=', $to_datetime);
+            }
+        }
+
+        // Product Filter
+        if ($request->filled('product_id')) {
+            $query->where('pump_transactions.pts_fuel_grade_id', $request->input('product_id'));
+        }
+
+        // Get aggregated data grouped by date, site, and product
+        $analyticalData = $query->select([
+                DB::raw('DATE(pump_transactions.date_time_start) as date'),
+                'stations.site_name',
+                'stations.pts_id as site_ref',
+                'fuel_grades.name as product_name',
+                DB::raw('SUM(pump_transactions.volume) as liters_sold'),
+                DB::raw('SUM(pump_transactions.amount) as total_amount'),
+                DB::raw('COUNT(pump_transactions.id) as transactions_count'),
+            ])
+            ->groupBy('date', 'stations.id', 'stations.site_name', 'stations.pts_id', 'fuel_grades.id', 'fuel_grades.name')
+            ->orderBy('date', 'desc')
+            ->orderBy('stations.site_name')
+            ->orderBy('fuel_grades.name')
+            ->get();
+
+        // Calculate average transaction amount for each row
+        $analyticalData = $analyticalData->map(function ($item) {
+            $avgTransactionAmount = $item->transactions_count > 0 ? $item->total_amount / $item->transactions_count : 0;
+
+            return [
+                'date' => $item->date,
+                'site' => $item->site_name ?? 'Unknown Site',
+                'site_ref' => $item->site_ref ?? '',
+                'product' => $item->product_name ?? 'Unknown Product',
+                'liters_sold' => (float) $item->liters_sold,
+                'amount' => (float) $item->total_amount,
+                'transactions' => (int) $item->transactions_count,
+                'avg_transaction_amount' => (float) $avgTransactionAmount,
+            ];
+        });
+
+        // Calculate totals
+        $totalLiters = $analyticalData->sum('liters_sold');
+        $totalAmount = $analyticalData->sum('amount');
+        $totalTransactions = $analyticalData->sum('transactions');
+        $overallAvgTransaction = $totalTransactions > 0 ? $totalAmount / $totalTransactions : 0;
+
+        return response()->json([
+            'data' => $analyticalData,
+            'total_liters' => $totalLiters,
+            'total_amount' => $totalAmount,
+            'total_transactions' => $totalTransactions,
+            'overall_avg_transaction' => $overallAvgTransaction,
+        ]);
+    }
+
+    /**
+     * Get sales summary data (Sales Type Wise and Product Wise Summaries).
+     */
+    public function getSalesSummary(Request $request)
+    {
+        // Build query to get pump transactions based on filters
+        $query = PumpTransaction::query()
+            ->leftJoin('stations', 'pump_transactions.station_id', '=', 'stations.id')
+            ->leftJoin('fuel_grades', function ($join) {
+                $join->on('pump_transactions.pts_fuel_grade_id', '=', 'fuel_grades.id')
+                     ->on('pump_transactions.station_id', '=', 'fuel_grades.station_id');
+            });
+
+        // Station Filter
+        if ($request->filled('station_id')) {
+            $query->where('pump_transactions.station_id', $request->input('station_id'));
+        }
+
+        // Date and Time Filters
+        if ($request->filled('from_date') || $request->filled('to_date') || $request->filled('from_time') || $request->filled('to_time')) {
+            $from_date = $request->input('from_date');
+            $to_date = $request->input('to_date');
+            $from_time = $request->input('from_time') ?: '00:00:00';
+            $to_time = $request->input('to_time') ?: '23:59:59';
+
+            if ($from_date && $to_date) {
+                $from_datetime = $from_date.' '.$from_time;
+                $to_datetime = $to_date.' '.$to_time;
+                $query->whereBetween('pump_transactions.date_time_start', [$from_datetime, $to_datetime]);
+            } elseif ($from_date) {
+                $from_datetime = $from_date.' '.$from_time;
+                $query->where('pump_transactions.date_time_start', '>=', $from_datetime);
+            } elseif ($to_date) {
+                $to_datetime = $to_date.' '.$to_time;
+                $query->where('pump_transactions.date_time_start', '<=', $to_datetime);
+            }
+        }
+
+        // Product Filter
+        if ($request->filled('product_id')) {
+            $query->where('pump_transactions.pts_fuel_grade_id', $request->input('product_id'));
+        }
+
+        // Get transactions data
+        $transactions = $query->select([
+            'pump_transactions.*',
+            'stations.site_name',
+            'fuel_grades.name as fuel_grade_name',
+        ])->with('ptsUser')->get();
+
+        // Sales Type Wise Summary (Cash, MOP)
+        $salesTypeSummary = $transactions->groupBy('mode_of_payment')
+            ->map(function ($group) {
+                return [
+                    'sales_type' => ucfirst($group->first()->mode_of_payment ?? 'Unknown'),
+                    'volume' => $group->sum('volume'),
+                    'total_amount' => $group->sum('amount'),
+                    'sales_count' => $group->count(),
+                ];
+            })
+            ->values();
+
+        // Product Wise Summary
+        $productSummary = $transactions->groupBy(function ($transaction) {
+            return $transaction->fuel_grade_name ?? 'Unknown Product';
+        })
+        ->map(function ($group) {
+            $totalVolume = $group->sum('volume');
+            $totalAmount = $group->sum('amount');
+            $salesCount = $group->count();
+
+            return [
+                'product_name' => $group->first()->fuel_grade_name ?? 'Unknown Product',
+                'avg_per_unit' => $totalVolume > 0 ? $totalAmount / $totalVolume : 0,
+                'volume' => $totalVolume,
+                'total_amount' => $totalAmount,
+                'sales_count' => $salesCount,
+                'avg_sales_amount' => $salesCount > 0 ? $totalAmount / $salesCount : 0,
+            ];
+        })
+        ->values();
+
+        // Attendant Wise Summary
+        $attendantSummary = $transactions->groupBy(function ($transaction) {
+            return $transaction->pts_user_id ?? 'Unknown Attendant';
+        })
+        ->map(function ($group) {
+            $firstTransaction = $group->first();
+            $attendantName = 'Unknown Attendant';
+
+            // Try to get attendant name from PTS User if available
+            if ($firstTransaction->ptsUser) {
+                $attendantName = $firstTransaction->ptsUser->login ?? 'Attendant #' . $firstTransaction->pts_user_id;
+            } elseif ($firstTransaction->pts_user_id) {
+                $attendantName = 'Attendant #' . $firstTransaction->pts_user_id;
+            }
+
+            return [
+                'attendant_name' => $attendantName,
+                'attendant_id' => $firstTransaction->pts_user_id ?? 'N/A',
+                'volume' => $group->sum('volume'),
+                'total_amount' => $group->sum('amount'),
+                'transactions_count' => $group->count(),
+            ];
+        })
+        ->values();
+
+        // Calculate totals
+        $totalVolume = $transactions->sum('volume');
+        $totalAmount = $transactions->sum('amount');
+        $totalSalesCount = $transactions->count();
+
+        return response()->json([
+            'sales_type_summary' => $salesTypeSummary,
+            'product_summary' => $productSummary,
+            'attendant_summary' => $attendantSummary,
+            'total_volume' => $totalVolume,
+            'total_amount' => $totalAmount,
+            'total_sales_count' => $totalSalesCount,
+        ]);
+    }
+
+    /**
      * Get shift summary data (Payment Mode, Product, and Pump Wise Summaries).
      */
     public function getShiftSummary(Request $request)

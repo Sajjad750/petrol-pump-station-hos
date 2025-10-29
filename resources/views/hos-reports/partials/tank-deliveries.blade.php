@@ -1,7 +1,7 @@
 <!-- Filters Card -->
 <div class="card custom-card mb-3">
     <div class="card-header custom-card-header">
-        <h5 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-filter"></i> Filters</h5>
+        <h6 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-filter"></i> Filters</h6>
     </div>
     <div class="card-body">
         <form id="tank-deliveries-filter-form">
@@ -84,7 +84,7 @@
 <!-- Tank Deliveries Table Card -->
 <div class="card custom-card">
     <div class="card-header custom-card-header">
-        <h4 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-table"></i> Tank Deliveries Data</h4>
+        <h6 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-table"></i> Tank Deliveries Data</h4>
     </div>
     <div class="card-body" style="padding: 0;">
         <div class="table-responsive">

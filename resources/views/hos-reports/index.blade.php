@@ -3,7 +3,8 @@
 @push('css')
     <style>
         .nav-tabs .nav-link {
-            padding: 1rem 2rem;
+            font-size: 14px;
+            padding: 1rem 1rem;
             font-weight: 500;
             color: #6c757d !important;
             border: none;
@@ -18,8 +19,8 @@
 
         .nav-tabs .nav-link.active {
             color:rgb(0, 0, 0) !important;
-            background-color: #fff;
-            border-bottom: 3px solid rgb(0, 0, 0) !important;
+            background-color: #dedede;
+            border-bottom: 2px solid #000 !important;
             border-color: transparent #dee2e6 #fff #dee2e6;
         }
 
@@ -89,6 +90,16 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" id="sales-summary-tab" data-toggle="tab" href="#sales-summary" role="tab" aria-controls="sales-summary" aria-selected="false">
+                                <i class="fas fa-chart-bar"></i> Sales Summary
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="analytical-sales-tab" data-toggle="tab" href="#analytical-sales" role="tab" aria-controls="analytical-sales" aria-selected="false">
+                                <i class="fas fa-chart-line"></i> Analytical Sales
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" id="shift-summary-tab" data-toggle="tab" href="#shift-summary" role="tab" aria-controls="shift-summary" aria-selected="false">
                                 <i class="fas fa-clipboard-list"></i> Shift Summary
                             </a>
@@ -111,6 +122,14 @@
                         </div>
                         <div class="tab-pane fade" id="tank-deliveries" role="tabpanel" aria-labelledby="tank-delivery-tab">
                             @include('hos-reports.partials.tank-deliveries')
+                        </div>
+                        <!-- Sales Summary Tab -->
+                        <div class="tab-pane fade" id="sales-summary" role="tabpanel" aria-labelledby="sales-summary-tab">
+                            @include('hos-reports.partials.sales-summary')
+                        </div>
+                        <!-- Analytical Sales Tab -->
+                        <div class="tab-pane fade" id="analytical-sales" role="tabpanel" aria-labelledby="analytical-sales-tab">
+                            @include('hos-reports.partials.analytical-sales')
                         </div>
                         <!-- Shift Summary Tab -->
                         <div class="tab-pane fade" id="shift-summary" role="tabpanel" aria-labelledby="shift-summary-tab">
