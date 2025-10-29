@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\FuelGrade;
+use App\Models\HosCommand;
 use App\Models\PaymentModeWiseSummary;
 use App\Models\ProductWiseSummary;
 use App\Models\Pump;
@@ -1683,5 +1684,73 @@ class SyncController extends Controller
             'created_at_bos' => $bosData['created_at'] ?? null,
             'updated_at_bos' => $bosData['updated_at'] ?? null,
         ];
+    }
+
+    /**
+     * Get pending commands for a station
+     */
+    public function getPendingCommands(Request $request): JsonResponse
+    {
+        $station = $request->get('station');
+        Log::debug("getPendingCommands: ", (array)$request->all());
+
+        $commands = HosCommand::where('station_id', $station->id)
+            ->where('status', 'pending')
+            ->orderBy('created_at')
+            ->limit(10)
+            ->get();
+
+        // Mark commands as processing
+        foreach ($commands as $command) {
+            $command->markAsProcessing();
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $commands->map(function ($command) {
+                return [
+                    'id' => $command->id,
+                    'command_type' => $command->command_type,
+                    'command_data' => $command->command_data,
+                    'created_at' => $command->created_at->toIso8601String(),
+                ];
+            }),
+        ]);
+    }
+
+    /**
+     * Acknowledge command execution
+     */
+    public function acknowledgeCommand(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'command_id' => 'required|integer',
+            'success' => 'required|boolean',
+            'error_message' => 'nullable|string|max:1000',
+        ]);
+
+        $station = $request->get('station');
+
+        $command = HosCommand::where('id', $validated['command_id'])
+            ->where('station_id', $station->id)
+            ->first();
+
+        if (!$command) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Command not found',
+            ], 404);
+        }
+
+        if ($validated['success']) {
+            $command->markAsCompleted();
+        } else {
+            $command->markAsFailed($validated['error_message'] ?? 'Unknown error');
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Command acknowledged successfully',
+        ]);
     }
 }

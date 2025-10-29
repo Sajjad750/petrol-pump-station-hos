@@ -51,6 +51,8 @@ Route::middleware('auth')->group(function () {
     Route::get('fuel_grades', \App\Http\Controllers\FuelGradeListController::class)->name('fuel_grades');
     Route::get('fuel_grades/export-excel', [\App\Http\Controllers\FuelGradeListController::class, 'exportExcel'])->name('fuel_grades.export.excel');
     Route::get('fuel_grades/export-pdf', [\App\Http\Controllers\FuelGradeListController::class, 'exportPdf'])->name('fuel_grades.export.pdf');
+    Route::put('fuel-grades/{fuelGrade}/price', [\App\Http\Controllers\FuelGradeController::class, 'updatePrice'])->name('fuel-grades.update-price');
+    Route::put('fuel-grades/{fuelGrade}/schedule-price', [\App\Http\Controllers\FuelGradeController::class, 'schedulePrice'])->name('fuel-grades.schedule-price');
 
     // Shifts
     Route::get('shifts', \App\Http\Controllers\ShiftListController::class)->name('shifts.index');
@@ -73,6 +75,12 @@ Route::middleware('auth')->group(function () {
 
     // Role Management
     Route::resource('roles', \App\Http\Controllers\RoleController::class)->middleware('permission:view-roles');
+
+    // HOS Commands
+    Route::prefix('hos-commands')->group(function () {
+        Route::get('/', [\App\Http\Controllers\HosCommandController::class, 'index'])->name('hos-commands.index');
+        Route::get('/{hosCommand}', [\App\Http\Controllers\HosCommandController::class, 'show'])->name('hos-commands.show');
+    });
 
     // HOS Reports
     Route::get('hos-reports', \App\Http\Controllers\HosReportsController::class)->name('hos-reports');
