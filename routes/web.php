@@ -92,6 +92,8 @@ Route::middleware('auth')->group(function () {
     Route::get('hos-reports/shift-summary', [\App\Http\Controllers\HosReportsController::class, 'getShiftSummary'])->name('hos-reports.shift-summary');
     Route::get('hos-reports/sales-summary', [\App\Http\Controllers\HosReportsController::class, 'getSalesSummary'])->name('hos-reports.sales-summary');
     Route::get('hos-reports/analytical-sales', [\App\Http\Controllers\HosReportsController::class, 'getAnalyticalSales'])->name('hos-reports.analytical-sales');
+    Route::get('hos-reports/tank-monitoring', [\App\Http\Controllers\HosReportsController::class, 'getTankMonitoring'])->name('hos-reports.tank-monitoring');
+    Route::get('hos-reports/tanks-from-measurements', [\App\Http\Controllers\HosReportsController::class, 'getTanksFromMeasurements'])->name('hos-reports.tanks-from-measurements');
     Route::get('hos-reports/export-excel', [\App\Http\Controllers\HosReportsController::class, 'exportExcel'])->name('hos-reports.export.excel');
     Route::get('hos-reports/export-pdf', [\App\Http\Controllers\HosReportsController::class, 'exportPdf'])->name('hos-reports.export.pdf');
 });

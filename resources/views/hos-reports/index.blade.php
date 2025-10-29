@@ -90,6 +90,11 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" id="tank-monitoring-tab" data-toggle="tab" href="#tank-monitoring" role="tab" aria-controls="tank-monitoring" aria-selected="false">
+                                <i class="fas fa-tachometer-alt"></i> Tank Monitoring
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" id="sales-summary-tab" data-toggle="tab" href="#sales-summary" role="tab" aria-controls="sales-summary" aria-selected="false">
                                 <i class="fas fa-chart-bar"></i> Sales Summary
                             </a>
@@ -122,6 +127,10 @@
                         </div>
                         <div class="tab-pane fade" id="tank-deliveries" role="tabpanel" aria-labelledby="tank-delivery-tab">
                             @include('hos-reports.partials.tank-deliveries')
+                        </div>
+                        <!-- Tank Monitoring Tab -->
+                        <div class="tab-pane fade" id="tank-monitoring" role="tabpanel" aria-labelledby="tank-monitoring-tab">
+                            @include('hos-reports.partials.tank-monitoring')
                         </div>
                         <!-- Sales Summary Tab -->
                         <div class="tab-pane fade" id="sales-summary" role="tabpanel" aria-labelledby="sales-summary-tab">

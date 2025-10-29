@@ -8,6 +8,7 @@ use App\Models\PumpTransaction;
 use App\Models\Station;
 use App\Models\TankInventory;
 use App\Models\TankDelivery;
+use App\Models\TankMeasurement;
 use App\Models\Shift;
 use App\Models\PaymentModeWiseSummary;
 use App\Models\ProductWiseSummary;
@@ -717,6 +718,163 @@ class HosReportsController extends Controller
         ];
 
         return response()->json($json_data);
+    }
+
+    /**
+     * Get tank monitoring data with status calculation.
+     */
+    public function getTankMonitoring(Request $request)
+    {
+        $query = TankMeasurement::query()
+            ->leftJoin('stations', 'tank_measurements.station_id', '=', 'stations.id')
+            ->leftJoin('fuel_grades', function ($join) {
+                $join->on('tank_measurements.fuel_grade_id', '=', 'fuel_grades.id')
+                     ->on('tank_measurements.station_id', '=', 'fuel_grades.station_id');
+            });
+
+        // Station Filter
+        if ($request->filled('station_id')) {
+            $query->where('tank_measurements.station_id', $request->input('station_id'));
+        }
+
+        // Date and Time Filters
+        if ($request->filled('from_date') || $request->filled('to_date') || $request->filled('from_time') || $request->filled('to_time')) {
+            $from_date = $request->input('from_date');
+            $to_date = $request->input('to_date');
+            $from_time = $request->input('from_time') ?: '00:00:00';
+            $to_time = $request->input('to_time') ?: '23:59:59';
+
+            if ($from_date && $to_date) {
+                $from_datetime = $from_date.' '.$from_time;
+                $to_datetime = $to_date.' '.$to_time;
+                $query->whereBetween('tank_measurements.date_time', [$from_datetime, $to_datetime]);
+            } elseif ($from_date) {
+                $from_datetime = $from_date.' '.$from_time;
+                $query->where('tank_measurements.date_time', '>=', $from_datetime);
+            } elseif ($to_date) {
+                $to_datetime = $to_date.' '.$to_time;
+                $query->where('tank_measurements.date_time', '<=', $to_datetime);
+            }
+        }
+
+        // Product Filter
+        if ($request->filled('product_id')) {
+            $query->where('tank_measurements.fuel_grade_id', $request->input('product_id'));
+        }
+
+        // Tank Filter
+        if ($request->filled('tank')) {
+            $query->where('tank_measurements.tank', $request->input('tank'));
+        }
+
+        // Status Filter - Calculate based on tank_filling_percentage
+        if ($request->filled('status')) {
+            $status = $request->input('status');
+
+            switch ($status) {
+                case 'critical':
+                    $query->where(function ($q) {
+                        $q->whereNotNull('tank_measurements.tank_filling_percentage')
+                          ->where('tank_measurements.tank_filling_percentage', '<', 30);
+                    });
+
+                    break;
+
+                case 'low':
+                    $query->where(function ($q) {
+                        $q->whereNotNull('tank_measurements.tank_filling_percentage')
+                          ->where('tank_measurements.tank_filling_percentage', '>=', 30)
+                          ->where('tank_measurements.tank_filling_percentage', '<', 70);
+                    });
+
+                    break;
+
+                case 'normal':
+                    $query->where(function ($q) {
+                        $q->whereNotNull('tank_measurements.tank_filling_percentage')
+                          ->where('tank_measurements.tank_filling_percentage', '>=', 70);
+                    });
+
+                    break;
+            }
+        }
+
+        // Get data
+        $measurements = $query->select([
+            'tank_measurements.*',
+            'stations.site_name',
+            'stations.pts_id as site_ref',
+            'fuel_grades.name as fuel_grade_name_from_table',
+            'tank_measurements.fuel_grade_name as fuel_grade_name_from_field',
+        ])
+        ->orderBy('tank_measurements.date_time', 'desc')
+        ->orderBy('stations.site_name')
+        ->orderBy('tank_measurements.tank')
+        ->get();
+
+        // Process data and add status
+        $monitoringData = $measurements->map(function ($measurement) {
+            $percentage = (float) ($measurement->tank_filling_percentage ?? 0);
+
+            // Determine status based on percentage
+            $status = 'normal';
+            $statusClass = 'normal';
+
+            if ($percentage < 30) {
+                $status = 'critical';
+                $statusClass = 'critical';
+            } elseif ($percentage < 70) {
+                $status = 'low';
+                $statusClass = 'low';
+            }
+
+            // Format tank number
+            $tankFormatted = 'T-'.str_pad($measurement->tank, 2, '0', STR_PAD_LEFT);
+
+            // Get product name (prefer joined fuel_grade name, fallback to fuel_grade_name field)
+            $productName = $measurement->fuel_grade_name_from_table ?? $measurement->fuel_grade_name_from_field ?? 'Unknown Product';
+
+            return [
+                'station' => $measurement->site_name ?? 'Unknown Station',
+                'site_ref' => $measurement->site_ref ?? '',
+                'date_time' => $measurement->date_time ? $measurement->date_time->format('Y-m-d H:i:s') : 'N/A',
+                'product' => $productName,
+                'tank' => $tankFormatted,
+                'product_volume' => (float) ($measurement->product_volume ?? 0),
+                'tank_filling_percentage' => $percentage,
+                'status' => ucfirst($status),
+                'status_class' => $statusClass,
+            ];
+        });
+
+        return response()->json([
+            'data' => $monitoringData,
+            'total_records' => $monitoringData->count(),
+        ]);
+    }
+
+    /**
+     * Get tank list for dropdown (from tank measurements).
+     */
+    public function getTanksFromMeasurements(Request $request)
+    {
+        $query = TankMeasurement::query()
+            ->select('tank')
+            ->distinct()
+            ->orderBy('tank');
+
+        if ($request->filled('station_id')) {
+            $query->where('station_id', $request->input('station_id'));
+        }
+
+        $tanks = $query->get()->map(function ($item) {
+            return [
+                'tank' => $item->tank,
+                'tank_formatted' => 'T-'.str_pad($item->tank, 2, '0', STR_PAD_LEFT),
+            ];
+        });
+
+        return response()->json(['tanks' => $tanks]);
     }
 
     /**
