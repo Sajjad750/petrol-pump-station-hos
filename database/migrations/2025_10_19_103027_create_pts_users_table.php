@@ -26,6 +26,7 @@ return new class () extends Migration {
             // HOS-specific additions
             $table->foreignId('station_id')->constrained()->onDelete('cascade');
             $table->unsignedBigInteger('bos_pts_user_id')->comment('Original BOS PTS user ID');
+            $table->uuid('bos_uuid')->nullable()->comment('Original BOS UUID');
             $table->timestamp('synced_at')->nullable();
             $table->timestamp('created_at_bos')->nullable()->comment('Original creation time in BOS');
             $table->timestamp('updated_at_bos')->nullable()->comment('Original update time in BOS');
@@ -33,16 +34,17 @@ return new class () extends Migration {
             $table->timestamps();
 
             // Indexes
-            $table->index(['station_id', 'pts_user_id']);
+            $table->index(['station_id', 'pts_user_id', 'bos_uuid']);
             $table->index(['station_id', 'login']);
-            $table->index(['station_id', 'is_active']);
+            $table->index(['station_id', 'is_active', 'bos_uuid']);
             $table->index('pts_user_id');
             $table->index('login');
             $table->index('is_active');
             $table->index('bos_pts_user_id');
+            $table->index('bos_uuid');
 
             // Unique constraint to prevent duplicates
-            $table->unique(['station_id', 'bos_pts_user_id'], 'unique_station_bos_pts_user');
+            $table->unique(['station_id', 'bos_pts_user_id', 'bos_uuid'], 'unique_station_bos_pts_user');
         });
     }
 
