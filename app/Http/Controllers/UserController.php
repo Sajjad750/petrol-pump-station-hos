@@ -35,10 +35,24 @@ class UserController extends Controller
         }
 
         $users = $query->latest()->paginate(10)->withQueryString();
-
         $roles = Role::all();
 
-        return view('users.index', compact('users', 'roles'));
+        // Stats for cards
+        $totalUsers = User::count();
+        // $activeUsers = User::where('is_active', true)->count();
+        // $inactiveUsers = User::where('is_active', false)->count();
+        $adminUsers = User::whereHas('role', function ($q) {
+            $q->whereIn('name', ['admin', 'super admin']);
+        })->count();
+
+        return view('users.index', compact(
+            'users',
+            'roles',
+            'totalUsers',
+            // 'activeUsers',
+            // 'inactiveUsers',
+            'adminUsers'
+        ));
     }
 
     /**

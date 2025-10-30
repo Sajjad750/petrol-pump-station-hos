@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Application Name
@@ -123,4 +122,16 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | UI Feature Toggles
+    |--------------------------------------------------------------------------
+    |
+    | Control visibility of optional/legacy sidebar items via env.
+    |
+    */
+
+    'show_legacy_menu' => (bool) env('SHOW_LEGACY_MENU', false),
+    'show_notifications_menu' => (bool) env('SHOW_NOTIFICATIONS_MENU', false),
+    'show_help_menu' => (bool) env('SHOW_HELP_MENU', false),
 ];
