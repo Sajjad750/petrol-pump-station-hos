@@ -9,6 +9,10 @@ Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'ind
 
 Route::get('/dashboard/station/{id}', [\App\Http\Controllers\DashboardController::class, 'getStationDetails'])->middleware(['auth'])->name('dashboard.station.details');
 
+Route::get('/operations-monitor', [\App\Http\Controllers\OperationsMonitorController::class, 'index'])->name('operations-monitor');
+
+Route::get('/operations-monitor/stations/{station}', [\App\Http\Controllers\OperationsMonitorController::class, 'show'])->name('operations-monitor.station');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

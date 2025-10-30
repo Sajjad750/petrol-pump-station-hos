@@ -31,8 +31,8 @@
                         </a>
                     </li>
 
-                    <li class="nav-item {{ request()->routeIs('hos-reports.tank-monitoring') ? 'menu-open' : '' }}">
-                        <a href="{{ route('hos-reports.tank-monitoring') }}" class="nav-link {{ request()->routeIs('hos-reports.tank-monitoring') ? 'active' : '' }}">
+                    <li class="nav-item {{ request()->routeIs('operations-monitor') ? 'menu-open' : '' }}">
+                        <a href="{{ route('operations-monitor') }}" class="nav-link {{ request()->routeIs('operations-monitor') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-desktop"></i>
                             <p>Operations Monitor</p>
                         </a>

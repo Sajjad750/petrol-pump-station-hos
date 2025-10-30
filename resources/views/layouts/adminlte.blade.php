@@ -36,5 +36,6 @@
         <!-- ./wrapper -->
         @include('layouts.js')
         @stack('js')
+        @stack('scripts')
     </body>
 </html>
