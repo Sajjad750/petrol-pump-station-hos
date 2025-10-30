@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\FuelGrade;
+use App\Models\FuelGradePriceHistory;
+use App\Models\HosCommand;
 use App\Models\PaymentModeWiseSummary;
 use App\Models\ProductWiseSummary;
 use App\Models\Pump;
@@ -1680,6 +1682,215 @@ class SyncController extends Controller
             'is_active' => $bosData['is_active'] ?? true,
             'station_id' => $stationId,
             'bos_pts_user_id' => $bosData['id'],
+            'created_at_bos' => $bosData['created_at'] ?? null,
+            'updated_at_bos' => $bosData['updated_at'] ?? null,
+        ];
+    }
+
+    /**
+     * Get pending commands for a station
+     */
+    public function getPendingCommands(Request $request): JsonResponse
+    {
+        $station = $request->get('station');
+        Log::debug("getPendingCommands: ", (array)$request->all());
+
+        $commands = HosCommand::where('station_id', $station->id)
+            ->where('status', 'pending')
+            ->orderBy('created_at')
+            ->limit(10)
+            ->get();
+
+        // Mark commands as processing
+        foreach ($commands as $command) {
+            $command->markAsProcessing();
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $commands->map(function ($command) {
+                return [
+                    'id' => $command->id,
+                    'command_type' => $command->command_type,
+                    'command_data' => $command->command_data,
+                    'created_at' => $command->created_at->toIso8601String(),
+                ];
+            }),
+        ]);
+    }
+
+    /**
+     * Acknowledge command execution
+     */
+    public function acknowledgeCommand(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'command_id' => 'required|integer',
+            'success' => 'required|boolean',
+            'error_message' => 'nullable|string|max:1000',
+        ]);
+
+        $station = $request->get('station');
+
+        $command = HosCommand::where('id', $validated['command_id'])
+            ->where('station_id', $station->id)
+            ->first();
+
+        if (!$command) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Command not found',
+            ], 404);
+        }
+
+        if ($validated['success']) {
+            $command->markAsCompleted();
+        } else {
+            $command->markAsFailed($validated['error_message'] ?? 'Unknown error');
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Command acknowledged successfully',
+        ]);
+    }
+
+    /**
+     * Sync fuel grade price history from BOS
+     */
+    public function syncFuelGradePriceHistory(Request $request): JsonResponse
+    {
+        Log::debug("syncFuelGradePriceHistory: ", (array)$request->all());
+
+        $station = $request->get('station');
+        $ptsId = $request->input('pts_id');
+        $priceHistories = $request->input('data', []);
+        Log::debug("fuel_grade_price_histories: ", (array)$priceHistories);
+
+        $created = 0;
+        $updated = 0;
+        $failed = 0;
+        $errors = [];
+
+        DB::beginTransaction();
+
+        try {
+            foreach ($priceHistories as $priceHistoryData) {
+                try {
+                    // Create sync log entry
+                    $syncLog = SyncLog::createLog(
+                        $station->id,
+                        'fuel_grade_price_history',
+                        'create',
+                        $priceHistoryData,
+                        'pending'
+                    );
+
+                    // Prepare price history data for HOS
+                    $hosPriceHistoryData = $this->prepareFuelGradePriceHistoryData($priceHistoryData, $station->id);
+
+                    // Use updateOrCreate to handle duplicates
+                    $priceHistory = FuelGradePriceHistory::updateOrCreate(
+                        [
+                            'station_id' => $station->id,
+                            'bos_price_history_id' => $priceHistoryData['id'],
+                        ],
+                        array_merge($hosPriceHistoryData, [
+                            'synced_at' => now(),
+                        ])
+                    );
+
+                    // Mark sync log as successful
+                    $syncLog->markAsSuccessful([
+                        'price_history_id' => $priceHistory->id,
+                        'action' => $priceHistory->wasRecentlyCreated ? 'created' : 'updated',
+                    ]);
+
+                    if ($priceHistory->wasRecentlyCreated) {
+                        $created++;
+                    } else {
+                        $updated++;
+                    }
+                } catch (\Exception $e) {
+                    $failed++;
+                    $errors[] = [
+                        'price_history_id' => $priceHistoryData['id'] ?? 'unknown',
+                        'error' => $e->getMessage(),
+                    ];
+
+                    // Mark sync log as failed
+                    if (isset($syncLog)) {
+                        $syncLog->markAsFailed($e->getMessage());
+                    }
+
+                    Log::error('Failed to sync fuel grade price history', [
+                        'station_id' => $station->id,
+                        'pts_id' => $ptsId,
+                        'price_history_data' => $priceHistoryData,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            // Update station's last sync time
+            $station->updateLastSync();
+
+            DB::commit();
+
+            $totalItems = $created + $updated + $failed;
+            $allFailed = $totalItems > 0 && $failed === $totalItems;
+
+            return response()->json([
+                'success' => !$allFailed,
+                'message' => $allFailed
+                    ? "All {$failed} fuel grade price histories failed to sync"
+                    : "Synced {$created} created, {$updated} updated, {$failed} failed fuel grade price histories",
+                'data' => [
+                    'created' => $created,
+                    'updated' => $updated,
+                    'failed' => $failed,
+                    'errors' => $errors,
+                ],
+            ], $allFailed ? 422 : 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Sync fuel grade price history failed', [
+                'station_id' => $station->id,
+                'pts_id' => $ptsId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Sync operation failed: ' . $e->getMessage(),
+                'data' => [
+                    'created' => $created,
+                    'updated' => $updated,
+                    'failed' => $failed,
+                    'errors' => $errors,
+                ],
+            ], 500);
+        }
+    }
+
+    /**
+     * Prepare fuel grade price history data for HOS storage
+     */
+    private function prepareFuelGradePriceHistoryData(array $bosData, int $stationId): array
+    {
+        return [
+            'uuid' => Str::uuid7(),
+            'fuel_grade_id' => $bosData['fuel_grade_id'],
+            'old_price' => $bosData['old_price'],
+            'new_price' => $bosData['new_price'],
+            'change_type' => $bosData['change_type'] ?? null,
+            'effective_at' => $bosData['effective_at'] ?? null,
+            'notes' => $bosData['notes'] ?? null,
+            'changed_by' => $bosData['changed_by'] ?? null,
+            'station_id' => $stationId,
+            'bos_price_history_id' => $bosData['id'],
+            'bos_uuid' => $bosData['uuid'],
             'created_at_bos' => $bosData['created_at'] ?? null,
             'updated_at_bos' => $bosData['updated_at'] ?? null,
         ];

@@ -79,7 +79,7 @@ class FuelGradeListController extends Controller
             'updated_at_bos',
             'created_at',
             'updated_at',
-            'options'
+            'options',
         ];
 
         $length = $request->input('length');
@@ -126,6 +126,9 @@ class FuelGradeListController extends Controller
         $data = $data->map(function ($row) {
             $row = $row->toArray();
 
+            // Store raw price value before formatting
+            $raw_price = $row['price'] ?? 0;
+
             // Format timestamps
             $row['scheduled_at'] = $row['scheduled_at'] ? \Carbon\Carbon::parse($row['scheduled_at'])->format('Y-m-d H:i:s') : '-';
             $row['synced_at'] = $row['synced_at'] ? \Carbon\Carbon::parse($row['synced_at'])->format('Y-m-d H:i:s') : '-';
@@ -170,6 +173,16 @@ class FuelGradeListController extends Controller
             } else {
                 $row['price_status'] = '<span class="badge badge-secondary">No Change Scheduled</span>';
             }
+
+            // Add action buttons (use raw price for data attributes)
+            $row['options'] = '
+                <button class="btn btn-sm btn-primary update-price-btn" data-id="' . $row['id'] . '" data-price="' . $raw_price . '" data-name="' . htmlspecialchars($row['name']) . '">
+                    <i class="fas fa-edit"></i> Update Price
+                </button>
+                <button class="btn btn-sm btn-warning schedule-price-btn" data-id="' . $row['id'] . '" data-price="' . $raw_price . '" data-name="' . htmlspecialchars($row['name']) . '">
+                    <i class="fas fa-calendar"></i> Schedule Price
+                </button>
+            ';
 
             return $row;
         });

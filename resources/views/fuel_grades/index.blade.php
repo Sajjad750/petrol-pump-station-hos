@@ -85,7 +85,7 @@
                                         <th>Blend Status</th>
                                         <th>Blend Info</th>
                                         <th>BOS Fuel Grade ID</th>
-                                        
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                             </table>
@@ -164,7 +164,11 @@
                         data: 'bos_fuel_grade_id',
                         defaultContent: '-'
                     },
-                   
+                    {
+                        data: 'options',
+                        orderable: false,
+                        searchable: false
+                    },
                 ],
                 'scrollX': true
             });
@@ -234,6 +238,98 @@
             // Auto-filter on station dropdown change
             $('#station_id').on('change', function() {
                 table.draw();
+            });
+
+            // Update price button
+            $(document).on('click', '.update-price-btn', function() {
+                const fuelGradeId = $(this).data('id');
+                const currentPrice = $(this).data('price');
+                const name = $(this).data('name');
+                
+                $('#updatePriceModal input[name="price"]').val(currentPrice);
+                $('#updatePriceModal input[name="scheduled_at"]').val('');
+                $('#updatePriceModal').find('.modal-title').text('Update Price - ' + name);
+                $('#updatePriceForm').attr('action', '{{ route("fuel-grades.update-price", ":id") }}'.replace(':id', fuelGradeId));
+                $('#updatePriceModal').modal('show');
+            });
+
+            // Schedule price button
+            $(document).on('click', '.schedule-price-btn', function() {
+                const fuelGradeId = $(this).data('id');
+                const currentPrice = $(this).data('price');
+                const name = $(this).data('name');
+                
+                $('#schedulePriceModal input[name="scheduled_price"]').val(currentPrice);
+                $('#schedulePriceModal input[name="scheduled_at"]').val('');
+                $('#schedulePriceModal').find('.modal-title').text('Schedule Price - ' + name);
+                $('#schedulePriceForm').attr('action', '{{ route("fuel-grades.schedule-price", ":id") }}'.replace(':id', fuelGradeId));
+                $('#schedulePriceModal').modal('show');
+            });
+
+            // Update price form submission
+            $('#updatePriceForm').on('submit', function(e) {
+                e.preventDefault();
+                const form = $(this);
+                const url = form.attr('action');
+                const data = {
+                    price: $('#updatePriceModal input[name="price"]').val(),
+                    scheduled_at: $('#updatePriceModal input[name="scheduled_at"]').val() || null,
+                    _token: '{{ csrf_token() }}',
+                    _method: 'PUT'
+                };
+
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: data,
+                    success: function(response) {
+                        $('#updatePriceModal').modal('hide');
+                        Swal.fire('Success', response.message || 'Price update command queued successfully', 'success');
+                        table.draw();
+                    },
+                    error: function(xhr) {
+                        let errorMsg = 'An error occurred';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        } else if (xhr.responseJSON && xhr.responseJSON.errors) {
+                            errorMsg = Object.values(xhr.responseJSON.errors).flat().join('<br>');
+                        }
+                        Swal.fire('Error', errorMsg, 'error');
+                    }
+                });
+            });
+
+            // Schedule price form submission
+            $('#schedulePriceForm').on('submit', function(e) {
+                e.preventDefault();
+                const form = $(this);
+                const url = form.attr('action');
+                const data = {
+                    scheduled_price: $('#schedulePriceModal input[name="scheduled_price"]').val(),
+                    scheduled_at: $('#schedulePriceModal input[name="scheduled_at"]').val(),
+                    _token: '{{ csrf_token() }}',
+                    _method: 'PUT'
+                };
+
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: data,
+                    success: function(response) {
+                        $('#schedulePriceModal').modal('hide');
+                        Swal.fire('Success', response.message || 'Price schedule command queued successfully', 'success');
+                        table.draw();
+                    },
+                    error: function(xhr) {
+                        let errorMsg = 'An error occurred';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        } else if (xhr.responseJSON && xhr.responseJSON.errors) {
+                            errorMsg = Object.values(xhr.responseJSON.errors).flat().join('<br>');
+                        }
+                        Swal.fire('Error', errorMsg, 'error');
+                    }
+                });
             });
         });
     </script>
