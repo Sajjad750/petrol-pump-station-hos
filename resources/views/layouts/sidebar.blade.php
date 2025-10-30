@@ -91,60 +91,78 @@
 
                     @if (config('app.show_legacy_menu'))
                         <li class="nav-header">Legacy</li>
-                        <li class="nav-item {{ $route_name == 'pump_transactions' ? 'menu-open' : '' }}">
-                            <a href="{{ route('pump_transactions') }}" class="nav-link {{ $route_name == 'pump_transactions' ? 'active' : '' }}">
+                        @if(config('app.show_pump_transactions_menu'))
+                        <li class="nav-item {{ $route_name == 'pump_transactions' ? 'menu-open' : ''}}">
+                            <a href="{{ route('pump_transactions') }}" class="nav-link {{ $route_name == 'pump_transactions' ? 'active' : ''}}">
                                 <i class="nav-icon fas fa-money-bill-wave"></i>
                                 <p>Pump Transactions</p>
                             </a>
                         </li>
-                        <li class="nav-item {{ $route_name == 'pumps' ? 'menu-open' : '' }}">
-                            <a href="{{ route('pumps') }}" class="nav-link {{ $route_name == 'pumps' ? 'active' : '' }}">
+                        @endif
+                        @if(config('app.show_pumps_menu'))
+                        <li class="nav-item {{ $route_name == 'pumps' ? 'menu-open' : ''}}">
+                            <a href="{{ route('pumps') }}" class="nav-link {{ $route_name == 'pumps' ? 'active' : ''}}">
                                 <i class="nav-icon fas fa-gas-pump"></i>
                                 <p>Pumps</p>
                             </a>
                         </li>
-                        <li class="nav-item {{ $route_name == 'tank_measurements' ? 'menu-open' : '' }}">
-                            <a href="{{ route('tank_measurements') }}" class="nav-link {{ $route_name == 'tank_measurements' ? 'active' : '' }}">
+                        @endif
+                        @if(config('app.show_tank_measurements_menu'))
+                        <li class="nav-item {{ $route_name == 'tank_measurements' ? 'menu-open' : ''}}">
+                            <a href="{{ route('tank_measurements') }}" class="nav-link {{ $route_name == 'tank_measurements' ? 'active' : ''}}">
                                 <i class="nav-icon fas fa-tint"></i>
                                 <p>Tank Measurements</p>
                             </a>
                         </li>
-                        <li class="nav-item {{ $route_name == 'tank_deliveries' ? 'menu-open' : '' }}">
-                            <a href="{{ route('tank_deliveries') }}" class="nav-link {{ $route_name == 'tank_deliveries' ? 'active' : '' }}">
+                        @endif
+                        @if(config('app.show_tank_deliveries_menu'))
+                        <li class="nav-item {{ $route_name == 'tank_deliveries' ? 'menu-open' : ''}}">
+                            <a href="{{ route('tank_deliveries') }}" class="nav-link {{ $route_name == 'tank_deliveries' ? 'active' : ''}}">
                                 <i class="nav-icon fas fa-truck-loading"></i>
                                 <p>Tank Deliveries</p>
                             </a>
                         </li>
-                        <li class="nav-item {{ $route_name == 'tank_inventories' ? 'menu-open' : '' }}">
-                            <a href="{{ route('tank_inventories') }}" class="nav-link {{ $route_name == 'tank_inventories' ? 'active' : '' }}">
+                        @endif
+                        @if(config('app.show_tank_inventories_menu'))
+                        <li class="nav-item {{ $route_name == 'tank_inventories' ? 'menu-open' : ''}}">
+                            <a href="{{ route('tank_inventories') }}" class="nav-link {{ $route_name == 'tank_inventories' ? 'active' : ''}}">
                                 <i class="nav-icon fas fa-boxes"></i>
                                 <p>Tank Inventories</p>
                             </a>
                         </li>
-                        <li class="nav-item {{ $route_name == 'product_wise_summaries' ? 'menu-open' : '' }}">
-                            <a href="{{ route('product_wise_summaries') }}" class="nav-link {{ $route_name == 'product_wise_summaries' ? 'active' : '' }}">
+                        @endif
+                        @if(config('app.show_product_wise_summaries_menu'))
+                        <li class="nav-item {{ $route_name == 'product_wise_summaries' ? 'menu-open' : ''}}">
+                            <a href="{{ route('product_wise_summaries') }}" class="nav-link {{ $route_name == 'product_wise_summaries' ? 'active' : ''}}">
                                 <i class="nav-icon fas fa-chart-bar"></i>
                                 <p>Product Summaries</p>
                             </a>
                         </li>
-                        <li class="nav-item {{ $route_name == 'payment_mode_wise_summaries' ? 'menu-open' : '' }}">
-                            <a href="{{ route('payment_mode_wise_summaries') }}" class="nav-link {{ $route_name == 'payment_mode_wise_summaries' ? 'active' : '' }}">
+                        @endif
+                        @if(config('app.show_payment_mode_wise_summaries_menu'))
+                        <li class="nav-item {{ $route_name == 'payment_mode_wise_summaries' ? 'menu-open' : ''}}">
+                            <a href="{{ route('payment_mode_wise_summaries') }}" class="nav-link {{ $route_name == 'payment_mode_wise_summaries' ? 'active' : ''}}">
                                 <i class="nav-icon fas fa-credit-card"></i>
                                 <p>Payment Summaries</p>
                             </a>
                         </li>
-                        <li class="nav-item {{ $route_name == 'shift_templates' ? 'menu-open' : '' }}">
-                            <a href="{{ route('shift_templates') }}" class="nav-link {{ $route_name == 'shift_templates' ? 'active' : '' }}">
+                        @endif
+                        @if(config('app.show_shift_templates_menu'))
+                        <li class="nav-item {{ $route_name == 'shift_templates' ? 'menu-open' : ''}}">
+                            <a href="{{ route('shift_templates') }}" class="nav-link {{ $route_name == 'shift_templates' ? 'active' : ''}}">
                                 <i class="nav-icon fas fa-calendar-alt"></i>
                                 <p>Shift Templates</p>
                             </a>
                         </li>
-                        <li class="nav-item {{ $route_name == 'pts_users' ? 'menu-open' : '' }}">
-                            <a href="{{ route('pts_users') }}" class="nav-link {{ $route_name == 'pts_users' ? 'active' : '' }}">
+                        @endif
+                        @if(config('app.show_pts_users_menu'))
+                        <li class="nav-item {{ $route_name == 'pts_users' ? 'menu-open' : ''}}">
+                            <a href="{{ route('pts_users') }}" class="nav-link {{ $route_name == 'pts_users' ? 'active' : ''}}">
                                 <i class="nav-icon fas fa-users-cog"></i>
                                 <p>PTS Users</p>
                             </a>
                         </li>
+                        @endif
                         @if(auth()->user()->hasPermission('view-roles'))
                         <li class="nav-item {{ in_array($route_name, ['roles.index', 'roles.create', 'roles.edit', 'roles.show']) ? 'menu-open' : '' }}">
                             <a href="{{ route('roles.index') }}" class="nav-link {{ in_array($route_name, ['roles.index', 'roles.create', 'roles.edit', 'roles.show']) ? 'active' : '' }}">

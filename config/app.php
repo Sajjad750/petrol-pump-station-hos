@@ -133,5 +133,14 @@ return [
 
     'show_legacy_menu' => (bool) env('SHOW_LEGACY_MENU', false),
     'show_notifications_menu' => (bool) env('SHOW_NOTIFICATIONS_MENU', false),
-    'show_help_menu' => (bool) env('SHOW_HELP_MENU', false),
+    'show_help_menu' => (bool) env('SHOW_HELP_MENU', true),
+    // Dynamic individual sidebar toggles
+    'show_pump_transactions_menu' => (bool) env('SHOW_PUMP_TRANSACTIONS_MENU', true),
+    'show_tank_measurements_menu' => (bool) env('SHOW_TANK_MEASUREMENTS_MENU', false),
+    'show_tank_deliveries_menu' => (bool) env('SHOW_TANK_DELIVERIES_MENU', false),
+    'show_tank_inventories_menu' => (bool) env('SHOW_TANK_INVENTORIES_MENU', false),
+    'show_product_wise_summaries_menu' => (bool) env('SHOW_PRODUCT_WISE_SUMMARIES_MENU', false),
+    'show_payment_mode_wise_summaries_menu' => (bool) env('SHOW_PAYMENT_MODE_WISE_SUMMARIES_MENU', false),
+    'show_shift_templates_menu' => (bool) env('SHOW_SHIFT_TEMPLATES_MENU', false),
+    'show_pts_users_menu' => (bool) env('SHOW_PTS_USERS_MENU', false),
 ];
