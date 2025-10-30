@@ -1,7 +1,7 @@
 <!-- Filters Card -->
-<div class="card mb-3">
+<div class="card custom-card mb-3">
     <div class="card-header custom-card-header">
-        <h5 class="mb-0"><i class="fas fa-filter"></i> Filters</h5>
+        <h6 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-filter"></i> Filters</h6>
     </div>
     <div class="card-body">
         <form id="tank-inventory-filter-form">
@@ -40,25 +40,35 @@
                 </div>
                 <div class="col-md-2">
                     <div class="form-group">
-                        <label for="inventory_fuel_grade_id">Fuel Grade</label>
+                        <label for="inventory_fuel_grade_id">Product</label>
                         <select class="form-control" id="inventory_fuel_grade_id" name="fuel_grade_id">
-                            <option value="">All Fuel Grades</option>
+                            <option value="">All Products</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label for="inventory_tank">Tank</label>
+                        <select class="form-control" id="inventory_tank" name="tank">
+                            <option value="">All Tanks</option>
                         </select>
                     </div>
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-12 d-flex justify-content-end" style="gap: 10px;">
-                    <button type="button" id="inventory-filter-btn" class="btn btn-primary">
-                        <i class="fas fa-filter"></i> Apply Filters
+                    <button type="button" id="inventory-filter-btn" class="btn btn-dark">
+                        <i class="fas fa-filter"></i> Search Filters
                     </button>
-                    <button type="button" id="inventory-reset-btn" class="btn btn-secondary">
+                    <button type="button" id="inventory-reset-btn" class="btn btn-dark">
                         <i class="fas fa-redo"></i> Reset
                     </button>
-                    <button type="button" id="inventory-export-excel-btn" class="btn btn-success">
+                    <button type="button" id="inventory-export-excel-btn" class="btn btn-dark">
                         <i class="fas fa-file-excel"></i> Export Excel
                     </button>
-                    <button type="button" id="inventory-export-pdf-btn" class="btn btn-danger">
+                    <button type="button" id="inventory-export-pdf-btn" class="btn btn-dark">
                         <i class="fas fa-file-pdf"></i> Export PDF
                     </button>
                 </div>
@@ -70,41 +80,22 @@
 <!-- Tank Inventory Table Card -->
 <div class="card custom-card">
     <div class="card-header custom-card-header">
-        <h4 class="mb-0"><i class="fas fa-table"></i> Tank Inventory Data</h4>
+        <h6 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-table"></i> Tank Inventory Data</h4>
     </div>
-    <div class="card-body">
+    <div class="card-body" style="padding: 0;">
         <div class="table-responsive">
-            <table id="tank-inventory-table" class="table-bordered table-striped table-hover table">
-                <thead class="custom-table-header">
+            <table id="tank-inventory-table" class="table">
+                <thead>
                     <tr>
+                        <th>Date & Time <span class="sort-indicator"><i class="fas fa-sort"></i></span></th>
                         <th>Site</th>
-                        <th>Fuel Grade ID</th>
-                        <th>Fuel Grade Name</th>
-                        <th>Configuration ID</th>
-                        <th>Snapshot DateTime</th>
-                        <th>Date Time</th>
-                        <th>Status</th>
-                        <th>Alarms</th>
-                        <th>Absolute Product Height</th>
-                        <th>Absolute Water Height</th>
-                        <th>Absolute Temperature</th>
-                        <th>Absolute Product Volume</th>
-                        <th>Absolute Product TC Volume</th>
-                        <th>Absolute Product Density</th>
-                        <th>Absolute Product Mass</th>
-                        <th>Pumps Dispensed Volume</th>
-                        <th>Probe Data</th>
-                        <th>Product Height</th>
-                        <th>Water Height</th>
-                        <th>Temperature</th>
-                        <th>Product Volume</th>
-                        <th>Water Volume</th>
-                        <th>Product Ullage</th>
-                        <th>Product TC Volume</th>
-                        <th>Product Density</th>
-                        <th>Product Mass</th>
-                        <th>Tank Filling %</th>
-                        <th>Created At</th>
+                        <th>Tank</th>
+                        <th>Product</th>
+                        <th class="text-right">Volume (L)</th>
+                        <th class="text-right">Height (mm)</th>
+                        <th class="text-right">Water (mm)</th>
+                        <th class="text-right">Temperature (°C)</th>
+                        <th class="text-right">Ullage (L)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -115,21 +106,141 @@
     </div>
 </div>
 
+@push('css')
+<style>
+    /* Tank Inventory Table Styles - Shared with transactions */
+    #tank-inventory-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+        background-color: white;
+    }
+    
+    #tank-inventory-table thead {
+        background-color: #D7D7D7;
+    }
+    
+    #tank-inventory-table thead th {
+        background-color: #D7D7D7 !important;
+        color: #333 !important;
+        font-weight: bold !important;
+        padding: 12px 15px !important;
+        text-align: left !important;
+        border: none !important;
+        font-size: 14px;
+    }
+    
+    #tank-inventory-table tbody tr {
+        background-color: white;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    #tank-inventory-table tbody tr:hover {
+        background-color: #f5f5f5;
+    }
+    
+    #tank-inventory-table tbody td {
+        padding: 12px 15px !important;
+        border: none !important;
+        border-bottom: 1px solid #e0e0e0 !important;
+        color: #555;
+        font-size: 14px;
+    }
+    
+    /* Blue links for clickable items */
+    .tank-inventory-link {
+        color: #011332 !important;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .tank-inventory-link:hover {
+        text-decoration: underline;
+        color: #0099ff !important;
+    }
+    
+    /* Secondary text (Ref, etc.) */
+    .secondary-text {
+        font-size: 12px;
+        color: #999 !important;
+        margin-top: 3px;
+        display: block;
+        line-height: 1.4;
+    }
+    
+    /* Right-aligned numeric columns */
+    #tank-inventory-table tbody td.text-right {
+        text-align: right !important;
+    }
+    
+    /* Date & Time sort indicator */
+    .sort-indicator {
+        display: inline-block;
+        margin-left: 5px;
+        color: #999;
+        font-size: 12px;
+    }
+    
+    /* Override DataTable default styling */
+    #tank-inventory-table_wrapper .dataTables_length,
+    #tank-inventory-table_wrapper .dataTables_filter,
+    #tank-inventory-table_wrapper .dataTables_info,
+    #tank-inventory-table_wrapper .dataTables_paginate {
+        padding: 10px 15px;
+        color: #555;
+    }
+    
+    #tank-inventory-table_wrapper .dataTables_processing {
+        background-color: rgba(255, 255, 255, 0.9);
+        border: none;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    /* Remove borders from DataTable wrapper elements */
+    #tank-inventory-table_wrapper table.dataTable {
+        border: none !important;
+        border-collapse: collapse !important;
+    }
+    
+    #tank-inventory-table_wrapper table.dataTable thead th,
+    #tank-inventory-table_wrapper table.dataTable tbody td {
+        border: none !important;
+    }
+    
+    #tank-inventory-table_wrapper table.dataTable tbody td {
+        border-bottom: 1px solid #e0e0e0 !important;
+    }
+</style>
+@endpush
+
 @push('js')
     <script>
         $(document).ready(function() {
             var inventoryTable = $('#tank-inventory-table').DataTable({
                 'processing': true,
                 'serverSide': true,
-                'responsive': true,
+                'responsive': false,
                 'lengthChange': true,
                 'autoWidth': false,
                 'pageLength': 10,
+                'dom': '<"row"<"col-sm-6"l><"col-sm-6"f>>rt<"row"<"col-sm-6"i><"col-sm-6"p>>',
                 'order': [
-                    [4, 'desc']
+                    [0, 'desc']
                 ],
+                'bInfo': true,
+                'bFilter': true,
+                'bLengthChange': true,
+                'paging': true,
+                'orderCellsTop': false,
                 'ajax': {
                     'url': '{{ route('hos-reports.tank-inventory') }}',
+                    'type': 'GET',
+                    'error': function(xhr, error, thrown) {
+                        console.error('AJAX Error:', error);
+                        console.error('Response:', xhr.responseText);
+                        alert('Error loading data. Please check the console for details.');
+                    },
                     'data': function(d) {
                         d.from_date = $('#inventory_from_date').val();
                         d.to_date = $('#inventory_to_date').val();
@@ -137,173 +248,122 @@
                         d.to_time = $('#inventory_to_time').val();
                         d.station_id = $('#inventory_station_id').val();
                         d.fuel_grade_id = $('#inventory_fuel_grade_id').val();
+                        d.tank = $('#inventory_tank').val();
                     }
                 },
                 'columns': [{
-                        data: 'station_id',
-                        name: 'station_id'
-                    },
-                    {
-                        data: 'fuel_grade_id',
-                        name: 'fuel_grade_id'
-                    },
-                    {
-                        data: 'fuel_grade_name',
-                        name: 'fuel_grade_name'
-                    },
-                    {
-                        data: 'configuration_id',
-                        name: 'configuration_id'
-                    },
-                    {
-                        data: 'snapshot_datetime',
-                        name: 'snapshot_datetime'
-                    },
-                    {
                         data: 'date_time',
-                        name: 'date_time'
+                        name: 'date_time',
+                        orderable: true,
+                        render: function(data, type) {
+                            if (type !== 'display' || !data) return data || '';
+                            try {
+                                var date = new Date(data.replace(' ', 'T'));
+                                if (isNaN(date.getTime())) return data;
+                                var month = String(date.getMonth() + 1).padStart(2, '0');
+                                var day = String(date.getDate()).padStart(2, '0');
+                                var year = date.getFullYear();
+                                var hours = String(date.getHours()).padStart(2, '0');
+                                var minutes = String(date.getMinutes()).padStart(2, '0');
+                                var seconds = String(date.getSeconds()).padStart(2, '0');
+                                return month + '/' + day + '/' + year + ' ' + hours + ':' + minutes + ':' + seconds;
+                            } catch (e) {
+                                return data;
+                            }
+                        },
+                        className: 'text-left'
                     },
                     {
-                        data: 'status',
-                        name: 'status'
+                        data: 'site',
+                        name: 'site',
+                        orderable: true,
+                        render: function(data, type, row) {
+                            if (type === 'display') {
+                                var siteHtml = '<a href="#" class="tank-inventory-link">' + (data || '') + '</a>';
+                                if (row.site_ref) {
+                                    var ref = row.site_ref;
+                                    if (/^\d+$/.test(ref)) {
+                                        ref = String(ref).padStart(3, '0');
+                                    }
+                                    siteHtml += '<span class="secondary-text">Ref: ' + ref + '</span>';
+                                }
+                                return siteHtml;
+                            }
+                            return data || '';
+                        },
+                        className: 'text-left'
                     },
                     {
-                        data: 'alarms',
-                        name: 'alarms'
-                    },
-                    {
-                        data: 'absolute_product_height',
-                        name: 'absolute_product_height',
+                        data: 'tank',
+                        name: 'tank',
+                        orderable: true,
                         render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
+                            return '<a href="#" class="tank-inventory-link">' + (data || '') + '</a>';
+                        },
+                        className: 'text-left'
                     },
                     {
-                        data: 'absolute_water_height',
-                        name: 'absolute_water_height',
+                        data: 'product',
+                        name: 'product',
+                        orderable: true,
                         render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
+                            if (!data) return '';
+                            // Check if it's Diesel to show in orange, otherwise blue
+                            var isDiesel = data.toLowerCase().includes('diesel');
+                            var colorClass = isDiesel ? 'style="color: #ff6600;"' : '';
+                            return '<a href="#" class="tank-inventory-link" ' + colorClass + '>' + data + '</a>';
+                        },
+                        className: 'text-left'
                     },
                     {
-                        data: 'absolute_temperature',
-                        name: 'absolute_temperature',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
+                        data: 'volume',
+                        name: 'volume',
+                        orderable: true,
+                        render: function(data, type) {
+                            if (type !== 'display' || data === null || data === undefined) return '';
+                            return parseFloat(data).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+                        },
+                        className: 'text-right'
                     },
                     {
-                        data: 'absolute_product_volume',
-                        name: 'absolute_product_volume',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
+                        data: 'height',
+                        name: 'height',
+                        orderable: true,
+                        render: function(data, type) {
+                            if (type !== 'display' || data === null || data === undefined) return '';
+                            return parseFloat(data).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+                        },
+                        className: 'text-right'
                     },
                     {
-                        data: 'absolute_product_tc_volume',
-                        name: 'absolute_product_tc_volume',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'absolute_product_density',
-                        name: 'absolute_product_density',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'absolute_product_mass',
-                        name: 'absolute_product_mass',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'pumps_dispensed_volume',
-                        name: 'pumps_dispensed_volume',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'probe_data',
-                        name: 'probe_data'
-                    },
-                    {
-                        data: 'product_height',
-                        name: 'product_height',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'water_height',
-                        name: 'water_height',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
+                        data: 'water',
+                        name: 'water',
+                        orderable: true,
+                        render: function(data, type) {
+                            if (type !== 'display' || data === null || data === undefined) return '';
+                            return parseFloat(data).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+                        },
+                        className: 'text-right'
                     },
                     {
                         data: 'temperature',
                         name: 'temperature',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
+                        orderable: true,
+                        render: function(data, type) {
+                            if (type !== 'display' || data === null || data === undefined) return '';
+                            return parseFloat(data).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+                        },
+                        className: 'text-right'
                     },
                     {
-                        data: 'product_volume',
-                        name: 'product_volume',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'water_volume',
-                        name: 'water_volume',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'product_ullage',
-                        name: 'product_ullage',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'product_tc_volume',
-                        name: 'product_tc_volume',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'product_density',
-                        name: 'product_density',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'product_mass',
-                        name: 'product_mass',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) : '';
-                        }
-                    },
-                    {
-                        data: 'tank_filling_percentage',
-                        name: 'tank_filling_percentage',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) + '%' : '';
-                        }
-                    },
-                    {
-                        data: 'created_at',
-                        name: 'created_at'
+                        data: 'ullage',
+                        name: 'ullage',
+                        orderable: true,
+                        render: function(data, type) {
+                            if (type !== 'display' || data === null || data === undefined) return '';
+                            return parseFloat(data).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+                        },
+                        className: 'text-right'
                     }
                 ],
                 'language': {
@@ -326,6 +386,7 @@
                 $('#inventory_to_time').val('');
                 $('#inventory_station_id').val('');
                 $('#inventory_fuel_grade_id').val('');
+                $('#inventory_tank').val('');
                 inventoryTable.draw();
             });
 
@@ -345,7 +406,8 @@
                     from_time: $('#inventory_from_time').val(),
                     to_time: $('#inventory_to_time').val(),
                     station_id: $('#inventory_station_id').val(),
-                    fuel_grade_id: $('#inventory_fuel_grade_id').val()
+                    fuel_grade_id: $('#inventory_fuel_grade_id').val(),
+                    tank: $('#inventory_tank').val()
                 };
                 const queryString = $.param(filters);
                 window.location.href = '{{ route('hos-reports.tank-inventory.export.excel') }}?' + queryString;
@@ -359,7 +421,8 @@
                     from_time: $('#inventory_from_time').val(),
                     to_time: $('#inventory_to_time').val(),
                     station_id: $('#inventory_station_id').val(),
-                    fuel_grade_id: $('#inventory_fuel_grade_id').val()
+                    fuel_grade_id: $('#inventory_fuel_grade_id').val(),
+                    tank: $('#inventory_tank').val()
                 };
                 const queryString = $.param(filters);
                 window.location.href = '{{ route('hos-reports.tank-inventory.export.pdf') }}?' + queryString;
@@ -380,8 +443,52 @@
                 }
             });
 
+            // Load fuel grades for dropdown
+            $.ajax({
+                url: '{{ route('hos-reports.fuel-grades') }}',
+                method: 'GET',
+                success: function(response) {
+                    if (response.fuel_grades) {
+                        response.fuel_grades.forEach(function(grade) {
+                            $('#inventory_fuel_grade_id').append(
+                                $('<option></option>').val(grade.id).text(grade.name)
+                            );
+                        });
+                    }
+                }
+            });
+
+            // Load tanks for dropdown
+            function loadTanks() {
+                const stationId = $('#inventory_station_id').val();
+                $.ajax({
+                    url: '{{ route('hos-reports.tanks') }}',
+                    method: 'GET',
+                    data: { station_id: stationId },
+                    success: function(response) {
+                        $('#inventory_tank').empty().append('<option value="">All Tanks</option>');
+                        if (response.tanks) {
+                            response.tanks.forEach(function(tank) {
+                                $('#inventory_tank').append(
+                                    $('<option></option>').val(tank.tank).text(tank.tank_formatted)
+                                );
+                            });
+                        }
+                    }
+                });
+            }
+
+            // Initial load
+            loadTanks();
+
+            // Reload tanks when station changes
+            $('#inventory_station_id').on('change', function() {
+                loadTanks();
+                inventoryTable.draw();
+            });
+
             // Auto-filter on dropdown change
-            $('#inventory_station_id, #inventory_fuel_grade_id').on('change', function() {
+            $('#inventory_fuel_grade_id, #inventory_tank').on('change', function() {
                 inventoryTable.draw();
             });
         });

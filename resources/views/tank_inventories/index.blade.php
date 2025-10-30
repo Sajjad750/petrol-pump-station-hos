@@ -10,7 +10,7 @@
                 <!-- Filters Card -->
                 <div class="card custom-card mb-3">
                     <div class="card-header custom-card-header">
-                        <h5 class="mb-0">Filters</h5>
+                        <h6 class="mb-0">Filters</h6>
                     </div>
                     <div class="card-body">
                         <form id="filter-form">
