@@ -6,6 +6,7 @@ use App\Models\Station;
 use App\Models\PumpTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\Alert;
 
 class DashboardController extends Controller
 {
@@ -36,6 +37,16 @@ class DashboardController extends Controller
         // Get product distribution data
         $productDistributionData = $this->getProductDistributionData();
 
+        // Top sites sales by volume and amount
+        $topSitesSales = $this->getTopSitesSalesData();
+
+        // Recent alerts (latest 5) for dashboard
+        $recentAlerts = Alert::with('station')
+            ->whereIn('device_type', ['Pump', 'Probe'])
+            ->latest('datetime')
+            ->limit(5)
+            ->get();
+
         return view('dashboard', compact(
             'stations',
             'totalStations',
@@ -43,7 +54,9 @@ class DashboardController extends Controller
             'warningStations',
             'offlineStations',
             'salesData',
-            'productDistributionData'
+            'productDistributionData',
+            'topSitesSales',
+            'recentAlerts'
         ));
     }
 
@@ -168,6 +181,46 @@ class DashboardController extends Controller
             'total_amount' => $totalAmount,
             'raw_data' => $productData
         ];
+    }
+
+    /**
+     * Get top sites by sales (volume and amount) over the last 30 days.
+     */
+    private function getTopSitesSalesData(): array
+    {
+        $startDate = now()->subDays(30)->startOfDay();
+        $endDate = now()->endOfDay();
+
+        $rows = PumpTransaction::query()
+            ->whereBetween('date_time_start', [$startDate, $endDate])
+            ->whereNotNull('station_id')
+            ->whereNotNull('volume')
+            ->whereNotNull('amount')
+            ->join('stations', 'pump_transactions.station_id', '=', 'stations.id')
+            ->select(
+                'stations.id as station_id',
+                'stations.site_name as station_name',
+                DB::raw('SUM(pump_transactions.volume) as total_volume'),
+                DB::raw('SUM(pump_transactions.amount) as total_amount')
+            )
+            ->groupBy('stations.id', 'stations.site_name')
+            ->orderByDesc('total_amount')
+            ->limit(5)
+            ->get();
+
+        if ($rows->isEmpty()) {
+            return [
+                'labels' => [],
+                'volume' => [],
+                'amount' => [],
+            ];
+        }
+
+        $labels = $rows->pluck('station_name')->all();
+        $volume = $rows->pluck('total_volume')->map(fn ($v) => (float)$v)->all();
+        $amount = $rows->pluck('total_amount')->map(fn ($a) => (float)$a)->all();
+
+        return compact('labels', 'volume', 'amount');
     }
 
     /**

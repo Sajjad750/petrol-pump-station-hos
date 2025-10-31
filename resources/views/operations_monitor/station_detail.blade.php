@@ -1,7 +1,7 @@
 @extends('layouts.adminlte')
 
 @section('content')
-<div class="container-fluid py-3">
+<div class="container-fluid p-4">
     <!-- Station Header -->
     <div class="d-flex justify-content-between align-items-start mb-2">
         <div>

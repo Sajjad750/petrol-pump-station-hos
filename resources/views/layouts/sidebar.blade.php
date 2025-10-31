@@ -52,6 +52,13 @@
                         </a>
                     </li>
 
+                    <li class="nav-item {{ request()->routeIs('alerts.index') ? 'menu-open' : '' }}">
+                        <a href="{{ route('alerts.index') }}" class="nav-link {{ request()->routeIs('alerts.index') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-exclamation-triangle"></i>
+                            <p>Alerts</p>
+                        </a>
+                    </li>
+
                     @if (config('app.show_notifications_menu'))
                     <li class="nav-item">
                         <a href="#" class="nav-link">
@@ -60,7 +67,7 @@
                         </a>
                     </li>
                     @endif
-
+                  
                     @if(auth()->user()->hasPermission('view-users'))
                     <li class="nav-item {{ in_array($route_name, ['users.index', 'users.create', 'users.edit', 'users.show']) ? 'menu-open' : '' }}">
                         <a href="{{ route('users.index') }}" class="nav-link {{ in_array($route_name, ['users.index', 'users.create', 'users.edit', 'users.show']) ? 'active' : '' }}">
@@ -82,7 +89,7 @@
                     <li class="nav-item">
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit" class="nav-link btn btn-link p-0 text-left">
+                            <button type="submit" class="nav-link btn btn-link p-0 text-left" style="margin-top:200px;">
                                 <i class="nav-icon fas fa-sign-out-alt text-danger"></i>
                                 <p class="text-danger">Logout</p>
                             </button>
@@ -180,3 +187,4 @@
     </div>
     <!-- /.sidebar -->
 </aside>
+

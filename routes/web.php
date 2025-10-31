@@ -13,6 +13,8 @@ Route::get('/operations-monitor', [\App\Http\Controllers\OperationsMonitorContro
 
 Route::get('/operations-monitor/stations/{station}', [\App\Http\Controllers\OperationsMonitorController::class, 'show'])->name('operations-monitor.station');
 
+Route::get('/alerts', [\App\Http\Controllers\AlertController::class, 'index'])->name('alerts.index');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

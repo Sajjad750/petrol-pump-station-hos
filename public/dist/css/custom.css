@@ -78,9 +78,9 @@ textarea {
 }
 
 .main-sidebar .nav-sidebar .nav-link.active {
-    background-color: #8a8888 !important;
+    background-color: #000000 !important;
     color: #fff !important;
-    box-shadow: 0 2px 4px rgba(80, 81, 249, 0.3) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
 }
 
 .main-sidebar .nav-sidebar .nav-link.active .nav-icon {
@@ -111,50 +111,51 @@ textarea {
 
 /* Primary Button */
 .btn-primary {
-    background-color: #5051F9 !important;
-    border-color: #5051F9 !important;
+    background-color: #000 !important;
+    border-color: #000 !important;
     color: #ffffff !important;
     transition: all 0.3s ease !important;
 }
 
 .btn-primary:hover {
-    background-color: #3f40d4 !important;
-    border-color: #3f40d4 !important;
-    box-shadow: 0 4px 8px rgba(80, 81, 249, 0.3) !important;
+    background-color: #ffffff !important;
+    border-color: #000000 !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
+    color:#000 !important;
 }
 
-.btn-primary:focus,
+/* .btn-primary:focus,
 .btn-primary.focus {
-    background-color: #3f40d4 !important;
-    border-color: #3f40d4 !important;
-    box-shadow: 0 0 0 0.2rem rgba(80, 81, 249, 0.5) !important;
+    background-color: #000000 !important;
+    border-color: #000000 !important;
+    box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.5) !important;
 }
 
 .btn-primary:not(:disabled):not(.disabled):active,
 .btn-primary:not(:disabled):not(.disabled).active {
-    background-color: #3536b8 !important;
-    border-color: #3536b8 !important;
-}
+    background-color: #000000 !important;
+    border-color: #000000 !important;
+} */
 
 /* Outline Primary Button */
 .btn-outline-primary {
-    color: #5051F9 !important;
-    border-color: #5051F9 !important;
+    color: #000000 !important;
+    border-color: #000000 !important;
 }
 
 .btn-outline-primary:hover {
-    background-color: #5051F9 !important;
-    border-color: #5051F9 !important;
+    background-color: #000000 !important;
+    border-color: #000000 !important;
     color: #ffffff !important;
 }
 
 /* Link Button with Primary Color */
 .btn-link {
-    color: #5051F9 !important;
+    color: #000000 !important;
 }
 
 .btn-link:hover {
-    color: #3f40d4 !important;
+    color: #000000 !important;
 }
 
 /* ============================================
@@ -245,17 +246,17 @@ a:hover {
    ============================================ */
 
 .pagination .page-item.active .page-link {
-    background-color: #5051F9 !important;
-    border-color: #5051F9 !important;
+    background-color: #000000 !important;
+    border-color: #000000 !important;
     color:#ffffff !important;
 }
 
 .pagination .page-link {
-    color: #5051F9 !important;
+    color: #000000 !important;
 }
 
 .pagination .page-link:hover {
-    color: #3f40d4 !important;
+    color: #000000 !important;
 }
 
 /* ============================================
@@ -263,7 +264,7 @@ a:hover {
    ============================================ */
 
 .badge-primary {
-    background-color: #5051F9 !important;
+    background-color: #000000 !important;
 }
 
 /* ============================================
@@ -572,7 +573,7 @@ body.dark-mode .pagination .page-item.active .page-link {
 
 .small-box .small-box-footer:hover {
     background: #f8f9fa !important;
-    color: #5051F9 !important;
+    color: #050505 !important;
 }
 
 /* Remove background colors from small-box variants */
@@ -1937,3 +1938,18 @@ body.dark-mode .pumps-progress {
     padding: 20px;
     background: white;
 }
+// C
+}
+})
+// COMPR
+}
+})
+// COMPR
+}
+})
+// C
+}
+})
+// COMPR
+}
+})

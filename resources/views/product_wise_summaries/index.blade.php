@@ -3,7 +3,7 @@
 @endpush
 
 @section('content')
-    <div class="container-fluid">
+    <div class="container-fluid p-3">
         <div class="row">
             <!-- Main Content -->
             <div class="col-md-12">

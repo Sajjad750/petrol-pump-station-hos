@@ -16,7 +16,7 @@
             </div>
         </div>
     </div>
-    <div class="container-fluid">
+    <div class="container-fluid p-4">
         <!-- Stats row -->
         <div class="row mb-4">
             <div class="col mt-4">

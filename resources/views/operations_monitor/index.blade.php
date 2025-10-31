@@ -1,7 +1,7 @@
 @extends('layouts.adminlte')
 
 @section('content')
-<div class="container-fluid py-3">
+<div class="container-fluid p-4">
     <!-- Page Title and Bar -->
     <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
         <div>
