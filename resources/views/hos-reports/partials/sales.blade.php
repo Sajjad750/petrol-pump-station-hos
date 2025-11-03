@@ -1,7 +1,7 @@
 <!-- Filters Card -->
-<div class="card mb-3">
+<div class="card custom-card mb-3">
     <div class="card-header custom-card-header">
-        <h5 class="mb-0"><i class="fas fa-filter"></i> Filters</h5>
+        <h6 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-filter"></i> Filters</h6>
     </div>
     <div class="card-body">
         <form id="sales-filter-form">
@@ -41,16 +41,16 @@
             </div>
             <div class="row">
                 <div class="col-md-12 d-flex justify-content-end" style="gap: 10px;">
-                    <button type="button" id="sales-filter-btn" class="btn btn-primary">
-                        <i class="fas fa-filter"></i> Apply Filters
+                    <button type="button" id="sales-filter-btn" class="btn btn-dark">
+                        <i class="fas fa-filter"></i> Search Filters
                     </button>
-                    <button type="button" id="sales-reset-btn" class="btn btn-secondary">
+                    <button type="button" id="sales-reset-btn" class="btn btn-dark">
                         <i class="fas fa-redo"></i> Reset
                     </button>
-                    <button type="button" id="sales-export-excel-btn" class="btn btn-success">
+                    <button type="button" id="sales-export-excel-btn" class="btn btn-dark">
                         <i class="fas fa-file-excel"></i> Export Excel
                     </button>
-                    <button type="button" id="sales-export-pdf-btn" class="btn btn-danger">
+                    <button type="button" id="sales-export-pdf-btn" class="btn btn-dark">
                         <i class="fas fa-file-pdf"></i> Export PDF
                     </button>
                 </div>
@@ -62,19 +62,19 @@
 <!-- Sales Table Card -->
 <div class="card custom-card">
     <div class="card-header custom-card-header">
-        <h4 class="mb-0"><i class="fas fa-table"></i> Sales Data</h4>
+        <h6 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-table"></i> Sales Data</h6>
     </div>
-    <div class="card-body">
+    <div class="card-body" style="padding: 0;">
         <div class="table-responsive">
-            <table id="sales-table" class="table-bordered table-striped table-hover table">
-                <thead class="custom-table-header">
+            <table id="sales-table" class="table">
+                <thead>
                     <tr>
                         <th>Site</th>
                         <th>Transaction ID</th>
-                        <th>Date & Time</th>
+                        <th>Date & Time <span class="sort-indicator"><i class="fas fa-sort"></i></span></th>
                         <th>Product</th>
-                        <th>Liters</th>
-                        <th>Amount</th>
+                        <th class="text-right">Liters</th>
+                        <th class="text-right">Amount</th>
                         <th>HOS Received Time</th>
                     </tr>
                 </thead>
@@ -92,15 +92,27 @@
             var salesTable = $('#sales-table').DataTable({
                 'processing': true,
                 'serverSide': true,
-                'responsive': true,
+                'responsive': false,
                 'lengthChange': true,
                 'autoWidth': false,
                 'pageLength': 10,
+                'dom': '<"row"<"col-sm-6"l><"col-sm-6"f>>rt<"row"<"col-sm-6"i><"col-sm-6"p>>',
                 'order': [
                     [2, 'desc']
                 ],
+                'bInfo': true,
+                'bFilter': true,
+                'bLengthChange': true,
+                'paging': true,
+                'orderCellsTop': false,
                 'ajax': {
                     'url': '{{ route('hos-reports.sales') }}',
+                    'type': 'GET',
+                    'error': function(xhr, error, thrown) {
+                        console.error('AJAX Error:', error);
+                        console.error('Response:', xhr.responseText);
+                        alert('Error loading data. Please check the console for details.');
+                    },
                     'data': function(d) {
                         d.from_date = $('#sales_from_date').val();
                         d.to_date = $('#sales_to_date').val();
@@ -111,37 +123,107 @@
                 },
                 'columns': [{
                         data: 'site',
-                        name: 'site'
+                        name: 'site',
+                        orderable: true,
+                        render: function(data, type, row) {
+                            if (type === 'display') {
+                                var siteHtml = '<a href="#" class="sales-link">' + (data || '') + '</a>';
+                                if (row.site_ref) {
+                                    var ref = row.site_ref;
+                                    if (/^\d+$/.test(ref)) {
+                                        ref = String(ref).padStart(3, '0');
+                                    }
+                                    siteHtml += '<span class="secondary-text">Ref: ' + ref + '</span>';
+                                }
+                                return siteHtml;
+                            }
+                            return data || '';
+                        },
+                        className: 'text-left'
                     },
                     {
                         data: 'transaction_id',
-                        name: 'transaction_id'
+                        name: 'transaction_id',
+                        orderable: true,
+                        render: function(data) {
+                            return '<a href="#" class="sales-link">' + (data || '') + '</a>';
+                        },
+                        className: 'text-left'
                     },
                     {
                         data: 'date_time',
-                        name: 'date_time'
+                        name: 'date_time',
+                        orderable: true,
+                        render: function(data, type) {
+                            if (type !== 'display' || !data) return data || '';
+                            try {
+                                var date = new Date(data.replace(' ', 'T'));
+                                if (isNaN(date.getTime())) return data;
+                                var month = String(date.getMonth() + 1).padStart(2, '0');
+                                var day = String(date.getDate()).padStart(2, '0');
+                                var year = date.getFullYear();
+                                var hours = String(date.getHours()).padStart(2, '0');
+                                var minutes = String(date.getMinutes()).padStart(2, '0');
+                                return month + '/' + day + '/' + year + ' ' + hours + ':' + minutes;
+                            } catch (e) {
+                                return data;
+                            }
+                        },
+                        className: 'text-left'
                     },
                     {
                         data: 'product',
-                        name: 'product'
+                        name: 'product',
+                        orderable: true,
+                        render: function(data) {
+                            if (!data) return '';
+                            // Check if it's Diesel to show in orange, otherwise blue
+                            var isDiesel = data.toLowerCase().includes('diesel');
+                            var colorClass = isDiesel ? 'style="color: #ff6600;"' : '';
+                            return '<a href="#" class="sales-link" ' + colorClass + '>' + data + '</a>';
+                        },
+                        className: 'text-left'
                     },
                     {
                         data: 'liters',
                         name: 'liters',
-                        render: function(data) {
-                            return data ? parseFloat(data).toFixed(2) + ' L' : '';
-                        }
+                        orderable: true,
+                        render: function(data, type) {
+                            if (type !== 'display' || data === null || data === undefined) return '';
+                            return parseFloat(data).toFixed(2) + ' L';
+                        },
+                        className: 'text-right'
                     },
                     {
                         data: 'amount',
                         name: 'amount',
-                        render: function(data) {
-                            return data ? '$' + parseFloat(data).toFixed(2) : '';
-                        }
+                        orderable: true,
+                        render: function(data, type) {
+                            if (type !== 'display' || data === null || data === undefined) return '';
+                            return '$' + parseFloat(data).toFixed(2);
+                        },
+                        className: 'text-right'
                     },
                     {
                         data: 'hos_received_time',
-                        name: 'hos_received_time'
+                        name: 'hos_received_time',
+                        orderable: true,
+                        render: function(data, type) {
+                            if (type !== 'display' || !data) return data || '';
+                            try {
+                                var date = new Date(data.replace(' ', 'T'));
+                                if (isNaN(date.getTime())) return data;
+                                var month = String(date.getMonth() + 1).padStart(2, '0');
+                                var day = String(date.getDate()).padStart(2, '0');
+                                var year = date.getFullYear();
+                                var hours = String(date.getHours()).padStart(2, '0');
+                                var minutes = String(date.getMinutes()).padStart(2, '0');
+                                return month + '/' + day + '/' + year + ' ' + hours + ':' + minutes;
+                            } catch (e) {
+                                return data;
+                            }
+                        },
+                        className: 'text-left'
                     }
                 ],
                 'language': {

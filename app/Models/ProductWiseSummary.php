@@ -29,6 +29,14 @@ class ProductWiseSummary extends Model
     }
 
     /**
+     * Get the fuel grade for this product wise summary
+     */
+    public function fuelGrade(): BelongsTo
+    {
+        return $this->belongsTo(FuelGrade::class, 'fuel_grade_id', 'id');
+    }
+
+    /**
      * Scope to get product wise summaries for a specific station
      */
     public function scopeForStation($query, int $stationId)

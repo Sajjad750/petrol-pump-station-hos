@@ -186,32 +186,45 @@
                         </div>
                         <div class="card-body modern-card-body">
                             <div class="alarm-list">
-                                <div class="alarm-item">
-                                    <div class="alarm-content">
-                                        <div class="alarm-station">Station A-001</div>
-                                        <div class="alarm-description">Low stock alert - Tank 1 (Diesel)</div>
-                                        <div class="alarm-time">10 mins ago</div>
+                                @forelse($recentAlerts as $alert)
+                                    @php
+                                        // Build message & level from alert
+                                        $level = 'low';
+                                        if ($alert->device_type === 'Pump') {
+                                            if ($alert->code == 1) { $message = 'Pump '.$alert->device_number.' offline state detected'; $level = 'high'; }
+                                            elseif ($alert->code == 2) { $message = 'Pump '.$alert->device_number.' overfilling detected'; $level = 'medium'; }
+                                            else { $message = 'Pump '.$alert->device_number.' notification'; }
+                                        } else { // Probe
+                                            switch ($alert->code) {
+                                                case 1: $message = 'Probe '.$alert->device_number.' offline state detected'; $level='high'; break;
+                                                case 2: $message = 'Probe '.$alert->device_number.' error detected'; $level='medium'; break;
+                                                case 3: $message = 'Probe '.$alert->device_number.' critical high product level'; $level='high'; break;
+                                                case 4: $message = 'Probe '.$alert->device_number.' high product level'; $level='medium'; break;
+                                                case 5: $message = 'Probe '.$alert->device_number.' low product level'; $level='medium'; break;
+                                                case 6: $message = 'Probe '.$alert->device_number.' critical low product level'; $level='high'; break;
+                                                case 7: $message = 'Probe '.$alert->device_number.' high water level'; $level='medium'; break;
+                                                case 8: $message = 'Probe '.$alert->device_number.' tank leakage detected'; $level='high'; break;
+                                                default: $message = 'Probe '.$alert->device_number.' notification'; $level='low'; break;
+                                            }
+                                        }
+                                    @endphp
+                                    <div class="alarm-item">
+                                        <div class="alarm-content">
+                                            <div class="alarm-station">
+                                                @if($alert->station)
+                                                    <a href="{{ route('operations-monitor.station', $alert->station->id) }}">{{ $alert->station->site_name }}</a>
+                                                @else
+                                                    Station #{{ $alert->station_id ?? '-' }}
+                                                @endif
+                                            </div>
+                                            <div class="alarm-description">{{ $message }}</div>
+                                            <div class="alarm-time">{{ optional($alert->datetime)->diffForHumans() ?? '-' }}</div>
+                                        </div>
+                                        <div class="alarm-priority {{ $level }}">{{ $level }}</div>
                                     </div>
-                                    <div class="alarm-priority high">high</div>
-                                </div>
-                                
-                                <div class="alarm-item">
-                                    <div class="alarm-content">
-                                        <div class="alarm-station">Station B-015</div>
-                                        <div class="alarm-description">Pump 3 offline</div>
-                                        <div class="alarm-time">25 mins ago</div>
-                                    </div>
-                                    <div class="alarm-priority medium">medium</div>
-                                </div>
-                                
-                                <div class="alarm-item">
-                                    <div class="alarm-content">
-                                        <div class="alarm-station">Station C-022</div>
-                                        <div class="alarm-description">Price sync required</div>
-                                        <div class="alarm-time">1 hour ago</div>
-                                    </div>
-                                    <div class="alarm-priority low">low</div>
-                                </div>
+                                @empty
+                                    <div class="text-muted small">No recent alarms</div>
+                                @endforelse
                             </div>
                         </div>
                     </div>
@@ -625,23 +638,26 @@
                 }
             });
 
-            // Top Sites Chart (Horizontal Bar Chart)
+            // Top Sites Chart (Horizontal Bar Chart) - Dynamic Data
             var topSitesCtx = document.getElementById('topSitesChart').getContext('2d');
-            console.log('Initializing top sites chart...');
+            var topLabels = @json($topSitesSales['labels'] ?? []);
+            var topVolumes = @json($topSitesSales['volume'] ?? []);
+            var topAmounts = @json($topSitesSales['amount'] ?? []);
+
             new Chart(topSitesCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['Airport Station', 'Downtown Station', 'Highway Station', 'Mall Station', 'Suburb Station'],
+                    labels: topLabels,
                     datasets: [{
                         label: 'Sales Volume (Liters)',
-                        data: [25000, 22000, 18000, 15000, 12000],
+                        data: topVolumes,
                         backgroundColor: '#3b82f6',
                         borderColor: '#3b82f6',
                         borderWidth: 0,
                         borderRadius: 4
                     }, {
-                        label: 'Remaining',
-                        data: [75000, 78000, 82000, 85000, 88000],
+                        label: 'Sales Amount',
+                        data: topAmounts,
                         backgroundColor: '#e5e7eb',
                         borderColor: '#e5e7eb',
                         borderWidth: 0,
@@ -653,14 +669,15 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            display: false
-                        },
+                        legend: { display: false },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
                                     if (context.datasetIndex === 0) {
-                                        return context.parsed.x.toLocaleString() + ' L';
+                                        return (context.parsed.x || 0).toLocaleString() + ' L';
+                                    }
+                                    if (context.datasetIndex === 1) {
+                                        return (context.parsed.x || 0).toLocaleString();
                                     }
                                     return '';
                                 }
@@ -670,23 +687,14 @@
                     scales: {
                         x: {
                             beginAtZero: true,
-                            max: 100000,
-                            grid: {
-                                display: true,
-                                color: '#e5e7eb',
-                                lineWidth: 1
-                            },
+                            grid: { display: true, color: '#e5e7eb', lineWidth: 1 },
                             ticks: {
                                 callback: function(value) {
-                                    return value / 1000 + 'K';
+                                    return value >= 1000 ? (value/1000) + 'K' : value;
                                 }
                             }
                         },
-                        y: {
-                            grid: {
-                                display: false
-                            }
-                        }
+                        y: { grid: { display: false } }
                     }
                 }
             });

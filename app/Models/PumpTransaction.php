@@ -40,6 +40,15 @@ class PumpTransaction extends Model
     }
 
     /**
+     * Get the PTS user (attendant) for this transaction
+     */
+    public function ptsUser(): BelongsTo
+    {
+        return $this->belongsTo(PtsUser::class, 'pts_user_id', 'pts_user_id')
+            ->whereColumn('pump_transactions.station_id', 'pts_users.station_id');
+    }
+
+    /**
      * Scope to get transactions for a specific station
      */
     public function scopeForStation($query, int $stationId)

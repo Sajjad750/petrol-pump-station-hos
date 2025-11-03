@@ -1,7 +1,22 @@
 @extends('layouts.adminlte')
 
 @section('content')
-    <div class="container-fluid">
+<div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">Users Managment</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
+                        <li class="breadcrumb-item active">HOS Reports</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container-fluid p-4">
         <!-- Stats row -->
         <div class="row mb-4">
             <div class="col mt-4">

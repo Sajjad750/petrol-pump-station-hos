@@ -3,9 +3,10 @@
 @push('css')
     <style>
         .nav-tabs .nav-link {
-            padding: 1rem 2rem;
+            font-size: 14px;
+            padding: 1rem 1rem;
             font-weight: 500;
-            color: #6c757d;
+            color: #6c757d !important;
             border: none;
             background: transparent;
             transition: all 0.3s;
@@ -17,9 +18,9 @@
         }
 
         .nav-tabs .nav-link.active {
-            color: #007bff;
-            background-color: #fff;
-            border-bottom: 3px solid #007bff;
+            color:rgb(0, 0, 0) !important;
+            background-color: #dedede;
+            border-bottom: 2px solid #000 !important;
             border-color: transparent #dee2e6 #fff #dee2e6;
         }
 
@@ -30,7 +31,7 @@
         }
 
         .custom-card-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg,rgb(0, 0, 0) 0%,rgb(6, 6, 6) 100%);
             color: white;
             font-weight: 600;
             padding: 1rem 1.5rem;
@@ -88,6 +89,26 @@
                                 <i class="fas fa-truck"></i> Tank Deliveries
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="tank-monitoring-tab" data-toggle="tab" href="#tank-monitoring" role="tab" aria-controls="tank-monitoring" aria-selected="false">
+                                <i class="fas fa-tachometer-alt"></i> Tank Monitoring
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="sales-summary-tab" data-toggle="tab" href="#sales-summary" role="tab" aria-controls="sales-summary" aria-selected="false">
+                                <i class="fas fa-chart-bar"></i> Sales Summary
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="analytical-sales-tab" data-toggle="tab" href="#analytical-sales" role="tab" aria-controls="analytical-sales" aria-selected="false">
+                                <i class="fas fa-chart-line"></i> Analytical Sales
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="shift-summary-tab" data-toggle="tab" href="#shift-summary" role="tab" aria-controls="shift-summary" aria-selected="false">
+                                <i class="fas fa-clipboard-list"></i> Shift Summary
+                            </a>
+                        </li>
                     </ul>
                 </div>
                 <div class="card-body">
@@ -103,6 +124,25 @@
                         <!-- Tank Inventory Tab -->
                         <div class="tab-pane fade" id="tank-inventory" role="tabpanel" aria-labelledby="tank-inventory-tab">
                             @include('hos-reports.partials.tank-inventory')
+                        </div>
+                        <div class="tab-pane fade" id="tank-deliveries" role="tabpanel" aria-labelledby="tank-delivery-tab">
+                            @include('hos-reports.partials.tank-deliveries')
+                        </div>
+                        <!-- Tank Monitoring Tab -->
+                        <div class="tab-pane fade" id="tank-monitoring" role="tabpanel" aria-labelledby="tank-monitoring-tab">
+                            @include('hos-reports.partials.tank-monitoring')
+                        </div>
+                        <!-- Sales Summary Tab -->
+                        <div class="tab-pane fade" id="sales-summary" role="tabpanel" aria-labelledby="sales-summary-tab">
+                            @include('hos-reports.partials.sales-summary')
+                        </div>
+                        <!-- Analytical Sales Tab -->
+                        <div class="tab-pane fade" id="analytical-sales" role="tabpanel" aria-labelledby="analytical-sales-tab">
+                            @include('hos-reports.partials.analytical-sales')
+                        </div>
+                        <!-- Shift Summary Tab -->
+                        <div class="tab-pane fade" id="shift-summary" role="tabpanel" aria-labelledby="shift-summary-tab">
+                            @include('hos-reports.partials.shift-summary')
                         </div>
                     </div>
                 </div>
