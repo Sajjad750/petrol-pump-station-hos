@@ -42,7 +42,7 @@
                                     </div>
                                 </div>
                             </div>
-                      
+
                             <div class="row">
                                 <div class="col-md-12 d-flex justify-content-md-end justify-content-start" style="gap: 10px;">
                                     <button type="button" id="filter-btn" class="btn btn-primary">
@@ -71,22 +71,22 @@
                         <div class="table-responsive">
                             <table id="fuel-grades-table" class="table-bordered table">
                                 <thead class="custom-table-header">
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Station</th>
-                                        <th>UUID</th>
-                                        <th>PTS Fuel Grade ID</th>
-                                        <th>Name</th>
-                                        <th>Price</th>
-                                        <th>Scheduled Price</th>
-                                        <th>Scheduled At</th>
-                                        <th>Price Status</th>
-                                        <th>Expansion Coefficient</th>
-                                        <th>Blend Status</th>
-                                        <th>Blend Info</th>
-                                        <th>BOS Fuel Grade ID</th>
-                                        <th>Actions</th>
-                                    </tr>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Station</th>
+                                    <th>UUID</th>
+                                    <th>PTS Fuel Grade ID</th>
+                                    <th>Name</th>
+                                    <th>Price</th>
+                                    <th>Scheduled Price</th>
+                                    <th>Scheduled At</th>
+                                    <th>Price Status</th>
+                                    <th>Expansion Coefficient</th>
+                                    <th>Blend Status</th>
+                                    <th>Blend Info</th>
+                                    <th>BOS Fuel Grade ID</th>
+                                    <th>Actions</th>
+                                </tr>
                                 </thead>
                             </table>
                         </div>
@@ -95,17 +95,79 @@
             </div>
         </div>
     </div>
+
+    <!-- Update Price Modal -->
+    <div class="modal fade" id="updatePriceModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Update Price</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="updatePriceForm">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="update_price">Price</label>
+                            <input type="number" step="0.01" min="0" class="form-control" name="price" id="update_price" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="update_scheduled_at">Scheduled At (Optional)</label>
+                            <input type="datetime-local" class="form-control" name="scheduled_at" id="update_scheduled_at">
+                            <small class="form-text text-muted">Leave empty to update immediately</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update Price</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Schedule Price Modal -->
+    <div class="modal fade" id="schedulePriceModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Schedule Price</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="schedulePriceForm">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="schedule_price">Scheduled Price</label>
+                            <input type="number" step="0.01" min="0" class="form-control" name="scheduled_price" id="schedule_price" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="schedule_scheduled_at">Scheduled At</label>
+                            <input type="datetime-local" class="form-control" name="scheduled_at" id="schedule_scheduled_at" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-warning">Schedule Price</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @push('js')
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             var table = $('#fuel-grades-table').DataTable({
                 'processing': true,
                 'serverSide': true,
                 'ajax': {
                     'url': '{{ route('fuel_grades') }}',
-                    'data': function(d) {
+                    'data': function (d) {
                         d.name = $('#name').val();
                         d.min_price = $('#min_price').val();
                         d.max_price = $('#max_price').val();
@@ -114,8 +176,8 @@
                 },
                 'order': [0, 'desc'],
                 'columns': [{
-                        data: 'id'
-                    },
+                    data: 'id'
+                },
                     {
                         data: 'station.site_name',
                         defaultContent: '-'
@@ -174,12 +236,12 @@
             });
 
             // Apply filters button
-            $('#filter-btn').on('click', function() {
+            $('#filter-btn').on('click', function () {
                 table.draw();
             });
 
             // Reset filters button
-            $('#reset-btn').on('click', function() {
+            $('#reset-btn').on('click', function () {
                 $('#name').val('');
                 $('#min_price').val('');
                 $('#max_price').val('');
@@ -188,7 +250,7 @@
             });
 
             // Export to Excel
-            $('#export-excel-btn').on('click', function() {
+            $('#export-excel-btn').on('click', function () {
                 const filters = {
                     fuel_grade_name: $('#name').val(),
                     min_price: $('#min_price').val(),
@@ -200,7 +262,7 @@
             });
 
             // Export to PDF
-            $('#export-pdf-btn').on('click', function() {
+            $('#export-pdf-btn').on('click', function () {
                 const filters = {
                     fuel_grade_name: $('#name').val(),
                     min_price: $('#min_price').val(),
@@ -212,7 +274,7 @@
             });
 
             // Allow Enter key to trigger filter
-            $('#filter-form input, #filter-form select').on('keypress', function(e) {
+            $('#filter-form input, #filter-form select').on('keypress', function (e) {
                 if (e.which === 13) {
                     e.preventDefault();
                     table.draw();
@@ -223,10 +285,10 @@
             $.ajax({
                 url: '{{ route('fuel_grades') }}',
                 method: 'GET',
-                data: { get_stations: true },
-                success: function(response) {
+                data: {get_stations: true},
+                success: function (response) {
                     if (response.stations) {
-                        response.stations.forEach(function(station) {
+                        response.stations.forEach(function (station) {
                             $('#station_id').append(
                                 $('<option></option>').val(station.id).text(station.site_name)
                             );
@@ -236,16 +298,16 @@
             });
 
             // Auto-filter on station dropdown change
-            $('#station_id').on('change', function() {
+            $('#station_id').on('change', function () {
                 table.draw();
             });
 
             // Update price button
-            $(document).on('click', '.update-price-btn', function() {
+            $(document).on('click', '.update-price-btn', function () {
                 const fuelGradeId = $(this).data('id');
                 const currentPrice = $(this).data('price');
                 const name = $(this).data('name');
-                
+
                 $('#updatePriceModal input[name="price"]').val(currentPrice);
                 $('#updatePriceModal input[name="scheduled_at"]').val('');
                 $('#updatePriceModal').find('.modal-title').text('Update Price - ' + name);
@@ -254,11 +316,11 @@
             });
 
             // Schedule price button
-            $(document).on('click', '.schedule-price-btn', function() {
+            $(document).on('click', '.schedule-price-btn', function () {
                 const fuelGradeId = $(this).data('id');
                 const currentPrice = $(this).data('price');
                 const name = $(this).data('name');
-                
+
                 $('#schedulePriceModal input[name="scheduled_price"]').val(currentPrice);
                 $('#schedulePriceModal input[name="scheduled_at"]').val('');
                 $('#schedulePriceModal').find('.modal-title').text('Schedule Price - ' + name);
@@ -267,7 +329,7 @@
             });
 
             // Update price form submission
-            $('#updatePriceForm').on('submit', function(e) {
+            $('#updatePriceForm').on('submit', function (e) {
                 e.preventDefault();
                 const form = $(this);
                 const url = form.attr('action');
@@ -282,12 +344,12 @@
                     url: url,
                     type: 'POST',
                     data: data,
-                    success: function(response) {
+                    success: function (response) {
                         $('#updatePriceModal').modal('hide');
                         Swal.fire('Success', response.message || 'Price update command queued successfully', 'success');
                         table.draw();
                     },
-                    error: function(xhr) {
+                    error: function (xhr) {
                         let errorMsg = 'An error occurred';
                         if (xhr.responseJSON && xhr.responseJSON.message) {
                             errorMsg = xhr.responseJSON.message;
@@ -300,7 +362,7 @@
             });
 
             // Schedule price form submission
-            $('#schedulePriceForm').on('submit', function(e) {
+            $('#schedulePriceForm').on('submit', function (e) {
                 e.preventDefault();
                 const form = $(this);
                 const url = form.attr('action');
@@ -315,12 +377,12 @@
                     url: url,
                     type: 'POST',
                     data: data,
-                    success: function(response) {
+                    success: function (response) {
                         $('#schedulePriceModal').modal('hide');
                         Swal.fire('Success', response.message || 'Price schedule command queued successfully', 'success');
                         table.draw();
                     },
-                    error: function(xhr) {
+                    error: function (xhr) {
                         let errorMsg = 'An error occurred';
                         if (xhr.responseJSON && xhr.responseJSON.message) {
                             errorMsg = xhr.responseJSON.message;
