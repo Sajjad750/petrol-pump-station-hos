@@ -18,7 +18,7 @@
         }
 
         .nav-tabs .nav-link.active {
-            color:rgb(0, 0, 0) !important;
+            color: rgb(0, 0, 0) !important;
             background-color: #dedede;
             border-bottom: 2px solid #000 !important;
             border-color: transparent #dee2e6 #fff #dee2e6;
@@ -31,7 +31,7 @@
         }
 
         .custom-card-header {
-            background: linear-gradient(135deg,rgb(0, 0, 0) 0%,rgb(6, 6, 6) 100%);
+            background: linear-gradient(135deg, rgb(0, 0, 0) 0%, rgb(6, 6, 6) 100%);
             color: white;
             font-weight: 600;
             padding: 1rem 1.5rem;
@@ -115,34 +115,75 @@
                     <div class="tab-content" id="hosReportsTabContent">
                         <!-- Transactions Tab -->
                         <div class="tab-pane fade show active" id="transactions" role="tabpanel" aria-labelledby="transactions-tab">
-                            @include('hos-reports.partials.transactions')
+                            <div class="tab-content-loader" data-tab="transactions">
+                                <div class="py-5 text-center">
+                                    <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                                    <p class="text-muted mt-2">Loading transactions...</p>
+                                </div>
+                            </div>
                         </div>
                         <!-- Sales Tab -->
                         <div class="tab-pane fade" id="sales" role="tabpanel" aria-labelledby="sales-tab">
-                            @include('hos-reports.partials.sales')
+                            <div class="tab-content-loader" data-tab="sales">
+                                <div class="py-5 text-center">
+                                    <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                                    <p class="text-muted mt-2">Loading sales data...</p>
+                                </div>
+                            </div>
                         </div>
                         <!-- Tank Inventory Tab -->
                         <div class="tab-pane fade" id="tank-inventory" role="tabpanel" aria-labelledby="tank-inventory-tab">
-                            @include('hos-reports.partials.tank-inventory')
+                            <div class="tab-content-loader" data-tab="tank-inventory">
+                                <div class="py-5 text-center">
+                                    <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                                    <p class="text-muted mt-2">Loading tank inventory...</p>
+                                </div>
+                            </div>
                         </div>
-                        <div class="tab-pane fade" id="tank-deliveries" role="tabpanel" aria-labelledby="tank-delivery-tab">
-                            @include('hos-reports.partials.tank-deliveries')
+                        <!-- Tank Deliveries Tab -->
+                        <div class="tab-pane fade" id="tank-deliveries" role="tabpanel" aria-labelledby="tank-deliveries-tab">
+                            <div class="tab-content-loader" data-tab="tank-deliveries">
+                                <div class="py-5 text-center">
+                                    <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                                    <p class="text-muted mt-2">Loading tank deliveries...</p>
+                                </div>
+                            </div>
                         </div>
                         <!-- Tank Monitoring Tab -->
                         <div class="tab-pane fade" id="tank-monitoring" role="tabpanel" aria-labelledby="tank-monitoring-tab">
-                            @include('hos-reports.partials.tank-monitoring')
+                            <div class="tab-content-loader" data-tab="tank-monitoring">
+                                <div class="py-5 text-center">
+                                    <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                                    <p class="text-muted mt-2">Loading tank monitoring...</p>
+                                </div>
+                            </div>
                         </div>
                         <!-- Sales Summary Tab -->
                         <div class="tab-pane fade" id="sales-summary" role="tabpanel" aria-labelledby="sales-summary-tab">
-                            @include('hos-reports.partials.sales-summary')
+                            <div class="tab-content-loader" data-tab="sales-summary">
+                                <div class="py-5 text-center">
+                                    <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                                    <p class="text-muted mt-2">Loading sales summary...</p>
+                                </div>
+                            </div>
                         </div>
                         <!-- Analytical Sales Tab -->
                         <div class="tab-pane fade" id="analytical-sales" role="tabpanel" aria-labelledby="analytical-sales-tab">
-                            @include('hos-reports.partials.analytical-sales')
+                            <div class="tab-content-loader" data-tab="analytical-sales">
+                                <div class="py-5 text-center">
+                                    <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                                    <p class="text-muted mt-2">Loading analytical sales...</p>
+                                </div>
+                            </div>
                         </div>
                         <!-- Shift Summary Tab -->
                         <div class="tab-pane fade" id="shift-summary" role="tabpanel" aria-labelledby="shift-summary-tab">
-                            @include('hos-reports.partials.shift-summary')
+                            <div class="tab-content-loader" data-tab="shift-summary">
+                                <div class="py-5 text-center">
+                                    <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                                    <p class="text-muted mt-2">Loading shift summary...</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -155,6 +196,150 @@
     <script>
         $(document).ready(function() {
             console.log('HOS Reports page initialized');
+
+            // Track which tabs have been loaded
+            const loadedTabs = new Set();
+
+            /**
+             * Load tab content via AJAX
+             */
+            function loadTabContent(tabName, loaderDiv) {
+                console.log('loadTabContent called for:', tabName);
+
+                // Show loading indicator
+                loaderDiv.html(
+                    '<div class="text-center py-5">' +
+                    '<i class="fas fa-spinner fa-spin fa-2x text-muted"></i>' +
+                    '<p class="mt-2 text-muted">Loading ' + tabName.replace('-', ' ') + '...</p>' +
+                    '</div>'
+                );
+
+                // Make AJAX request to load partial
+                const baseUrl = '{{ url('hos-reports/partial') }}';
+                const partialUrl = baseUrl + '/' + tabName;
+                console.log('Making AJAX request to:', partialUrl);
+
+                $.ajax({
+                    url: partialUrl,
+                    method: 'GET',
+                    success: function(response) {
+                        console.log('AJAX success for tab:', tabName);
+                        // Replace loader with content
+                        loaderDiv.html(response);
+
+                        // Execute any script tags in the loaded content
+                        loaderDiv.find('script').each(function() {
+                            if ($(this).attr('src')) {
+                                // If script has src, create new script tag and append
+                                const script = document.createElement('script');
+                                script.src = $(this).attr('src');
+                                script.async = false;
+                                document.body.appendChild(script);
+                            } else {
+                                // Inline script - execute it
+                                try {
+                                    eval($(this).html());
+                                } catch (e) {
+                                    console.error('Error executing script:', e);
+                                }
+                            }
+                        });
+
+                        // Mark as loaded
+                        loadedTabs.add(tabName);
+
+                        // Trigger custom event for any additional initialization
+                        $(document).trigger('tabContentLoaded', [tabName]);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX Error loading tab content:', {
+                            tab: tabName,
+                            url: partialUrl,
+                            status: status,
+                            error: error,
+                            responseText: xhr.responseText,
+                            statusCode: xhr.status
+                        });
+                        loaderDiv.html(
+                            '<div class="alert alert-danger">' +
+                            '<i class="fas fa-exclamation-triangle"></i> ' +
+                            'Error loading content. Status: ' + xhr.status + '. Please check the console for details.' +
+                            '</div>'
+                        );
+                    }
+                });
+            }
+
+            /**
+             * Extract tab name from href (handles both #tab and full URLs)
+             */
+            function extractTabName(href) {
+                if (!href) return null;
+
+                // If href starts with #, remove it
+                if (href.startsWith('#')) {
+                    return href.substring(1);
+                }
+
+                // If href contains #, extract the part after #
+                const hashIndex = href.indexOf('#');
+                if (hashIndex !== -1) {
+                    return href.substring(hashIndex + 1);
+                }
+
+                // If no # found, return null
+                return null;
+            }
+
+            // Load tab content when tab is shown
+            $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+                const href = $(e.target).attr('href');
+                const targetTab = extractTabName(href);
+
+                if (targetTab) {
+                    const loaderDiv = $('#' + targetTab).find('.tab-content-loader');
+
+                    // Only load if not already loaded
+                    if (!loadedTabs.has(targetTab) && loaderDiv.length) {
+                        loadTabContent(targetTab, loaderDiv);
+                    }
+                }
+            });
+
+            // Load the active tab (transactions) immediately on page load
+            // Direct approach: load transactions tab by default
+            function loadActiveTab() {
+                // First try to find active tab from nav link
+                const activeTabLink = $('.nav-link.active');
+                let tabName = 'transactions'; // Default to transactions
+
+                if (activeTabLink.length) {
+                    const activeTabHref = activeTabLink.attr('href');
+                    const extractedTabName = extractTabName(activeTabHref);
+                    if (extractedTabName) {
+                        tabName = extractedTabName;
+                    }
+                }
+
+                console.log('Loading active tab:', tabName);
+                const tabPane = document.getElementById(tabName);
+
+                if (tabPane) {
+                    const loaderDiv = $(tabPane).find('.tab-content-loader');
+                    if (loaderDiv.length) {
+                        console.log('Loader div found, loading content for:', tabName);
+                        loadTabContent(tabName, loaderDiv);
+                    } else {
+                        console.error('Loader div not found in tab pane:', tabName);
+                    }
+                } else {
+                    console.error('Tab pane not found:', tabName);
+                }
+            }
+
+            // Load immediately and also try after a short delay as fallback
+            loadActiveTab();
+            setTimeout(loadActiveTab, 300);
         });
     </script>
 @endpush

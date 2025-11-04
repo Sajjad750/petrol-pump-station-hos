@@ -23,7 +23,7 @@ class HosReportsController extends Controller
     /**
      * Load partial view for a specific tab.
      */
-    public function loadPartial(string $tab): \Illuminate\View\View
+    public function loadPartial(string $tab): \Illuminate\View\View|\Illuminate\Http\Response
     {
         $validTabs = [
             'transactions',
@@ -40,7 +40,11 @@ class HosReportsController extends Controller
             abort(404, 'Tab not found');
         }
 
-        return view("hos-reports.partials.{$tab}");
+        // Render the partial view using a wrapper that includes stacks
+        // This allows @push directives in partials to be captured
+        return view('hos-reports.partial-wrapper', [
+            'tab' => $tab,
+        ]);
     }
 
     /**

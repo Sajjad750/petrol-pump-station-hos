@@ -90,6 +90,7 @@ Route::middleware('auth')->group(function () {
 
     // HOS Reports
     Route::get('hos-reports', \App\Http\Controllers\HosReportsController::class)->name('hos-reports');
+    Route::get('hos-reports/partial/{tab}', [\App\Http\Controllers\HosReportsController::class, 'loadPartial'])->name('hos-reports.partial');
     Route::get('hos-reports/stations', [\App\Http\Controllers\HosReportsController::class, 'getStations'])->name('hos-reports.stations');
     Route::get('hos-reports/fuel-grades', [\App\Http\Controllers\HosReportsController::class, 'getFuelGrades'])->name('hos-reports.fuel-grades');
     Route::get('hos-reports/transactions/data', [\App\Http\Controllers\HosReportsController::class, 'getTransactionsData'])->name('hos-reports.transactions.data');
