@@ -200,7 +200,7 @@
                         orderable: true,
                         render: function(data, type) {
                             if (type !== 'display' || data === null || data === undefined) return '';
-                            return '$' + parseFloat(data).toFixed(2);
+                            return 'SAR ' + parseFloat(data).toFixed(2);
                         },
                         className: 'text-right'
                     },
