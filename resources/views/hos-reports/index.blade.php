@@ -339,7 +339,6 @@
 
             // Load immediately and also try after a short delay as fallback
             loadActiveTab();
-            setTimeout(loadActiveTab, 300);
         });
     </script>
 @endpush
