@@ -41,8 +41,7 @@
                 <div class="col-md-2">
                     <div class="form-group">
                         <label for="transaction_pump_id">Pump ID</label>
-                        <input type="text" class="form-control" id="transaction_pump_id" name="pump_id"
-                            placeholder="Pump ID">
+                        <input type="text" class="form-control" id="transaction_pump_id" name="pump_id" placeholder="Pump ID">
                     </div>
                 </div>
             </div>
@@ -88,157 +87,157 @@
 </div>
 
 @push('css')
-<style>
-    /* Remove all default DataTable styling */
-    #transactions-table_wrapper {
-        border: none !important;
-    }
+    <style>
+        /* Remove all default DataTable styling */
+        #transactions-table_wrapper {
+            border: none !important;
+        }
 
-    #transactions-table_wrapper .dataTables_wrapper {
-        border: none !important;
-        padding: 0;
-    }
+        #transactions-table_wrapper .dataTables_wrapper {
+            border: none !important;
+            padding: 0;
+        }
 
-    #transactions-table_wrapper .dataTables_scrollHead {
-        border: none !important;
-    }
+        #transactions-table_wrapper .dataTables_scrollHead {
+            border: none !important;
+        }
 
-    #transactions-table_wrapper .dataTables_scrollBody {
-        border: none !important;
-    }
+        #transactions-table_wrapper .dataTables_scrollBody {
+            border: none !important;
+        }
 
-    #transactions-table {
-        width: 100% !important;
-        border-collapse: collapse;
-        background-color: white;
-        border: none !important;
-        margin: 0;
-    }
+        #transactions-table {
+            width: 100% !important;
+            border-collapse: collapse;
+            background-color: white;
+            border: none !important;
+            margin: 0;
+        }
 
-    #transactions-table thead {
-        background-color: #D7D7D7;
-    }
+        #transactions-table thead {
+            background-color: #D7D7D7;
+        }
 
-    #transactions-table thead th {
-        background-color: #D7D7D7 !important;
-        color: #333 !important;
-        font-weight: bold !important;
-        padding: 12px 15px !important;
-        text-align: left !important;
-        border: none !important;
-        border-top: none !important;
-        border-bottom: none !important;
-        border-left: none !important;
-        border-right: none !important;
-        font-size: 14px;
-    }
+        #transactions-table thead th {
+            background-color: #D7D7D7 !important;
+            color: #333 !important;
+            font-weight: bold !important;
+            padding: 12px 15px !important;
+            text-align: left !important;
+            border: none !important;
+            border-top: none !important;
+            border-bottom: none !important;
+            border-left: none !important;
+            border-right: none !important;
+            font-size: 14px;
+        }
 
-    #transactions-table thead th.text-right {
-        text-align: right !important;
-    }
+        #transactions-table thead th.text-right {
+            text-align: right !important;
+        }
 
-    #transactions-table tbody {
-        background-color: white;
-    }
+        #transactions-table tbody {
+            background-color: white;
+        }
 
-    #transactions-table tbody td {
-        padding: 12px 15px !important;
-        border: none !important;
-        border-top: none !important;
-        border-left: none !important;
-        border-right: none !important;
-        border-bottom: 1px solid #e0e0e0 !important;
-        color: #555 !important;
-        font-size: 14px;
-        vertical-align: top;
-        background-color: white !important;
-    }
+        #transactions-table tbody td {
+            padding: 12px 15px !important;
+            border: none !important;
+            border-top: none !important;
+            border-left: none !important;
+            border-right: none !important;
+            border-bottom: 1px solid #e0e0e0 !important;
+            color: #555 !important;
+            font-size: 14px;
+            vertical-align: top;
+            background-color: white !important;
+        }
 
-    #transactions-table tbody tr {
-        background-color: white !important;
-        border: none !important;
-    }
+        #transactions-table tbody tr {
+            background-color: white !important;
+            border: none !important;
+        }
 
-    #transactions-table tbody tr:hover {
-        background-color: #f9f9f9 !important;
-    }
+        #transactions-table tbody tr:hover {
+            background-color: #f9f9f9 !important;
+        }
 
-    #transactions-table tbody tr:last-child td {
-        border-bottom: none !important;
-    }
+        #transactions-table tbody tr:last-child td {
+            border-bottom: none !important;
+        }
 
-    /* Blue links for clickable items */
-    .transaction-link {
-        color: #011332 !important;
-        text-decoration: none;
-        font-weight: 500;
-        cursor: pointer;
-    }
+        /* Blue links for clickable items */
+        .transaction-link {
+            color: #011332 !important;
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+        }
 
-    .transaction-link:hover {
-        color: #0056b3 !important;
-        text-decoration: underline;
-    }
+        .transaction-link:hover {
+            color: #0056b3 !important;
+            text-decoration: underline;
+        }
 
-    /* Secondary text (Ref, Vehicle ID, username) */
-    .secondary-text {
-        font-size: 12px;
-        color: #999 !important;
-        margin-top: 3px;
-        display: block;
-        line-height: 1.4;
-    }
+        /* Secondary text (Ref, Vehicle ID, username) */
+        .secondary-text {
+            font-size: 12px;
+            color: #999 !important;
+            margin-top: 3px;
+            display: block;
+            line-height: 1.4;
+        }
 
-    /* Right-aligned numeric columns */
-    #transactions-table tbody td.text-right {
-        text-align: right !important;
-    }
+        /* Right-aligned numeric columns */
+        #transactions-table tbody td.text-right {
+            text-align: right !important;
+        }
 
-    /* Date & Time sort indicator */
-    .sort-indicator {
-        display: inline-block;
-        margin-left: 5px;
-        color: #999;
-        font-size: 12px;
-    }
+        /* Date & Time sort indicator */
+        .sort-indicator {
+            display: inline-block;
+            margin-left: 5px;
+            color: #999;
+            font-size: 12px;
+        }
 
-    /* Override DataTable default styling */
-    #transactions-table_wrapper .dataTables_length,
-    #transactions-table_wrapper .dataTables_filter,
-    #transactions-table_wrapper .dataTables_info,
-    #transactions-table_wrapper .dataTables_paginate {
-        padding: 10px 15px;
-        color: #555;
-    }
+        /* Override DataTable default styling */
+        #transactions-table_wrapper .dataTables_length,
+        #transactions-table_wrapper .dataTables_filter,
+        #transactions-table_wrapper .dataTables_info,
+        #transactions-table_wrapper .dataTables_paginate {
+            padding: 10px 15px;
+            color: #555;
+        }
 
-    #transactions-table_wrapper .dataTables_processing {
-        background-color: rgba(255, 255, 255, 0.9);
-        border: none;
-        border-radius: 4px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
+        #transactions-table_wrapper .dataTables_processing {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
 
-    /* Remove borders from DataTable wrapper elements */
-    #transactions-table_wrapper table.dataTable {
-        border: none !important;
-        border-collapse: collapse !important;
-    }
+        /* Remove borders from DataTable wrapper elements */
+        #transactions-table_wrapper table.dataTable {
+            border: none !important;
+            border-collapse: collapse !important;
+        }
 
-    #transactions-table_wrapper table.dataTable thead th,
-    #transactions-table_wrapper table.dataTable tbody td {
-        border: none !important;
-    }
+        #transactions-table_wrapper table.dataTable thead th,
+        #transactions-table_wrapper table.dataTable tbody td {
+            border: none !important;
+        }
 
-    #transactions-table_wrapper table.dataTable tbody td {
-        border-bottom: 1px solid #e0e0e0 !important;
-    }
-</style>
+        #transactions-table_wrapper table.dataTable tbody td {
+            border-bottom: 1px solid #e0e0e0 !important;
+        }
+    </style>
 @endpush
 
 <!-- Transactions Table Card -->
 <div class="card custom-card">
     <div class="card-header custom-card-header">
-        <h6 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-table"></i> Transactions Data</h4>
+        <h6 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-table"></i> Transactions Data</h6>
     </div>
     <div class="card-body" style="padding: 0;">
         <div class="table-responsive">
@@ -268,8 +267,8 @@
 </div>
 
 @push('js')
-<script>
-    $(document).ready(function() {
+    <script>
+        $(document).ready(function() {
             var transactionsTable = $('#transactions-table').DataTable({
                 'processing': true,
                 'serverSide': true,
@@ -360,7 +359,7 @@
                         orderable: true,
                         render: function(data) {
                             if (!data) return '';
-                            return '<a href="#" class="transaction-link">P-' + String(data).padStart(2, '0') + '</a>';
+                            return data;
                         },
                         className: 'text-left'
                     },
@@ -370,7 +369,7 @@
                         orderable: true,
                         render: function(data) {
                             if (!data) return '';
-                            return '<a href="#" class="transaction-link">N-' + String(data).padStart(2, '0') + '</a>';
+                            return data;
                         },
                         className: 'text-left'
                     },
@@ -380,7 +379,7 @@
                         orderable: true,
                         render: function(data) {
                             if (!data) return '';
-                            return '<a href="#" class="transaction-link">' + data + '</a>';
+                            return data;
                         },
                         className: 'text-left'
                     },
@@ -551,5 +550,5 @@
                 transactionsTable.draw();
             });
         });
-</script>
+    </script>
 @endpush
