@@ -1693,7 +1693,6 @@ class SyncController extends Controller
     public function getPendingCommands(Request $request): JsonResponse
     {
         $station = $request->get('station');
-        Log::debug("getPendingCommands: ", (array)$request->all());
 
         $commands = HosCommand::where('station_id', $station->id)
             ->where('status', 'pending')
