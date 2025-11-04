@@ -75,10 +75,10 @@ class HosReportsController extends Controller
                 $join->on('pump_transactions.pts_fuel_grade_id', '=', 'fuel_grades.id')
                      ->on('pump_transactions.station_id', '=', 'fuel_grades.station_id');
             })
-            ->leftJoin('pts_users', function ($join) {
-                $join->on('pump_transactions.pts_user_id', '=', 'pts_users.pts_user_id')
-                     ->on('pump_transactions.station_id', '=', 'pts_users.station_id');
-            })
+//            ->leftJoin('pts_users', function ($join) {
+//                $join->on('pump_transactions.pts_user_id', '=', 'pts_users.pts_user_id')
+//                     ->on('pump_transactions.station_id', '=', 'pts_users.station_id');
+//            })
             ->select('pump_transactions.*');
 
         // Date and Time Filters
@@ -224,16 +224,16 @@ class HosReportsController extends Controller
             }
 
             // Get attendant name and username
-            $attenName = '';
-            $attenUsername = '';
-
-            if ($transaction->ptsUser) {
-                $attenUsername = $transaction->ptsUser->login ?? '';
-                // For display, use login as name (or first name if available)
-                $attenName = $attenUsername;
-            } elseif ($transaction->pts_user_id) {
-                $attenName = (string) $transaction->pts_user_id;
-            }
+            //            $attenName = '';
+            //            $attenUsername = '';
+            //
+            //            if ($transaction->ptsUser) {
+            //                $attenUsername = $transaction->ptsUser->login ?? '';
+            //                // For display, use login as name (or first name if available)
+            //                $attenName = $attenUsername;
+            //            } elseif ($transaction->pts_user_id) {
+            //                $attenName = (string) $transaction->pts_user_id;
+            //            }
 
             return [
                 'site' => $transaction->station ? $transaction->station->site_name : '',
@@ -249,8 +249,8 @@ class HosReportsController extends Controller
                 'mop' => ucfirst($transaction->mode_of_payment ?? ''),
                 'mobile_vehicle_id' => $mobile,
                 'vehicle_id' => $vehicleId,
-                'atten' => $attenName,
-                'atten_username' => $attenUsername,
+                'atten' => null,
+                'atten_username' => null,
             ];
         });
 
