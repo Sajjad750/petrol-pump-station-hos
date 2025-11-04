@@ -21,6 +21,29 @@ class HosReportsController extends Controller
     }
 
     /**
+     * Load partial view for a specific tab.
+     */
+    public function loadPartial(string $tab): \Illuminate\View\View
+    {
+        $validTabs = [
+            'transactions',
+            'sales',
+            'tank-inventory',
+            'tank-deliveries',
+            'tank-monitoring',
+            'sales-summary',
+            'analytical-sales',
+            'shift-summary',
+        ];
+
+        if (!in_array($tab, $validTabs)) {
+            abort(404, 'Tab not found');
+        }
+
+        return view("hos-reports.partials.{$tab}");
+    }
+
+    /**
      * Get stations for dropdown.
      */
     public function getStations()
@@ -69,7 +92,7 @@ class HosReportsController extends Controller
 
         // Eager load relationships
         $query = PumpTransaction::query()
-            ->with(['station', 'fuelGrade', 'ptsUser'])
+            ->with(['station', 'fuelGrade'])
             ->leftJoin('stations', 'pump_transactions.station_id', '=', 'stations.id')
             ->leftJoin('fuel_grades', function ($join) {
                 $join->on('pump_transactions.pts_fuel_grade_id', '=', 'fuel_grades.id')
