@@ -230,7 +230,8 @@
                     'processing': '<i class="fas fa-spinner fa-spin"></i> Loading...',
                     'emptyTable': 'No sales records found',
                     'zeroRecords': 'No matching sales records found'
-                }
+                },
+                destroy: true,
             });
 
             // Apply filters button

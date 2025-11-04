@@ -115,11 +115,11 @@
         margin: 0;
         background-color: white;
     }
-    
+
     #tank-inventory-table thead {
         background-color: #D7D7D7;
     }
-    
+
     #tank-inventory-table thead th {
         background-color: #D7D7D7 !important;
         color: #333 !important;
@@ -129,16 +129,16 @@
         border: none !important;
         font-size: 14px;
     }
-    
+
     #tank-inventory-table tbody tr {
         background-color: white;
         border-bottom: 1px solid #e0e0e0;
     }
-    
+
     #tank-inventory-table tbody tr:hover {
         background-color: #f5f5f5;
     }
-    
+
     #tank-inventory-table tbody td {
         padding: 12px 15px !important;
         border: none !important;
@@ -146,19 +146,19 @@
         color: #555;
         font-size: 14px;
     }
-    
+
     /* Blue links for clickable items */
     .tank-inventory-link {
         color: #011332 !important;
         text-decoration: none;
         font-weight: 500;
     }
-    
+
     .tank-inventory-link:hover {
         text-decoration: underline;
         color: #0099ff !important;
     }
-    
+
     /* Secondary text (Ref, etc.) */
     .secondary-text {
         font-size: 12px;
@@ -167,12 +167,12 @@
         display: block;
         line-height: 1.4;
     }
-    
+
     /* Right-aligned numeric columns */
     #tank-inventory-table tbody td.text-right {
         text-align: right !important;
     }
-    
+
     /* Date & Time sort indicator */
     .sort-indicator {
         display: inline-block;
@@ -180,7 +180,7 @@
         color: #999;
         font-size: 12px;
     }
-    
+
     /* Override DataTable default styling */
     #tank-inventory-table_wrapper .dataTables_length,
     #tank-inventory-table_wrapper .dataTables_filter,
@@ -189,25 +189,25 @@
         padding: 10px 15px;
         color: #555;
     }
-    
+
     #tank-inventory-table_wrapper .dataTables_processing {
         background-color: rgba(255, 255, 255, 0.9);
         border: none;
         border-radius: 4px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    
+
     /* Remove borders from DataTable wrapper elements */
     #tank-inventory-table_wrapper table.dataTable {
         border: none !important;
         border-collapse: collapse !important;
     }
-    
+
     #tank-inventory-table_wrapper table.dataTable thead th,
     #tank-inventory-table_wrapper table.dataTable tbody td {
         border: none !important;
     }
-    
+
     #tank-inventory-table_wrapper table.dataTable tbody td {
         border-bottom: 1px solid #e0e0e0 !important;
     }
@@ -370,7 +370,8 @@
                     'processing': '<i class="fas fa-spinner fa-spin"></i> Loading...',
                     'emptyTable': 'No tank inventory records found',
                     'zeroRecords': 'No matching tank inventory records found'
-                }
+                },
+                destroy: true,
             });
 
             // Apply filters button

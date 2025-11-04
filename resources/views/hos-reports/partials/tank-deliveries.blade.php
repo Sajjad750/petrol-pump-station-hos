@@ -223,7 +223,8 @@
                     'processing': '<i class="fas fa-spinner fa-spin"></i> Loading...',
                     'emptyTable': 'No tank delivery records found',
                     'zeroRecords': 'No matching tank delivery records found'
-                }
+                },
+                destroy: true,
             });
 
             // Apply filters button
