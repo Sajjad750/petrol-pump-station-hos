@@ -1037,12 +1037,19 @@ class HosReportsController extends Controller
             $query->where('pump_transactions.pts_fuel_grade_id', $request->input('product_id'));
         }
 
+        // Join pts_users to avoid composite-key eager load issue
+        $query->leftJoin('pts_users', function ($join) {
+            $join->on('pump_transactions.pts_user_id', '=', 'pts_users.pts_user_id')
+                 ->on('pump_transactions.station_id', '=', 'pts_users.station_id');
+        });
+
         // Get transactions data
         $transactions = $query->select([
             'pump_transactions.*',
             'stations.site_name',
             'fuel_grades.name as fuel_grade_name',
-        ])->with('ptsUser')->get();
+            'pts_users.login as attendant_login',
+        ])->get();
 
         // Sales Type Wise Summary (Cash, MOP)
         $salesTypeSummary = $transactions->groupBy('mode_of_payment')
@@ -1082,11 +1089,12 @@ class HosReportsController extends Controller
         })
         ->map(function ($group) {
             $firstTransaction = $group->first();
+
+            // Get attendant name from joined data
             $attendantName = 'Unknown Attendant';
 
-            // Try to get attendant name from PTS User if available
-            if ($firstTransaction->ptsUser) {
-                $attendantName = $firstTransaction->ptsUser->login ?? 'Attendant #' . $firstTransaction->pts_user_id;
+            if ($firstTransaction->attendant_login) {
+                $attendantName = $firstTransaction->attendant_login;
             } elseif ($firstTransaction->pts_user_id) {
                 $attendantName = 'Attendant #' . $firstTransaction->pts_user_id;
             }
