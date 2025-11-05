@@ -200,15 +200,39 @@
 
             // Prefill logic: when user clicks Update/Schedule in table, populate modals from top form
             $('#apply_prefill').on('click', function () {
+                const stationId = $('#station_select').val();
+                const productId = $('#product_select').val();
+                const productName = $('#product_select option:selected').text();
                 const price = $('#new_price').val();
                 const date = $('#effective_date').val();
                 const time = $('#effective_time').val();
                 const scheduledAt = date && time ? (date + 'T' + time) : '';
 
-                if (price) {
-                    $('#schedulePriceModal input[name="scheduled_price"]').val(price);
+                if (!stationId) {
+                    alert('Please select a station first.');
+                    return;
                 }
+                if (!productId) {
+                    alert('Please select a product.');
+                    return;
+                }
+                if (!price) {
+                    alert('Please enter the new price.');
+                    return;
+                }
+                if (!scheduledAt) {
+                    alert('Please select both effective date and time.');
+                    return;
+                }
+
+                // Prefill modal
+                $('#schedulePriceModal input[name="scheduled_price"]').val(price);
                 $('#schedulePriceModal input[name="scheduled_at"]').val(scheduledAt);
+                $('#schedulePriceModal .modal-title').text('Schedule Price - ' + productName);
+                $('#schedulePriceForm').attr('action', '{{ route("fuel-grades.schedule-price", ":id") }}'.replace(':id', productId));
+
+                // Show modal
+                $('#schedulePriceModal').modal('show');
             });
 
             // Override Update button to behave like Schedule button on this page
