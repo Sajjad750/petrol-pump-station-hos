@@ -98,7 +98,7 @@
                     <li class="nav-item">
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit" class="nav-link btn btn-link p-0 text-left" style="margin-top:200px;">
+                            <button type="submit" class="nav-link btn btn-link p-0 text-left">
                                 <i class="nav-icon fas fa-sign-out-alt text-danger"></i>
                                 <p class="text-danger">Logout</p>
                             </button>
