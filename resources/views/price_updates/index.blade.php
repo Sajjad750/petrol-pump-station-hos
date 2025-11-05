@@ -51,9 +51,9 @@
                             </div>
                         </div>
                         <div class="d-flex justify-content-end">
-                            <button id="apply_prefill" type="button" class="btn btn-primary">Apply Prefill</button>
+                            <button id="apply_prefill" type="button" class="btn btn-primary">Schedule Price</button>
                         </div>
-                        <small class="text-muted d-block mt-2">Apply Prefill will pre-fill the modal when you click Update/Schedule in the table below.</small>
+                        <small class="text-muted d-block mt-2">Schedules the selected product price for the chosen station, date and time.</small>
                     </div>
                 </div>
 
@@ -96,10 +96,25 @@
                             @forelse($history as $item)
                                 <div class="list-group-item d-flex justify-content-between align-items-center">
                                     <div>
-                                        <strong>{{ $item->command_type === 'schedule_fuel_grade_price' ? 'Scheduled' : 'Updated' }}</strong>
-                                        <span class="text-muted">#{{ $item->id }} · {{ $item->created_at->format('Y-m-d H:i') }}</span>
+                                        <div class="font-weight-bold">{{ $item['product_name'] }}</div>
+                                        <div class="text-muted">{{ $item['scheduled_at'] ? \Illuminate\Support\Carbon::parse($item['scheduled_at'])->format('Y-m-d H:i') : $item['created_at']->format('Y-m-d H:i') }}</div>
                                     </div>
-                                    <code class="mb-0">@json($item->command_data)</code>
+                                    <div class="text-right">
+                                        <div class="text-muted">{{ $item['type'] === 'schedule_fuel_grade_price' ? 'Price Change' : 'Price Update' }}</div>
+                                        <div>
+                                            @php
+                                                $from = $item['price_from'];
+                                                $to = $item['price_to'];
+                                            @endphp
+                                            @if(!is_null($from) && !is_null($to) && $from != $to)
+                                                ${{ number_format((float)$from, 2) }} → ${{ number_format((float)$to, 2) }}
+                                            @elseif(!is_null($to))
+                                                ${{ number_format((float)$to, 2) }}
+                                            @else
+                                                N/A
+                                            @endif
+                                        </div>
+                                    </div>
                                 </div>
                             @empty
                                 <div class="text-muted">No recent price changes.</div>
@@ -113,35 +128,7 @@
 
     
 
-    <!-- Schedule Price Modal -->
-    <div class="modal fade" id="schedulePriceModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Schedule Price</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <form id="schedulePriceForm">
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <label for="schedule_price">Scheduled Price</label>
-                            <input type="number" step="0.01" min="0" class="form-control" name="scheduled_price" id="schedule_price" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="schedule_scheduled_at">Scheduled At</label>
-                            <input type="datetime-local" class="form-control" name="scheduled_at" id="schedule_scheduled_at" required>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-warning">Schedule Price</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+    
 @endsection
 
 @push('js')
@@ -198,7 +185,7 @@
                 ]
             });
 
-            // Prefill logic: when user clicks Update/Schedule in table, populate modals from top form
+            // Direct schedule on click (no modal)
             $('#apply_prefill').on('click', function () {
                 const stationId = $('#station_select').val();
                 const productId = $('#product_select').val();
@@ -225,64 +212,20 @@
                     return;
                 }
 
-                // Prefill modal
-                $('#schedulePriceModal input[name="scheduled_price"]').val(price);
-                $('#schedulePriceModal input[name="scheduled_at"]').val(scheduledAt);
-                $('#schedulePriceModal .modal-title').text('Schedule Price - ' + productName);
-                $('#schedulePriceForm').attr('action', '{{ route("fuel-grades.schedule-price", ":id") }}'.replace(':id', productId));
-
-                // Show modal
-                $('#schedulePriceModal').modal('show');
-            });
-
-            // Override Update button to behave like Schedule button on this page
-            $(document).on('click', '.update-price-btn', function () {
-                const fuelGradeId = $(this).data('id');
-                const currentPrice = $(this).data('price');
-                const name = $(this).data('name');
-
-                $('#schedulePriceModal input[name="scheduled_price"]').val(currentPrice || $('#new_price').val());
-                $('#schedulePriceModal input[name="scheduled_at"]').val('');
-                $('#schedulePriceModal').find('.modal-title').text('Schedule Price - ' + name);
-                $('#schedulePriceForm').attr('action', '{{ route("fuel-grades.schedule-price", ":id") }}'.replace(':id', fuelGradeId));
-                $('#schedulePriceModal').modal('show');
-            });
-
-            // Schedule price button
-            $(document).on('click', '.schedule-price-btn', function () {
-                const fuelGradeId = $(this).data('id');
-                const currentPrice = $(this).data('price');
-                const name = $(this).data('name');
-
-                $('#schedulePriceModal input[name="scheduled_price"]').val(currentPrice);
-                $('#schedulePriceModal input[name="scheduled_at"]').val('');
-                $('#schedulePriceModal').find('.modal-title').text('Schedule Price - ' + name);
-                $('#schedulePriceForm').attr('action', '{{ route("fuel-grades.schedule-price", ":id") }}'.replace(':id', fuelGradeId));
-                $('#schedulePriceModal').modal('show');
-            });
-
-            // Note: No direct update flow on this page; all actions use schedule route
-
-            // Schedule price form submission
-            $('#schedulePriceForm').on('submit', function (e) {
-                e.preventDefault();
-                const form = $(this);
-                const url = form.attr('action');
-                const data = {
-                    scheduled_price: $('#schedulePriceModal input[name="scheduled_price"]').val(),
-                    scheduled_at: $('#schedulePriceModal input[name="scheduled_at"]').val(),
-                    _token: '{{ csrf_token() }}',
-                    _method: 'PUT'
-                };
-
+                // Direct submit to schedule endpoint
+                const url = '{{ route("fuel-grades.schedule-price", ":id") }}'.replace(':id', productId);
                 $.ajax({
                     url: url,
                     type: 'POST',
-                    data: data,
+                    data: {
+                        scheduled_price: price,
+                        scheduled_at: scheduledAt,
+                        _token: '{{ csrf_token() }}',
+                        _method: 'PUT'
+                    },
                     success: function (response) {
-                        $('#schedulePriceModal').modal('hide');
                         Swal.fire('Success', response.message || 'Price schedule command queued successfully', 'success');
-                        table.draw();
+                        $('#fuel-grades-table').DataTable().draw();
                     },
                     error: function (xhr) {
                         let errorMsg = 'An error occurred';
@@ -295,6 +238,90 @@
                     }
                 });
             });
+
+            // Override Update button to behave like direct Schedule on this page
+            $(document).on('click', '.update-price-btn', function () {
+                const fuelGradeId = $(this).data('id');
+                const currentPrice = $(this).data('price');
+                const name = $(this).data('name');
+                const date = $('#effective_date').val();
+                const time = $('#effective_time').val();
+                const scheduledAt = date && time ? (date + 'T' + time) : '';
+
+                if (!scheduledAt) {
+                    alert('Please select both effective date and time.');
+                    return;
+                }
+
+                const url = '{{ route("fuel-grades.schedule-price", ":id") }}'.replace(':id', fuelGradeId);
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: {
+                        scheduled_price: currentPrice || $('#new_price').val(),
+                        scheduled_at: scheduledAt,
+                        _token: '{{ csrf_token() }}',
+                        _method: 'PUT'
+                    },
+                    success: function (response) {
+                        Swal.fire('Success', response.message || 'Price schedule command queued successfully', 'success');
+                        $('#fuel-grades-table').DataTable().draw();
+                    },
+                    error: function (xhr) {
+                        let errorMsg = 'An error occurred';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        } else if (xhr.responseJSON && xhr.responseJSON.errors) {
+                            errorMsg = Object.values(xhr.responseJSON.errors).flat().join('<br>');
+                        }
+                        Swal.fire('Error', errorMsg, 'error');
+                    }
+                });
+            });
+
+            // Schedule price button from table acts as direct schedule
+            $(document).on('click', '.schedule-price-btn', function () {
+                const fuelGradeId = $(this).data('id');
+                const currentPrice = $(this).data('price');
+                const name = $(this).data('name');
+                const date = $('#effective_date').val();
+                const time = $('#effective_time').val();
+                const scheduledAt = date && time ? (date + 'T' + time) : '';
+
+                if (!scheduledAt) {
+                    alert('Please select both effective date and time.');
+                    return;
+                }
+
+                const url = '{{ route("fuel-grades.schedule-price", ":id") }}'.replace(':id', fuelGradeId);
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: {
+                        scheduled_price: currentPrice,
+                        scheduled_at: scheduledAt,
+                        _token: '{{ csrf_token() }}',
+                        _method: 'PUT'
+                    },
+                    success: function (response) {
+                        Swal.fire('Success', response.message || 'Price schedule command queued successfully', 'success');
+                        $('#fuel-grades-table').DataTable().draw();
+                    },
+                    error: function (xhr) {
+                        let errorMsg = 'An error occurred';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        } else if (xhr.responseJSON && xhr.responseJSON.errors) {
+                            errorMsg = Object.values(xhr.responseJSON.errors).flat().join('<br>');
+                        }
+                        Swal.fire('Error', errorMsg, 'error');
+                    }
+                });
+            });
+
+            // Note: No direct update flow on this page; all actions use schedule route
+
+            // No modal submission handler needed
         });
     </script>
 @endpush

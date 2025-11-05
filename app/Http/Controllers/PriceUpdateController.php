@@ -20,12 +20,39 @@ class PriceUpdateController extends Controller
             ->orderBy('site_name')
             ->get(['id', 'site_name']);
 
-        // Recent price change history from queued commands
-        $history = HosCommand::query()
+        // Recent price change history from queued commands, enriched with fuel grade and prices
+        $rawHistory = HosCommand::query()
             ->whereIn('command_type', ['schedule_fuel_grade_price', 'update_fuel_grade_price'])
             ->latest()
             ->limit(20)
             ->get(['id', 'station_id', 'command_type', 'command_data', 'created_at']);
+
+        $history = $rawHistory->map(function (HosCommand $cmd) {
+            $data = (array) ($cmd->command_data ?? []);
+            $bosFuelGradeId = $data['bos_fuel_grade_id'] ?? null;
+            $scheduledAt = $data['scheduled_at'] ?? null;
+            $newPrice = $data['scheduled_price'] ?? ($data['price'] ?? null);
+            $oldPrice = $data['price'] ?? null;
+
+            $fuelGrade = null;
+
+            if ($bosFuelGradeId) {
+                $fuelGrade = FuelGrade::query()
+                    ->where('station_id', $cmd->station_id)
+                    ->where('bos_fuel_grade_id', $bosFuelGradeId)
+                    ->first(['name']);
+            }
+
+            return [
+                'id' => $cmd->id,
+                'type' => $cmd->command_type,
+                'product_name' => $fuelGrade->name ?? 'Unknown Product',
+                'scheduled_at' => $scheduledAt,
+                'price_from' => $oldPrice,
+                'price_to' => $newPrice,
+                'created_at' => $cmd->created_at,
+            ];
+        });
 
         return view('price_updates.index', [
             'stations' => $stations,
