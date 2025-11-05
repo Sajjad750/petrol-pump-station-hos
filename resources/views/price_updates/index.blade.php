@@ -111,36 +111,7 @@
         </div>
     </div>
 
-    <!-- Update Price Modal -->
-    <div class="modal fade" id="updatePriceModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Update Price</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <form id="updatePriceForm">
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <label for="update_price">Price</label>
-                            <input type="number" step="0.01" min="0" class="form-control" name="price" id="update_price" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="update_scheduled_at">Scheduled At (Optional)</label>
-                            <input type="datetime-local" class="form-control" name="scheduled_at" id="update_scheduled_at">
-                            <small class="form-text text-muted">Leave empty to update immediately</small>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Update Price</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+    
 
     <!-- Schedule Price Modal -->
     <div class="modal fade" id="schedulePriceModal" tabindex="-1" role="dialog">
@@ -235,24 +206,22 @@
                 const scheduledAt = date && time ? (date + 'T' + time) : '';
 
                 if (price) {
-                    $('#updatePriceModal input[name="price"]').val(price);
                     $('#schedulePriceModal input[name="scheduled_price"]').val(price);
                 }
-                $('#updatePriceModal input[name="scheduled_at"]').val(scheduledAt);
                 $('#schedulePriceModal input[name="scheduled_at"]').val(scheduledAt);
             });
 
-            // Update price button
+            // Override Update button to behave like Schedule button on this page
             $(document).on('click', '.update-price-btn', function () {
                 const fuelGradeId = $(this).data('id');
                 const currentPrice = $(this).data('price');
                 const name = $(this).data('name');
 
-                $('#updatePriceModal input[name="price"]').val(currentPrice);
-                $('#updatePriceModal input[name="scheduled_at"]').val('');
-                $('#updatePriceModal').find('.modal-title').text('Update Price - ' + name);
-                $('#updatePriceForm').attr('action', '{{ route("fuel-grades.update-price", ":id") }}'.replace(':id', fuelGradeId));
-                $('#updatePriceModal').modal('show');
+                $('#schedulePriceModal input[name="scheduled_price"]').val(currentPrice || $('#new_price').val());
+                $('#schedulePriceModal input[name="scheduled_at"]').val('');
+                $('#schedulePriceModal').find('.modal-title').text('Schedule Price - ' + name);
+                $('#schedulePriceForm').attr('action', '{{ route("fuel-grades.schedule-price", ":id") }}'.replace(':id', fuelGradeId));
+                $('#schedulePriceModal').modal('show');
             });
 
             // Schedule price button
@@ -268,38 +237,7 @@
                 $('#schedulePriceModal').modal('show');
             });
 
-            // Update price form submission
-            $('#updatePriceForm').on('submit', function (e) {
-                e.preventDefault();
-                const form = $(this);
-                const url = form.attr('action');
-                const data = {
-                    price: $('#updatePriceModal input[name="price"]').val(),
-                    scheduled_at: $('#updatePriceModal input[name="scheduled_at"]').val() || null,
-                    _token: '{{ csrf_token() }}',
-                    _method: 'PUT'
-                };
-
-                $.ajax({
-                    url: url,
-                    type: 'POST',
-                    data: data,
-                    success: function (response) {
-                        $('#updatePriceModal').modal('hide');
-                        Swal.fire('Success', response.message || 'Price update command queued successfully', 'success');
-                        table.draw();
-                    },
-                    error: function (xhr) {
-                        let errorMsg = 'An error occurred';
-                        if (xhr.responseJSON && xhr.responseJSON.message) {
-                            errorMsg = xhr.responseJSON.message;
-                        } else if (xhr.responseJSON && xhr.responseJSON.errors) {
-                            errorMsg = Object.values(xhr.responseJSON.errors).flat().join('<br>');
-                        }
-                        Swal.fire('Error', errorMsg, 'error');
-                    }
-                });
-            });
+            // Note: No direct update flow on this page; all actions use schedule route
 
             // Schedule price form submission
             $('#schedulePriceForm').on('submit', function (e) {
