@@ -521,10 +521,11 @@
                 method: 'GET',
                 success: function(response) {
                     if (response.stations) {
+                        var $sel = $('#transaction_station_id');
+                        var firstOption = $sel.find('option').first().clone();
+                        $sel.empty().append(firstOption);
                         response.stations.forEach(function(station) {
-                            $('#transaction_station_id').append(
-                                $('<option></option>').val(station.id).text(station.site_name)
-                            );
+                            $sel.append($('<option></option>').val(station.id).text(station.site_name));
                         });
                     }
                 }
@@ -536,10 +537,11 @@
                 method: 'GET',
                 success: function(response) {
                     if (response.fuel_grades) {
-                        response.fuel_grades.forEach(function(grade) {
-                            $('#transaction_product_id').append(
-                                $('<option></option>').val(grade.id).text(grade.name)
-                            );
+                        var $sel = $('#transaction_product_id');
+                        var firstOption = $sel.find('option').first().clone();
+                        $sel.empty().append(firstOption);
+                        response.fuel_grades.forEach(function(fuelGrade) {
+                            $sel.append($('<option></option>').val(fuelGrade.id).text(fuelGrade.name));
                         });
                     }
                 }

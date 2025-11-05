@@ -169,31 +169,33 @@
 @push('js')
 <script>
 $(document).ready(function() {
-    // Load stations for dropdown
+    // Load stations for dropdown (reset to avoid duplicates)
     $.ajax({
         url: '{{ route('hos-reports.stations') }}',
         method: 'GET',
         success: function(response) {
             if (response.stations) {
+                var $sel = $('#tank_monitoring_station_id');
+                var firstOption = $sel.find('option').first().clone();
+                $sel.empty().append(firstOption);
                 response.stations.forEach(function(station) {
-                    $('#tank_monitoring_station_id').append(
-                        $('<option></option>').val(station.id).text(station.site_name)
-                    );
+                    $sel.append($('<option></option>').val(station.id).text(station.site_name));
                 });
             }
         }
     });
 
-    // Load fuel grades for dropdown
+    // Load fuel grades for dropdown (reset to avoid duplicates)
     $.ajax({
         url: '{{ route('hos-reports.fuel-grades') }}',
         method: 'GET',
         success: function(response) {
             if (response.fuel_grades) {
+                var $sel = $('#tank_monitoring_product_id');
+                var firstOption = $sel.find('option').first().clone();
+                $sel.empty().append(firstOption);
                 response.fuel_grades.forEach(function(fuelGrade) {
-                    $('#tank_monitoring_product_id').append(
-                        $('<option></option>').val(fuelGrade.id).text(fuelGrade.name)
-                    );
+                    $sel.append($('<option></option>').val(fuelGrade.id).text(fuelGrade.name));
                 });
             }
         }

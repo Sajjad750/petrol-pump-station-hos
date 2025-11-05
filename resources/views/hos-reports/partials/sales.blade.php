@@ -289,10 +289,11 @@
                 method: 'GET',
                 success: function(response) {
                     if (response.stations) {
+                        var $sel = $('#sales_station_id');
+                        var firstOption = $sel.find('option').first().clone();
+                        $sel.empty().append(firstOption);
                         response.stations.forEach(function(station) {
-                            $('#sales_station_id').append(
-                                $('<option></option>').val(station.id).text(station.site_name)
-                            );
+                            $sel.append($('<option></option>').val(station.id).text(station.site_name));
                         });
                     }
                 }

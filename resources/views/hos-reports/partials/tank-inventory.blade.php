@@ -429,31 +429,33 @@
                 window.location.href = '{{ route('hos-reports.tank-inventory.export.pdf') }}?' + queryString;
             });
 
-            // Load stations for dropdown
+            // Load stations for dropdown (reset to avoid duplicates)
             $.ajax({
                 url: '{{ route('hos-reports.stations') }}',
                 method: 'GET',
                 success: function(response) {
                     if (response.stations) {
+                        var $sel = $('#inventory_station_id');
+                        var firstOption = $sel.find('option').first().clone();
+                        $sel.empty().append(firstOption);
                         response.stations.forEach(function(station) {
-                            $('#inventory_station_id').append(
-                                $('<option></option>').val(station.id).text(station.site_name)
-                            );
+                            $sel.append($('<option></option>').val(station.id).text(station.site_name));
                         });
                     }
                 }
             });
 
-            // Load fuel grades for dropdown
+            // Load fuel grades for dropdown (reset to avoid duplicates)
             $.ajax({
                 url: '{{ route('hos-reports.fuel-grades') }}',
                 method: 'GET',
                 success: function(response) {
                     if (response.fuel_grades) {
+                        var $sel = $('#inventory_fuel_grade_id');
+                        var firstOption = $sel.find('option').first().clone();
+                        $sel.empty().append(firstOption);
                         response.fuel_grades.forEach(function(grade) {
-                            $('#inventory_fuel_grade_id').append(
-                                $('<option></option>').val(grade.id).text(grade.name)
-                            );
+                            $sel.append($('<option></option>').val(grade.id).text(grade.name));
                         });
                     }
                 }
