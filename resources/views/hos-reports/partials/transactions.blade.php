@@ -411,8 +411,8 @@
                         className: 'text-right'
                     },
                     {
-                        data: 'mop',
-                        name: 'mop',
+                        data: 'mode_of_payment',
+                        name: 'mode_of_payment',
                         orderable: true,
                         className: 'text-left'
                     },

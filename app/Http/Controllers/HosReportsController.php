@@ -273,7 +273,7 @@ class HosReportsController extends Controller
                 'unit_price' => $transaction->price ?? 0,
                 'litres' => $transaction->volume ?? 0,
                 'amount' => $transaction->amount ?? 0,
-                'mop' => ucfirst($transaction->mode_of_payment ?? ''),
+                'mode_of_payment' => ucfirst($transaction->mode_of_payment ?? ''),
                 'mobile_vehicle_id' => $mobile,
                 'vehicle_id' => $vehicleId,
                 'atten' => null,

@@ -171,6 +171,7 @@ class SyncController extends Controller
             'total_amount' => $bosData['total_amount'],
             'tag' => $bosData['tag'],
             'pts_user_id' => $bosData['pts_user_id'],
+            'mode_of_payment' => $bosData['mode_of_payment'],
             'pts_configuration_id' => $bosData['pts_configuration_id'],
             'bos_shift_id' => $bosData['shift_id'],
 //            'fuel_grade_id' => $bosData['fuel_grade_id'],
