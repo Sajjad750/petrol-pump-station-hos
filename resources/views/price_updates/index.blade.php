@@ -79,7 +79,7 @@
                                     <th>Blend Status</th>
                                     <th>Blend Info</th>
                                     <th>BOS Fuel Grade ID</th>
-                                    <th>Actions</th>
+                            
                                 </tr>
                                 </thead>
                             </table>
@@ -223,7 +223,7 @@
                     {data: 'blend_status', defaultContent: '-'},
                     {data: 'blend_info', defaultContent: '-'},
                     {data: 'bos_fuel_grade_id', defaultContent: '-'},
-                    {data: 'actions', orderable: false, searchable: false}
+                   
                 ]
             });
 
