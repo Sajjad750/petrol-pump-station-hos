@@ -60,6 +60,14 @@ Route::middleware('auth')->group(function () {
     Route::put('fuel-grades/{fuelGrade}/price', [\App\Http\Controllers\FuelGradeController::class, 'updatePrice'])->name('fuel-grades.update-price');
     Route::put('fuel-grades/{fuelGrade}/schedule-price', [\App\Http\Controllers\FuelGradeController::class, 'schedulePrice'])->name('fuel-grades.schedule-price');
 
+    // Price Updates (new design wrapper around fuel grade scheduling)
+    Route::get('price-updates', [\App\Http\Controllers\PriceUpdateController::class, 'index'])
+        ->middleware('permission:view-fuel-grades')
+        ->name('price-updates');
+    Route::get('price-updates/products', [\App\Http\Controllers\PriceUpdateController::class, 'products'])
+        ->middleware('permission:view-fuel-grades')
+        ->name('price-updates.products');
+
     // Shifts
     Route::get('shifts', \App\Http\Controllers\ShiftListController::class)->name('shifts.index');
     Route::get('shifts/export-excel', [\App\Http\Controllers\ShiftListController::class, 'exportExcel'])->name('shifts.export.excel');

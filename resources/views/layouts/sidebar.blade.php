@@ -52,6 +52,15 @@
                         </a>
                     </li>
 
+                    @if(auth()->user()->hasPermission('view-fuel-grades'))
+                    <li class="nav-item {{ request()->routeIs('price-updates') ? 'menu-open' : '' }}">
+                        <a href="{{ route('price-updates') }}" class="nav-link {{ request()->routeIs('price-updates') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-dollar-sign"></i>
+                            <p>Price Update (New)</p>
+                        </a>
+                    </li>
+                    @endif
+
                     <li class="nav-item {{ request()->routeIs('alerts.index') ? 'menu-open' : '' }}">
                         <a href="{{ route('alerts.index') }}" class="nav-link {{ request()->routeIs('alerts.index') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-exclamation-triangle"></i>
@@ -89,7 +98,7 @@
                     <li class="nav-item">
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit" class="nav-link btn btn-link p-0 text-left" style="margin-top:200px;">
+                            <button type="submit" class="nav-link btn btn-link p-0 text-left">
                                 <i class="nav-icon fas fa-sign-out-alt text-danger"></i>
                                 <p class="text-danger">Logout</p>
                             </button>
