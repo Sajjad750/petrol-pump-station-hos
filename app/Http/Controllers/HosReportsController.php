@@ -1218,15 +1218,24 @@ class HosReportsController extends Controller
                 ->values();
 
             // Get Product Wise Summary for this shift using bos_shift_id
-            $productSummaries = ProductWiseSummary::with('fuelGrade')
-                ->where('bos_shift_id', $shiftInfo['bos_shift_id'])
-                ->where('station_id', $shiftInfo['station_id'])
-                ->get()
-                ->map(function ($item) {
+            // Join fuel_grades by station_id + bos_fuel_grade_id to reliably fetch product name
+            $productSummaries = ProductWiseSummary::query()
+                ->leftJoin('fuel_grades', function ($join) {
+                    $join->on('product_wise_summaries.station_id', '=', 'fuel_grades.station_id')
+                         ->on('product_wise_summaries.bos_fuel_grade_id', '=', 'fuel_grades.bos_fuel_grade_id');
+                })
+                ->where('product_wise_summaries.bos_shift_id', $shiftInfo['bos_shift_id'])
+                ->where('product_wise_summaries.station_id', $shiftInfo['station_id'])
+                ->get([
+                    'product_wise_summaries.volume as volume',
+                    'product_wise_summaries.amount as amount',
+                    'fuel_grades.name as fuel_grade_name',
+                ])
+                ->map(function ($row) {
                     return [
-                        'product' => optional($item->fuelGrade)->name ?? 'N/A',
-                        'txn_volume' => $item->volume ?? 0,
-                        'amount' => $item->amount ?? 0,
+                        'product' => $row->fuel_grade_name ?? 'Unknown Product',
+                        'txn_volume' => (float) ($row->volume ?? 0),
+                        'amount' => (float) ($row->amount ?? 0),
                     ];
                 })
                 ->groupBy('product')
