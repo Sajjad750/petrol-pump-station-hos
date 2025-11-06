@@ -29,13 +29,17 @@
                 <div class="col-md-2">
                     <div class="form-group">
                         <label for="shift_summary_from_time">From Time</label>
-                        <input type="time" class="form-control" id="shift_summary_from_time" name="from_time">
+                        <select class="form-control" id="shift_summary_from_time" name="from_time">
+                            <option value="">All Day</option>
+                        </select>
                     </div>
                 </div>
                 <div class="col-md-2">
                     <div class="form-group">
                         <label for="shift_summary_to_time">To Time</label>
-                        <input type="time" class="form-control" id="shift_summary_to_time" name="to_time">
+                        <select class="form-control" id="shift_summary_to_time" name="to_time">
+                            <option value="">All Day</option>
+                        </select>
                     </div>
                 </div>
                 <div class="col-md-2">
@@ -533,6 +537,53 @@
             $('#shift_summary_station_id, #shift_summary_view_mode').on('change', function() {
                 loadShiftSummary();
             });
+
+            // Populate time dropdowns based on selected date and station
+            function loadTimesForDate(dateStr) {
+                if (!dateStr) {
+                    var $from = $('#shift_summary_from_time');
+                    var $to = $('#shift_summary_to_time');
+                    var f0 = $from.find('option').first().clone();
+                    var t0 = $to.find('option').first().clone();
+                    $from.empty().append(f0);
+                    $to.empty().append(t0);
+                    return;
+                }
+                $.ajax({
+                    url: '{{ route('hos-reports.shift-times') }}',
+                    method: 'GET',
+                    data: {
+                        date: dateStr,
+                        station_id: $('#shift_summary_station_id').val()
+                    },
+                    success: function(resp) {
+                        var times = resp.times || [];
+                        var $from = $('#shift_summary_from_time');
+                        var $to = $('#shift_summary_to_time');
+                        var f0 = $from.find('option').first().clone();
+                        var t0 = $to.find('option').first().clone();
+                        $from.empty().append(f0);
+                        $to.empty().append(t0);
+                        times.forEach(function(t) {
+                            $from.append($('<option></option>').val(t).text(t));
+                            $to.append($('<option></option>').val(t).text(t));
+                        });
+                    }
+                });
+            }
+
+            // Reload times when dates or station change
+            $('#shift_summary_from_date, #shift_summary_to_date, #shift_summary_station_id').on('change', function() {
+                // If both dates provided, prefer from_date for time list; else use whichever set
+                var datePref = $('#shift_summary_from_date').val() || $('#shift_summary_to_date').val();
+                loadTimesForDate(datePref);
+            });
+
+            // Initial load (if dates prefilled)
+            (function initTimes(){
+                var datePref = $('#shift_summary_from_date').val() || $('#shift_summary_to_date').val();
+                if (datePref) loadTimesForDate(datePref);
+            })();
         });
     </script>
 @endpush

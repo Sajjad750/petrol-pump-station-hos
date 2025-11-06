@@ -1386,4 +1386,50 @@ class HosReportsController extends Controller
             'pump_total_amount' => $combinedPumpTotalAmount,
         ]);
     }
+
+    /**
+     * Get available shift times (HH:MM:SS) for a given date (and optional station).
+     */
+    public function getShiftTimes(Request $request)
+    {
+        $date = $request->input('date');
+
+        if (!$date) {
+            return response()->json(['times' => []]);
+        }
+
+        $stationId = $request->input('station_id');
+
+        $query = \App\Models\Shift::query();
+
+        if (!empty($stationId)) {
+            $query->where('station_id', $stationId);
+        }
+
+        // Consider shifts overlapping the selected date bounds
+        $dayStart = $date.' 00:00:00';
+        $dayEnd = $date.' 23:59:59';
+        $query->where(function ($q) use ($dayStart, $dayEnd) {
+            $q->where('end_time', '>=', $dayStart)
+              ->where('start_time', '<=', $dayEnd);
+        });
+
+        $shifts = $query->get(['start_time', 'end_time']);
+
+        $times = collect();
+
+        foreach ($shifts as $shift) {
+            if ($shift->start_time) {
+                $times->push($shift->start_time->format('H:i:s'));
+            }
+
+            if ($shift->end_time) {
+                $times->push($shift->end_time->format('H:i:s'));
+            }
+        }
+
+        $times = $times->unique()->sort()->values();
+
+        return response()->json(['times' => $times]);
+    }
 }
