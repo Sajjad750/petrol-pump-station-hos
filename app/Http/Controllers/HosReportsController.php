@@ -1137,23 +1137,26 @@ class HosReportsController extends Controller
             $shiftQuery->where('station_id', $request->input('station_id'));
         }
 
-        // Date and Time Filters
+        // Date and Time Filters (overlap by shift start_time/end_time against window)
         if ($request->filled('from_date') || $request->filled('to_date') || $request->filled('from_time') || $request->filled('to_time')) {
             $from_date = $request->input('from_date');
             $to_date = $request->input('to_date');
-            $from_time = $request->input('from_time') ?: '00:00:00';
-            $to_time = $request->input('to_time') ?: '23:59:59';
+            $from_time = $request->input('from_time');
+            $to_time = $request->input('to_time');
 
-            if ($from_date && $to_date) {
-                $from_datetime = $from_date.' '.$from_time;
-                $to_datetime = $to_date.' '.$to_time;
-                $shiftQuery->whereBetween('start_time', [$from_datetime, $to_datetime]);
-            } elseif ($from_date) {
-                $from_datetime = $from_date.' '.$from_time;
-                $shiftQuery->where('start_time', '>=', $from_datetime);
-            } elseif ($to_date) {
-                $to_datetime = $to_date.' '.$to_time;
-                $shiftQuery->where('start_time', '<=', $to_datetime);
+            // Build window start/end from provided parts. Default to full-day bounds when time missing
+            if ($from_date || $to_date) {
+                $window_start_date = $from_date ?: $to_date; // if only to_date provided, use it for both bounds
+                $window_end_date = $to_date ?: $from_date;
+
+                $window_start = $window_start_date.' '.($from_time ?: '00:00:00');
+                $window_end = $window_end_date.' '.($to_time ?: '23:59:59');
+
+                // Overlap: shift.start_time <= window_end AND shift.end_time >= window_start
+                $shiftQuery->where(function ($q) use ($window_start, $window_end) {
+                    $q->where('end_time', '>=', $window_start)
+                      ->where('start_time', '<=', $window_end);
+                });
             }
         }
 
