@@ -1052,10 +1052,15 @@ class HosReportsController extends Controller
         ])->get();
 
         // Sales Type Wise Summary (show raw MOP as stored in DB)
-        $salesTypeSummary = $transactions->groupBy('mode_of_payment')
+        $salesTypeSummary = $transactions
+            ->groupBy(function ($t) {
+                return trim((string) ($t->mode_of_payment ?? ''));
+            })
             ->map(function ($group, $mop) {
+                $label = trim((string) ($mop ?? ''));
+
                 return [
-                    'sales_type' => (string) ($mop ?? ''),
+                    'sales_type' => $label,
                     'volume' => $group->sum('volume'),
                     'total_amount' => $group->sum('amount'),
                     'sales_count' => $group->count(),
