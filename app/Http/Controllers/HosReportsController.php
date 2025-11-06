@@ -1051,11 +1051,11 @@ class HosReportsController extends Controller
             'pts_users.login as attendant_login',
         ])->get();
 
-        // Sales Type Wise Summary (Cash, MOP)
+        // Sales Type Wise Summary (show raw MOP as stored in DB)
         $salesTypeSummary = $transactions->groupBy('mode_of_payment')
-            ->map(function ($group) {
+            ->map(function ($group, $mop) {
                 return [
-                    'sales_type' => ucfirst($group->first()->mode_of_payment ?? 'Unknown'),
+                    'sales_type' => (string) ($mop ?? ''),
                     'volume' => $group->sum('volume'),
                     'total_amount' => $group->sum('amount'),
                     'sales_count' => $group->count(),
