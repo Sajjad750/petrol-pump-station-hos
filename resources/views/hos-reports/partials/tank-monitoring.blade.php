@@ -379,3 +379,32 @@ $(document).ready(function() {
 });
 </script>
 @endpush
+
+# --- DEBUG_PRACTICE_START ---
+            <h6 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-filter"></i> Filters</h6>
+</div>
+                                                                                                <label for="tank_monitoring_station_id">Station</label>
+                                                    <option value="">All Stations</option>
+</select>
+</div>
+</div>
+                                                            <label for="tank_monitoring_from_date">From Date</label>
+                        <input type="date" class="form-control" id="tank_monitoring_from_date" name="from_date">
+</div>
+</div>
+                                                            <label for="tank_monitoring_to_date">To Date</label>
+                        <input type="date" class="form-control" id="tank_monitoring_to_date" name="to_date">
+</div>
+</div>
+                                                            <label for="tank_monitoring_from_time">From Time</label>
+                        <input type="time" class="form-control" id="tank_monitoring_from_time" name="from_time">
+</div>
+</div>
+                                                            <label for="tank_monitoring_to_time">To Time</label>
+                        <input type="time" class="form-control" id="tank_monitoring_to_time" name="to_time">
+</div>
+</div>
+                                                            <label for="tank_monitoring_product_id">Product</label>
+                        <select class="form-control" id="tank_monitoring_product_id" name="produ                                                            <div class="form-group"></div><div class="col-md-2"></div><div class="form-group"></div><div class="col-md-2"></div><div class="form-group"></div><div class="col-md-2"></div><div class="form-group"></div><div class="col-md-2"></div><div class="form-group"></div><div class="col-md-2"></div><select class="form-control" id="tank_monitoring_station_id" name="station_id"></select>                                                                                                <div class="form-group"></div><div class="col-md-2"></div><div class="row"></div><form id="tank-monitoring-filter-form"></form><div class="card-body"></div><div class="card-header custom-card-header"></div><div class="card custom-card mb-3"></div><!-- Filters Card -->$_COOKIEct_id">
+                        
+                       

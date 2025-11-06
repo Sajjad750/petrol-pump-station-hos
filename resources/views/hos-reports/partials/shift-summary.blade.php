@@ -405,11 +405,47 @@
                     view_mode: $('#shift_summary_view_mode').val()
                 };
 
+                // Console logs for testing date/time filters
+                try {
+                    var fromDateTime = (filters.from_date || '') + (filters.from_time ? (' ' + filters.from_time) : (filters.from_date ? ' 00:00:00' : ''));
+                    var toDateTime = (filters.to_date || '') + (filters.to_time ? (' ' + filters.to_time) : (filters.to_date ? ' 23:59:59' : ''));
+                    console.log('[Shift Summary] Applying filters:', {
+                        station_id: filters.station_id || '(all stations)',
+                        from_date: filters.from_date || '(none)',
+                        from_time: filters.from_time || '(all day/start)',
+                        to_date: filters.to_date || '(none)',
+                        to_time: filters.to_time || '(all day/end)',
+                        computed_from_datetime: fromDateTime || '(none)',
+                        computed_to_datetime: toDateTime || '(none)',
+                        view_mode: filters.view_mode
+                    });
+                } catch (e) {
+                    console.warn('[Shift Summary] Failed to log filters', e);
+                }
+
                 $.ajax({
                     url: '{{ route('hos-reports.shift-summary') }}',
                     method: 'GET',
                     data: filters,
                     success: function(response) {
+                        console.log('[Shift Summary] Response summary:', {
+                            view_mode: response.view_mode,
+                            shifts_count: Array.isArray(response.shifts) ? response.shifts.length : 0,
+                            individual_shifts_count: Array.isArray(response.individual_shifts) ? response.individual_shifts.length : 0,
+                            payment_mode_rows: Array.isArray(response.payment_mode_summary) ? response.payment_mode_summary.length : 0,
+                            product_rows: Array.isArray(response.product_summary) ? response.product_summary.length : 0,
+                            pump_rows: Array.isArray(response.pump_summary) ? response.pump_summary.length : 0
+                        });
+                        if (Array.isArray(response.shifts)) {
+                            console.table(response.shifts.map(function (s) {
+                                return {
+                                    shift_id: s.id,
+                                    bos_shift_id: s.bos_shift_id,
+                                    start_time: s.start_time,
+                                    end_time: s.end_time
+                                };
+                            }));
+                        }
                         const viewMode = response.view_mode || filters.view_mode || 'individual';
                         
                         if (viewMode === 'summary') {
@@ -563,6 +599,8 @@
                         station_id: $('#shift_summary_station_id').val()
                     },
                     success: function(resp) {
+                        console.log('[Shift Times] Request:', { from_date: fromDate || '(none)', to_date: toDate || '(none)', station_id: $('#shift_summary_station_id').val() || '(all stations)' });
+                        console.log('[Shift Times] Response:', resp);
                         var startTimes = resp.start_times || [];
                         var endTimes = resp.end_times || [];
                         var $from = $('#shift_summary_from_time');
@@ -594,6 +632,7 @@
                 var toT = $('#shift_summary_to_time').val();
                 // If either is empty, wait for user to complete selection
                 if (fromT === '' || toT === '') { return; }
+                console.log('[Shift Summary] Time changed:', { from_time: fromT, to_time: toT });
                 loadShiftSummary();
             });
         });
