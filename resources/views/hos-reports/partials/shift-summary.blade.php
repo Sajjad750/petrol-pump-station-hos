@@ -538,52 +538,64 @@
                 loadShiftSummary();
             });
 
-            // Populate time dropdowns based on selected date and station
-            function loadTimesForDate(dateStr) {
-                if (!dateStr) {
-                    var $from = $('#shift_summary_from_time');
-                    var $to = $('#shift_summary_to_time');
-                    var f0 = $from.find('option').first().clone();
-                    var t0 = $to.find('option').first().clone();
-                    $from.empty().append(f0);
-                    $to.empty().append(t0);
+            function resetTimeDropdowns() {
+                var $from = $('#shift_summary_from_time');
+                var $to = $('#shift_summary_to_time');
+                var f0 = $from.find('option').first().clone();
+                var t0 = $to.find('option').first().clone();
+                $from.empty().append(f0);
+                $to.empty().append(t0);
+            }
+
+            function loadTimesForDateRange() {
+                var fromDate = $('#shift_summary_from_date').val();
+                var toDate = $('#shift_summary_to_date').val();
+                if (!fromDate && !toDate) {
+                    resetTimeDropdowns();
                     return;
                 }
                 $.ajax({
                     url: '{{ route('hos-reports.shift-times') }}',
                     method: 'GET',
                     data: {
-                        date: dateStr,
+                        from_date: fromDate,
+                        to_date: toDate,
                         station_id: $('#shift_summary_station_id').val()
                     },
                     success: function(resp) {
-                        var times = resp.times || [];
+                        var startTimes = resp.start_times || [];
+                        var endTimes = resp.end_times || [];
                         var $from = $('#shift_summary_from_time');
                         var $to = $('#shift_summary_to_time');
                         var f0 = $from.find('option').first().clone();
                         var t0 = $to.find('option').first().clone();
                         $from.empty().append(f0);
                         $to.empty().append(t0);
-                        times.forEach(function(t) {
-                            $from.append($('<option></option>').val(t).text(t));
-                            $to.append($('<option></option>').val(t).text(t));
-                        });
+                        startTimes.forEach(function(t) { $from.append($('<option></option>').val(t).text(t)); });
+                        endTimes.forEach(function(t) { $to.append($('<option></option>').val(t).text(t)); });
                     }
                 });
             }
 
             // Reload times when dates or station change
             $('#shift_summary_from_date, #shift_summary_to_date, #shift_summary_station_id').on('change', function() {
-                // If both dates provided, prefer from_date for time list; else use whichever set
-                var datePref = $('#shift_summary_from_date').val() || $('#shift_summary_to_date').val();
-                loadTimesForDate(datePref);
+                loadTimesForDateRange();
             });
 
             // Initial load (if dates prefilled)
             (function initTimes(){
-                var datePref = $('#shift_summary_from_date').val() || $('#shift_summary_to_date').val();
-                if (datePref) loadTimesForDate(datePref);
+                var seeded = $('#shift_summary_from_date').val() || $('#shift_summary_to_date').val();
+                if (seeded) loadTimesForDateRange();
             })();
+
+            // Trigger data load only when both times selected (or both empty = all day)
+            $('#shift_summary_from_time, #shift_summary_to_time').on('change', function() {
+                var fromT = $('#shift_summary_from_time').val();
+                var toT = $('#shift_summary_to_time').val();
+                // If either is empty, wait for user to complete selection
+                if (fromT === '' || toT === '') { return; }
+                loadShiftSummary();
+            });
         });
     </script>
 @endpush
