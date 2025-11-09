@@ -70,10 +70,10 @@ class FuelGradeController extends Controller
         $validated = $request->validated();
 
         // Update fuel grade in HOS database
-        $fuelGrade->update([
-            'scheduled_price' => $validated['scheduled_price'],
-            'scheduled_at' => $validated['scheduled_at'],
-        ]);
+        //        $fuelGrade->update([
+        //            'scheduled_price' => $validated['scheduled_price'],
+        //            'scheduled_at' => $validated['scheduled_at'],
+        //        ]);
 
         // Create HosCommand
         HosCommand::create([
