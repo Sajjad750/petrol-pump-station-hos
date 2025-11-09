@@ -45,6 +45,7 @@ class FuelGradeController extends Controller
                 'source_system' => "HOS",
                 'changed_by_user_name' => auth()->user()->name ?? null,
                 'status' => 'pending',
+                'user_timezone' => $request->user_timezone ?? null,
             ],
             'status' => 'pending',
         ]);
@@ -86,6 +87,7 @@ class FuelGradeController extends Controller
                 'source_system' => "HOS",
                 'changed_by_user_name' => auth()->user()->name ?? null,
                 'status' => 'pending',
+                'user_timezone' => $request->user_timezone ?? null,
             ],
             'status' => 'pending',
         ]);
