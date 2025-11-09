@@ -259,6 +259,7 @@
                     data: {
                         scheduled_price: price,
                         scheduled_at: scheduledAt,
+                        user_timezone: USER_TIMEZONE,
                         _token: '{{ csrf_token() }}',
                         _method: 'PUT'
                     },
