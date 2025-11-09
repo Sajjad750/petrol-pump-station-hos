@@ -27,7 +27,7 @@ class FuelGradeController extends Controller
             $data['price'] = $validated['price'];
         }
 
-        $fuelGrade->update($data);
+        //        $fuelGrade->update($data);
 
         // Determine command type
         $command_type = $validated['scheduled_at'] ? 'schedule_fuel_grade_price' : 'update_fuel_grade_price';
