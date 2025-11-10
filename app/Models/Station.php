@@ -144,11 +144,48 @@ class Station extends Model
     }
 
     /**
-     * Update last sync timestamp
+     * Update last sync timestamp and connectivity status
      */
     public function updateLastSync(): void
     {
-        $this->update(['last_sync_at' => now()]);
+        $this->update([
+            'last_sync_at' => now(),
+            'connectivity_status' => 'online', // When we receive a sync, BOS is definitely connected
+        ]);
+    }
+
+    /**
+     * Calculate connectivity status based on last sync time
+     * This can be used for periodic status updates
+     */
+    public function calculateConnectivityStatus(): string
+    {
+        if (!$this->last_sync_at) {
+            return 'offline';
+        }
+
+        $minutesSinceSync = $this->last_sync_at->diffInMinutes(now());
+
+        if ($minutesSinceSync <= 5) {
+            return 'online';
+        } elseif ($minutesSinceSync <= 30) {
+            return 'warning';
+        } else {
+            return 'offline';
+        }
+    }
+
+    /**
+     * Update connectivity status based on last sync time
+     * Useful for periodic background updates
+     */
+    public function updateConnectivityStatus(): void
+    {
+        $status = $this->calculateConnectivityStatus();
+
+        if ($this->connectivity_status !== $status) {
+            $this->update(['connectivity_status' => $status]);
+        }
     }
 
     /**
