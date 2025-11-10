@@ -3,152 +3,151 @@
 @endpush
 
 @section('content')
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card custom-card mb-3">
-                <div class="card-header custom-card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">New Price Schedule</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="station_select">Station</label>
-                                <select id="station_select" class="form-control">
-                                    <option value="">Select station</option>
-                                    @foreach ($stations as $station)
-                                    <option value="{{ $station->id }}">{{ $station->site_name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="product_select">Product</label>
-                                <select id="product_select" class="form-control" disabled>
-                                    <option value="">Select product</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="form-group">
-                                <label for="new_price">New Price</label>
-                                <input id="new_price" type="number" step="0.01" min="0" class="form-control"
-                                    placeholder="0.00">
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="form-group">
-                                <label for="effective_date">Effective Date</label>
-                                <input id="effective_date" type="date" class="form-control">
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="form-group">
-                                <label for="effective_time">Effective Time</label>
-                                <input id="effective_time" type="time" class="form-control">
-                            </div>
-                        </div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card custom-card mb-3">
+                    <div class="card-header custom-card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">New Price Schedule</h5>
                     </div>
-                    <div class="d-flex justify-content-end">
-                        <button id="apply_prefill" type="button" class="btn btn-primary">Schedule Price</button>
-                    </div>
-                    <small class="text-muted d-block mt-2">Schedules the selected product price for the chosen station,
-                        date and time.</small>
-                </div>
-            </div>
-
-            <div class="card custom-card">
-                <div class="card-header custom-card-header">
-                    <h4 class="mb-0">Fuel Grades</h4>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table id="fuel-grades-table" class="table-bordered table">
-                            <thead class="custom-table-header">
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Station</th>
-                                    <th>UUID</th>
-                                    <th>PTS Fuel Grade ID</th>
-                                    <th>Name</th>
-                                    <th>Price</th>
-                                    <th>Scheduled Price</th>
-                                    <th>Scheduled At</th>
-                                    <th>Price Status</th>
-                                    <th>Expansion Coefficient</th>
-                                    <th>Blend Status</th>
-                                    <th>Blend Info</th>
-                                    <th>BOS Fuel Grade ID</th>
-
-                                </tr>
-                            </thead>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card custom-card mt-3">
-                <div class="card-header custom-card-header">
-                    <h5 class="mb-0">Price Change History</h5>
-                </div>
-                <div class="card-body">
-                    <div class="list-group">
-                        @forelse($history as $item)
-                        <div class="list-group-item d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="font-weight-bold">{{ $item['product_name'] }}</div>
-                                <div class="text-muted">
-                                    @php
-                                    $dateToConvert = $item['effective_at'] ?? $item['created_at'];
-                                    $utcTimestamp = $dateToConvert instanceof \Carbon\Carbon
-                                    ? $dateToConvert->utc()->toIso8601String()
-                                    : \Illuminate\Support\Carbon::parse($dateToConvert)->utc()->toIso8601String();
-                                    @endphp
-                                    <span class="price-history-date" data-utc="{{ $utcTimestamp }}">
-                                        {{ $dateToConvert instanceof \Carbon\Carbon ? $dateToConvert->format('Y-m-d
-                                        H:i') : \Illuminate\Support\Carbon::parse($dateToConvert)->format('Y-m-d H:i')
-                                        }}
-                                    </span>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="station_select">Station</label>
+                                    <select id="station_select" class="form-control">
+                                        <option value="">Select station</option>
+                                        @foreach ($stations as $station)
+                                            <option value="{{ $station->id }}">{{ $station->site_name }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
-                                @if($item['changed_by_user_name'])
-                                <div class="text-muted small">Changed by: {{ $item['changed_by_user_name'] }}</div>
-                                @endif
                             </div>
-                            <div class="text-right">
-                                <div class="text-muted">{{ $item['change_type'] ?? 'Price Change' }}</div>
-                                <div>
-                                    @php
-                                    $from = $item['price_from'];
-                                    $to = $item['price_to'];
-                                    @endphp
-                                    @if (!is_null($from) && !is_null($to) && $from != $to)
-                                    ${{ number_format((float) $from, 2) }} → ${{ number_format((float) $to, 2) }}
-                                    @elseif(!is_null($to))
-                                    ${{ number_format((float) $to, 2) }}
-                                    @else
-                                    N/A
-                                    @endif
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="product_select">Product</label>
+                                    <select id="product_select" class="form-control" disabled>
+                                        <option value="">Select product</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label for="new_price">New Price</label>
+                                    <input id="new_price" type="number" step="0.01" min="0" class="form-control" placeholder="0.00">
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label for="effective_date">Effective Date</label>
+                                    <input id="effective_date" type="date" class="form-control">
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label for="effective_time">Effective Time</label>
+                                    <input id="effective_time" type="time" class="form-control">
                                 </div>
                             </div>
                         </div>
-                        @empty
-                        <div class="text-muted">No recent price changes.</div>
-                        @endforelse
+                        <div class="d-flex justify-content-end">
+                            <button id="apply_prefill" type="button" class="btn btn-primary">Schedule Price</button>
+                        </div>
+                        <small class="text-muted d-block mt-2">Schedules the selected product price for the chosen station,
+                            date and time.</small>
+                    </div>
+                </div>
+
+                <div class="card custom-card">
+                    <div class="card-header custom-card-header">
+                        <h4 class="mb-0">Fuel Grades</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="fuel-grades-table" class="table-bordered table">
+                                <thead class="custom-table-header">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Station</th>
+                                        <th>UUID</th>
+                                        <th>PTS Fuel Grade ID</th>
+                                        <th>Name</th>
+                                        <th>Price</th>
+                                        <th>Scheduled Price</th>
+                                        <th>Scheduled At</th>
+                                        <th>Price Status</th>
+                                        <th>Expansion Coefficient</th>
+                                        <th>Blend Status</th>
+                                        <th>Blend Info</th>
+                                        <th>BOS Fuel Grade ID</th>
+
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card custom-card mt-3">
+                    <div class="card-header custom-card-header">
+                        <h5 class="mb-0">Price Change History</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            @forelse($history as $item)
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="font-weight-bold">{{ $item['product_name'] }}</div>
+                                        <div class="text-muted">
+                                            @php
+                                                $dateToConvert = $item['effective_at'] ?? $item['created_at'];
+                                                $utcTimestamp =
+                                                    $dateToConvert instanceof \Carbon\Carbon
+                                                        ? $dateToConvert->utc()->toIso8601String()
+                                                        : \Illuminate\Support\Carbon::parse($dateToConvert)->utc()->toIso8601String();
+                                            @endphp
+                                            <span class="price-history-date" data-utc="{{ $utcTimestamp }}">
+                                                {{ $dateToConvert instanceof \Carbon\Carbon
+                                                    ? $dateToConvert->format('Y-m-d
+                                                                                        H:i')
+                                                    : \Illuminate\Support\Carbon::parse($dateToConvert)->format('Y-m-d H:i') }}
+                                            </span>
+                                        </div>
+                                        @if ($item['changed_by_user_name'])
+                                            <div class="text-muted small">Changed by: {{ $item['changed_by_user_name'] }}</div>
+                                        @endif
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-muted">{{ $item['change_type'] ?? 'Price Change' }}</div>
+                                        <div>
+                                            @php
+                                                $from = $item['price_from'];
+                                                $to = $item['price_to'];
+                                            @endphp
+                                            @if (!is_null($from) && !is_null($to) && $from != $to)
+                                                ${{ number_format((float) $from, 2) }} → ${{ number_format((float) $to, 2) }}
+                                            @elseif(!is_null($to))
+                                                ${{ number_format((float) $to, 2) }}
+                                            @else
+                                                N/A
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="text-muted">No recent price changes.</div>
+                            @endforelse
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 @endsection
 
 @push('js')
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.6.0/moment-timezone-with-data.min.js"></script>
-<script>
-    $(document).ready(function() {
+    <script>
+        $(document).ready(function() {
             const USER_TIMEZONE = moment.tz.guess();
             // Load products on station change
             $('#station_select').on('change', function() {
@@ -391,5 +390,5 @@
                 }
             });
         });
-</script>
+    </script>
 @endpush

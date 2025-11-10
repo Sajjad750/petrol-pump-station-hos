@@ -22,7 +22,8 @@
 <script src="{{ asset('plugins/moment/moment.min.js') }}"></script>
 <script src="{{ asset('plugins/moment/moment-with-locales.js') }}"></script>
 <script src="{{ asset('plugins/select2/js/select2.full.js') }}"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.6.0/moment-timezone-with-data.min.js"></script>
 <script>
     function alertMsg(msg, status = 'success') {
         Swal.fire({
