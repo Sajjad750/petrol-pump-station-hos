@@ -53,7 +53,8 @@
                         <div class="d-flex justify-content-end">
                             <button id="apply_prefill" type="button" class="btn btn-primary">Schedule Price</button>
                         </div>
-                        <small class="text-muted d-block mt-2">Schedules the selected product price for the chosen station, date and time.</small>
+                        <small class="text-muted d-block mt-2">Schedules the selected product price for the chosen station,
+                            date and time.</small>
                     </div>
                 </div>
 
@@ -98,10 +99,26 @@
                                     <div>
                                         <div class="font-weight-bold">{{ $item['product_name'] }}</div>
                                         <div class="text-muted">
-                                            {{ $item['scheduled_at'] ? \Illuminate\Support\Carbon::parse($item['scheduled_at'])->format('Y-m-d H:i') : $item['created_at']->format('Y-m-d H:i') }}</div>
+                                            @php
+                                                $dateToConvert = $item['effective_at'] ?? $item['created_at'];
+                                                $utcTimestamp =
+                                                    $dateToConvert instanceof \Carbon\Carbon
+                                                        ? $dateToConvert->utc()->toIso8601String()
+                                                        : \Illuminate\Support\Carbon::parse($dateToConvert)->utc()->toIso8601String();
+                                            @endphp
+                                            <span class="price-history-date" data-utc="{{ $utcTimestamp }}">
+                                                {{ $dateToConvert instanceof \Carbon\Carbon
+                                                    ? $dateToConvert->format('Y-m-d
+                                                                                        H:i')
+                                                    : \Illuminate\Support\Carbon::parse($dateToConvert)->format('Y-m-d H:i') }}
+                                            </span>
+                                        </div>
+                                        @if ($item['changed_by_user_name'])
+                                            <div class="text-muted small">Changed by: {{ $item['changed_by_user_name'] }}</div>
+                                        @endif
                                     </div>
                                     <div class="text-right">
-                                        <div class="text-muted">{{ $item['type'] === 'schedule_fuel_grade_price' ? 'Price Change' : 'Price Update' }}</div>
+                                        <div class="text-muted">{{ $item['change_type'] ?? 'Price Change' }}</div>
                                         <div>
                                             @php
                                                 $from = $item['price_from'];
@@ -129,8 +146,6 @@
 @endsection
 
 @push('js')
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.6.0/moment-timezone-with-data.min.js"></script>
     <script>
         $(document).ready(function() {
             const USER_TIMEZONE = moment.tz.guess();
@@ -364,6 +379,16 @@
             // Note: No direct update flow on this page; all actions use schedule route
 
             // No modal submission handler needed
+
+            // Convert UTC dates to user timezone
+            $('.price-history-date').each(function() {
+                const $element = $(this);
+                const utcTimestamp = $element.data('utc');
+                if (utcTimestamp) {
+                    const userTime = moment.tz(utcTimestamp, USER_TIMEZONE);
+                    $element.text(userTime.format('Y-MM-DD HH:mm'));
+                }
+            });
         });
     </script>
 @endpush

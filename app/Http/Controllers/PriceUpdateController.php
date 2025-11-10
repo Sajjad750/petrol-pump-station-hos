@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\FuelGrade;
-use App\Models\HosCommand;
+use App\Models\FuelGradePriceHistory;
 use App\Models\Station;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -20,39 +20,24 @@ class PriceUpdateController extends Controller
             ->orderBy('site_name')
             ->get(['id', 'site_name']);
 
-        // Recent price change history from queued commands, enriched with fuel grade and prices
-        $rawHistory = HosCommand::query()
-            ->whereIn('command_type', ['schedule_fuel_grade_price', 'update_fuel_grade_price'])
+        // Recent price change history from fuel_grade_price_history table
+        $history = FuelGradePriceHistory::query()
+            ->with('fuelGrade')
             ->latest()
             ->limit(20)
-            ->get(['id', 'station_id', 'command_type', 'command_data', 'created_at']);
-
-        $history = $rawHistory->map(function (HosCommand $cmd) {
-            $data = (array) ($cmd->command_data ?? []);
-            $bosFuelGradeId = $data['bos_fuel_grade_id'] ?? null;
-            $scheduledAt = $data['scheduled_at'] ?? null;
-            $newPrice = $data['scheduled_price'] ?? ($data['price'] ?? null);
-            $oldPrice = $data['price'] ?? null;
-
-            $fuelGrade = null;
-
-            if ($bosFuelGradeId) {
-                $fuelGrade = FuelGrade::query()
-                    ->where('station_id', $cmd->station_id)
-                    ->where('bos_fuel_grade_id', $bosFuelGradeId)
-                    ->first(['name']);
-            }
-
-            return [
-                'id' => $cmd->id,
-                'type' => $cmd->command_type,
-                'product_name' => $fuelGrade->name ?? 'Unknown Product',
-                'scheduled_at' => $scheduledAt,
-                'price_from' => $oldPrice,
-                'price_to' => $newPrice,
-                'created_at' => $cmd->created_at,
-            ];
-        });
+            ->get()
+            ->map(function (FuelGradePriceHistory $historyItem) {
+                return [
+                    'id' => $historyItem->id,
+                    'product_name' => $historyItem->fuelGrade->name ?? '',
+                    'effective_at' => $historyItem->effective_at,
+                    'created_at' => $historyItem->created_at,
+                    'price_from' => $historyItem->old_price,
+                    'price_to' => $historyItem->new_price,
+                    'change_type' => $historyItem->change_type,
+                    'changed_by_user_name' => $historyItem->changed_by_user_name,
+                ];
+            });
 
         return view('price_updates.index', [
             'stations' => $stations,
