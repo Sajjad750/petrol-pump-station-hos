@@ -533,6 +533,71 @@
             $('#shift_summary_station_id, #shift_summary_view_mode').on('change', function() {
                 loadShiftSummary();
             });
+
+            function resetTimeDropdowns() {
+                var $from = $('#shift_summary_from_time');
+                var $to = $('#shift_summary_to_time');
+                var f0 = $from.find('option').first().clone();
+                var t0 = $to.find('option').first().clone();
+                $from.empty().append(f0);
+                $to.empty().append(t0);
+            }
+
+            function loadTimesForDateRange() {
+                var fromDate = $('#shift_summary_from_date').val();
+                var toDate = $('#shift_summary_to_date').val();
+                if (!fromDate && !toDate) {
+                    resetTimeDropdowns();
+                    return;
+                }
+                $.ajax({
+                    url: '{{ route('hos-reports.shift-times') }}',
+                    method: 'GET',
+                    data: {
+                        from_date: fromDate,
+                        to_date: toDate,
+                        station_id: $('#shift_summary_station_id').val()
+                    },
+                    success: function(resp) {
+                        try {
+                            var reqObj = { from_date: fromDate || '(none)', to_date: toDate || '(none)', station_id: $('#shift_summary_station_id').val() || '(all stations)' };
+                            console.log('[Shift Times] Request: ' + JSON.stringify(reqObj));
+                            console.log('[Shift Times] Response: ' + JSON.stringify(resp));
+                        } catch (e) {}
+                        var startTimes = resp.start_times || [];
+                        var endTimes = resp.end_times || [];
+                        var $from = $('#shift_summary_from_time');
+                        var $to = $('#shift_summary_to_time');
+                        var f0 = $from.find('option').first().clone();
+                        var t0 = $to.find('option').first().clone();
+                        $from.empty().append(f0);
+                        $to.empty().append(t0);
+                        startTimes.forEach(function(t) { $from.append($('<option></option>').val(t).text(t)); });
+                        endTimes.forEach(function(t) { $to.append($('<option></option>').val(t).text(t)); });
+                    }
+                });
+            }
+
+            // Reload times when dates or station change
+            $('#shift_summary_from_date, #shift_summary_to_date, #shift_summary_station_id').on('change', function() {
+                loadTimesForDateRange();
+            });
+
+            // Initial load (if dates prefilled)
+            (function initTimes(){
+                var seeded = $('#shift_summary_from_date').val() || $('#shift_summary_to_date').val();
+                if (seeded) loadTimesForDateRange();
+            })();
+
+            // Trigger data load only when both times selected (or both empty = all day)
+            $('#shift_summary_from_time, #shift_summary_to_time').on('change', function() {
+                var fromT = $('#shift_summary_from_time').val();
+                var toT = $('#shift_summary_to_time').val();
+                // If either is empty, wait for user to complete selection
+                if (fromT === '' || toT === '') { return; }
+                try { console.log('[Shift Summary] Time changed: ' + JSON.stringify({ from_time: fromT, to_time: toT })); } catch (e) {}
+                loadShiftSummary();
+            });
         });
     </script>
 @endpush

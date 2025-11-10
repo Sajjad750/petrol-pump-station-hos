@@ -45,18 +45,12 @@
                         </a>
                     </li>
 
-                    <li class="nav-item {{ request()->routeIs('fuel_grades') ? 'menu-open' : '' }}">
-                        <a href="{{ route('fuel_grades') }}" class="nav-link {{ request()->routeIs('fuel_grades') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-tags"></i>
-                            <p>Price Change</p>
-                        </a>
-                    </li>
 
                     @if(auth()->user()->hasPermission('view-fuel-grades'))
                     <li class="nav-item {{ request()->routeIs('price-updates') ? 'menu-open' : '' }}">
                         <a href="{{ route('price-updates') }}" class="nav-link {{ request()->routeIs('price-updates') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-dollar-sign"></i>
-                            <p>Price Update (New)</p>
+                            <p>Price Update </p>
                         </a>
                     </li>
                     @endif
