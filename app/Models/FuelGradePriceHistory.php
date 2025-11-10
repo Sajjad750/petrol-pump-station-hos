@@ -9,6 +9,8 @@ class FuelGradePriceHistory extends Model
 {
     protected $table = 'fuel_grade_price_history';
 
+    protected $guarded = [];
+
     protected $casts = [
         'old_price' => 'decimal:3',
         'new_price' => 'decimal:3',
