@@ -29,13 +29,17 @@
                 <div class="col-md-2">
                     <div class="form-group">
                         <label for="shift_summary_from_time">From Time</label>
-                        <input type="time" class="form-control" id="shift_summary_from_time" name="from_time">
+                        <select class="form-control" id="shift_summary_from_time" name="from_time">
+                            <option value="">All Start Times</option>
+                        </select>
                     </div>
                 </div>
                 <div class="col-md-2">
                     <div class="form-group">
                         <label for="shift_summary_to_time">To Time</label>
-                        <input type="time" class="form-control" id="shift_summary_to_time" name="to_time">
+                        <select class="form-control" id="shift_summary_to_time" name="to_time">
+                            <option value="">All End Times</option>
+                        </select>
                     </div>
                 </div>
                 <div class="col-md-2">
@@ -535,12 +539,8 @@
             });
 
             function resetTimeDropdowns() {
-                var $from = $('#shift_summary_from_time');
-                var $to = $('#shift_summary_to_time');
-                var f0 = $from.find('option').first().clone();
-                var t0 = $to.find('option').first().clone();
-                $from.empty().append(f0);
-                $to.empty().append(t0);
+                $('#shift_summary_from_time').html('<option value="">All Start Times</option>');
+                $('#shift_summary_to_time').html('<option value="">All End Times</option>');
             }
 
             function loadTimesForDateRange() {
@@ -570,10 +570,10 @@
                         var $to = $('#shift_summary_to_time');
                         var previousFrom = $from.val();
                         var previousTo = $to.val();
-                        var f0 = $from.find('option').first().clone();
-                        var t0 = $to.find('option').first().clone();
-                        $from.empty().append(f0);
-                        $to.empty().append(t0);
+
+                        $from.html('<option value="">All Start Times</option>');
+                        $to.html('<option value="">All End Times</option>');
+
                         startTimes.forEach(function(t) {
                             $from.append($('<option></option>').val(t).text(t));
                         });
@@ -589,6 +589,11 @@
                         if (endTimes.length > 0) {
                             var nextTo = endTimes.indexOf(previousTo) !== -1 ? previousTo : endTimes[endTimes.length - 1];
                             $to.val(nextTo);
+                        }
+
+                        // When both dates are selected and auto times chosen, ensure filters can run without manual change
+                        if (startTimes.length > 0 && endTimes.length > 0 && $('#shift_summary_view_mode').val() === 'summary') {
+                            loadShiftSummary();
                         }
                     }
                 });
