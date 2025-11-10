@@ -579,7 +579,7 @@
                         startTimes.forEach(function(item) {
                             var label = item.time;
                             if (item.bos_shift_id) {
-                                label += ' (BOS #' + item.bos_shift_id + ')';
+                                label += ' (ID' + item.bos_shift_id + ')';
                             } else if (item.shift_id) {
                                 label += ' (Shift #' + item.shift_id + ')';
                             }
