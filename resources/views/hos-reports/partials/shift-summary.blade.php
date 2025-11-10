@@ -29,13 +29,17 @@
                 <div class="col-md-2">
                     <div class="form-group">
                         <label for="shift_summary_from_time">From Time</label>
-                        <input type="time" class="form-control" id="shift_summary_from_time" name="from_time">
+                        <select class="form-control" id="shift_summary_from_time" name="from_time">
+                            <option value="">All Start Times</option>
+                        </select>
                     </div>
                 </div>
                 <div class="col-md-2">
                     <div class="form-group">
                         <label for="shift_summary_to_time">To Time</label>
-                        <input type="time" class="form-control" id="shift_summary_to_time" name="to_time">
+                        <select class="form-control" id="shift_summary_to_time" name="to_time">
+                            <option value="">All End Times</option>
+                        </select>
                     </div>
                 </div>
                 <div class="col-md-2">
@@ -196,7 +200,9 @@
             function renderIndividualShift(shiftData, shiftIndex) {
                 var shiftHtml = '<div class="shift-card mb-4" style="border: 2px solid #D7D7D7; border-radius: 8px; padding: 20px; background: white; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">';
                 shiftHtml += '<h3 style="color: #333; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #D7D7D7; font-size: 20px;">';
-                shiftHtml += '<i class="fas fa-calendar-alt"></i> Shift ' + (shiftIndex + 1) + ' (ID: #' + shiftData.shift_number + ')';
+                var bosId = shiftData.bos_shift_id ? ('#' + shiftData.bos_shift_id) : 'N/A';
+                var shiftId = shiftData.shift_id ? ('#' + shiftData.shift_id) : 'N/A';
+                shiftHtml += '<i class="fas fa-calendar-alt"></i> Shift ' + (shiftIndex + 1) + ' (BOS Shift ID: ' + bosId + ' | Shift ID: ' + shiftId + ')';
                 shiftHtml += '</h3>';
                 shiftHtml += '<div class="row mb-3">';
                 shiftHtml += '<div class="col-md-6"><strong>Start Time:</strong> ' + formatDateTime(shiftData.start_time) + '</div>';
@@ -531,6 +537,114 @@
 
             // Auto-filter on dropdown change
             $('#shift_summary_station_id, #shift_summary_view_mode').on('change', function() {
+                loadShiftSummary();
+            });
+
+            function resetTimeDropdowns() {
+                $('#shift_summary_from_time').html('<option value="">All Start Times</option>');
+                $('#shift_summary_to_time').html('<option value="">All End Times</option>');
+            }
+
+            function loadTimesForDateRange() {
+                var fromDate = $('#shift_summary_from_date').val();
+                var toDate = $('#shift_summary_to_date').val();
+                if (!fromDate && !toDate) {
+                    resetTimeDropdowns();
+                    return;
+                }
+                $.ajax({
+                    url: '{{ route('hos-reports.shift-times') }}',
+                    method: 'GET',
+                    data: {
+                        from_date: fromDate,
+                        to_date: toDate,
+                        station_id: $('#shift_summary_station_id').val()
+                    },
+                    success: function(resp) {
+                        try {
+                            var reqObj = { from_date: fromDate || '(none)', to_date: toDate || '(none)', station_id: $('#shift_summary_station_id').val() || '(all stations)' };
+                            console.log('[Shift Times] Request: ' + JSON.stringify(reqObj));
+                            console.log('[Shift Times] Response: ' + JSON.stringify(resp));
+                        } catch (e) {}
+                        var startTimes = resp.start_times || [];
+                        var endTimes = resp.end_times || [];
+                        var $from = $('#shift_summary_from_time');
+                        var $to = $('#shift_summary_to_time');
+                        var previousFrom = $from.val();
+                        var previousTo = $to.val();
+
+                        $from.html('<option value="">All Start Times</option>');
+                        $to.html('<option value="">All End Times</option>');
+
+                        startTimes.forEach(function(item) {
+                            var label = item.time;
+                            if (item.bos_shift_id) {
+                                label += ' (ID #' + item.bos_shift_id + ')';
+                            } else if (item.shift_id) {
+                                label += ' (Shift #' + item.shift_id + ')';
+                            }
+
+                            $from.append(
+                                $('<option></option>')
+                                    .val(item.time)
+                                    .text(label)
+                                    .attr('data-shift-id', item.shift_id || '')
+                                    .attr('data-bos-shift-id', item.bos_shift_id || '')
+                            );
+                        });
+                        endTimes.forEach(function(item) {
+                            var label = item.time;
+                            if (item.bos_shift_id) {
+                                label += ' (BOS #' + item.bos_shift_id + ')';
+                            } else if (item.shift_id) {
+                                label += ' (Shift #' + item.shift_id + ')';
+                            }
+
+                            $to.append(
+                                $('<option></option>')
+                                    .val(item.time)
+                                    .text(label)
+                                    .attr('data-shift-id', item.shift_id || '')
+                                    .attr('data-bos-shift-id', item.bos_shift_id || '')
+                            );
+                        });
+
+                        if (startTimes.length > 0) {
+                            var nextFrom = startTimes.some(function(item) { return item.time === previousFrom; }) ? previousFrom : startTimes[0].time;
+                            $from.val(nextFrom);
+                        }
+
+                        if (endTimes.length > 0) {
+                            var nextTo = endTimes.some(function(item) { return item.time === previousTo; }) ? previousTo : endTimes[endTimes.length - 1].time;
+                            $to.val(nextTo);
+                        }
+
+                        // When both dates are selected and auto times chosen, ensure filters can run without manual change
+                        if (startTimes.length > 0 && endTimes.length > 0 && $('#shift_summary_view_mode').val() === 'summary') {
+                            loadShiftSummary();
+                        }
+                    }
+                });
+            }
+
+            // Reload times when dates or station change
+            $('#shift_summary_from_date, #shift_summary_to_date, #shift_summary_station_id').on('change', function() {
+                loadTimesForDateRange();
+            });
+
+            // Initial load (if dates prefilled)
+            (function initTimes(){
+                var seeded = $('#shift_summary_from_date').val() || $('#shift_summary_to_date').val();
+                if (seeded) loadTimesForDateRange();
+            })();
+
+            // Trigger data load only when both times selected (or both empty = all day)
+            $('#shift_summary_from_time, #shift_summary_to_time').on('change', function() {
+                var fromT = $('#shift_summary_from_time').val();
+                var toT = $('#shift_summary_to_time').val();
+                // If either is empty, wait for user to complete selection
+                if (fromT === '' || toT === '') { return; }
+                try { console.log('[Shift Summary] Time changed: ' + JSON.stringify({ from_time: fromT, to_time: toT })); } catch (e) {}
                 loadShiftSummary();
             });
         });

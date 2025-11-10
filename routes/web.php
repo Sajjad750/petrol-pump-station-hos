@@ -113,6 +113,7 @@ Route::middleware('auth')->group(function () {
     Route::get('hos-reports/tank-deliveries/export-excel', [\App\Http\Controllers\HosReportsController::class, 'exportTankDeliveriesExcel'])->name('hos-reports.tank-deliveries.export.excel');
     Route::get('hos-reports/tank-deliveries/export-pdf', [\App\Http\Controllers\HosReportsController::class, 'exportTankDeliveriesPdf'])->name('hos-reports.tank-deliveries.export.pdf');
     Route::get('hos-reports/shift-summary', [\App\Http\Controllers\HosReportsController::class, 'getShiftSummary'])->name('hos-reports.shift-summary');
+    Route::get('hos-reports/shift-times', [\App\Http\Controllers\HosReportsController::class, 'getShiftTimes'])->name('hos-reports.shift-times');
     Route::get('hos-reports/sales-summary', [\App\Http\Controllers\HosReportsController::class, 'getSalesSummary'])->name('hos-reports.sales-summary');
     Route::get('hos-reports/analytical-sales', [\App\Http\Controllers\HosReportsController::class, 'getAnalyticalSales'])->name('hos-reports.analytical-sales');
     Route::get('hos-reports/tank-monitoring', [\App\Http\Controllers\HosReportsController::class, 'getTankMonitoring'])->name('hos-reports.tank-monitoring');

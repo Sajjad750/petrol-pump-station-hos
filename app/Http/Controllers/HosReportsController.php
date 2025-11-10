@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
 use App\Models\PumpTransaction;
 use App\Models\Station;
 use App\Models\TankInventory;
@@ -1137,24 +1138,44 @@ class HosReportsController extends Controller
             $shiftQuery->where('station_id', $request->input('station_id'));
         }
 
-        // Date and Time Filters
-        if ($request->filled('from_date') || $request->filled('to_date') || $request->filled('from_time') || $request->filled('to_time')) {
-            $from_date = $request->input('from_date');
-            $to_date = $request->input('to_date');
-            $from_time = $request->input('from_time') ?: '00:00:00';
-            $to_time = $request->input('to_time') ?: '23:59:59';
+        $from_date = $request->input('from_date');
+        $to_date = $request->input('to_date');
+        $from_time = $request->input('from_time');
+        $to_time = $request->input('to_time');
 
-            if ($from_date && $to_date) {
-                $from_datetime = $from_date.' '.$from_time;
-                $to_datetime = $to_date.' '.$to_time;
-                $shiftQuery->whereBetween('start_time', [$from_datetime, $to_datetime]);
-            } elseif ($from_date) {
-                $from_datetime = $from_date.' '.$from_time;
-                $shiftQuery->where('start_time', '>=', $from_datetime);
-            } elseif ($to_date) {
-                $to_datetime = $to_date.' '.$to_time;
-                $shiftQuery->where('start_time', '<=', $to_datetime);
+        $windowStart = null;
+        $windowEnd = null;
+
+        if ($from_date || $from_time) {
+            $startDate = $from_date ?: $to_date;
+
+            if ($startDate) {
+                $windowStart = Carbon::parse($startDate.' '.($from_time ?: '00:00:00'));
             }
+        }
+
+        if ($to_date || $to_time) {
+            $endDate = $to_date ?: $from_date;
+
+            if ($endDate) {
+                $windowEnd = Carbon::parse($endDate.' '.($to_time ?: '23:59:59'));
+            }
+        }
+
+        if ($windowStart && !$windowEnd) {
+            $windowEnd = $windowStart->copy()->endOfDay();
+        }
+
+        if ($windowEnd && !$windowStart) {
+            $windowStart = $windowEnd->copy()->startOfDay();
+        }
+
+        if ($windowStart) {
+            $shiftQuery->where('start_time', '>=', $windowStart);
+        }
+
+        if ($windowEnd) {
+            $shiftQuery->where('start_time', '<=', $windowEnd);
         }
 
         // Get matching shifts with station info
@@ -1168,7 +1189,7 @@ class HosReportsController extends Controller
                 'id' => $shift->id,
                 'bos_shift_id' => $shift->bos_shift_id,
                 'station_id' => $shift->station_id,
-                'shift_number' => $shift->id, // Using ID as shift number
+                'shift_number' => $shift->bos_shift_id ?? $shift->id,
                 'start_time' => $shift->start_time ? $shift->start_time->format('Y-m-d H:i:s') : null,
                 'end_time' => $shift->end_time ? $shift->end_time->format('Y-m-d H:i:s') : null,
             ];
@@ -1281,6 +1302,7 @@ class HosReportsController extends Controller
             $individualShifts[] = [
                 'shift_id' => $shiftInfo['id'],
                 'shift_number' => $shiftInfo['shift_number'],
+                'bos_shift_id' => $shiftInfo['bos_shift_id'],
                 'start_time' => $shiftInfo['start_time'],
                 'end_time' => $shiftInfo['end_time'],
                 'payment_mode_summary' => $paymentSummaries->toArray(),
@@ -1360,6 +1382,7 @@ class HosReportsController extends Controller
                 return [
                     'id' => $s['id'],
                     'shift_number' => $s['shift_number'],
+                    'bos_shift_id' => $s['bos_shift_id'],
                     'start_time' => $s['start_time'],
                     'end_time' => $s['end_time'],
                 ];
@@ -1381,6 +1404,76 @@ class HosReportsController extends Controller
             'pump_total_totalizer_volume' => $combinedPumpTotalTotalizerVolume,
             'pump_total_txn_volume' => $combinedPumpTotalTxnVolume,
             'pump_total_amount' => $combinedPumpTotalAmount,
+        ]);
+    }
+
+    /**
+     * Get available shift times (HH:MM:SS) for a given date range, split by start and end times.
+     */
+    public function getShiftTimes(Request $request)
+    {
+        $from_date = $request->input('from_date');
+        $to_date = $request->input('to_date');
+        $station_id = $request->input('station_id');
+
+        $startTimes = collect();
+        $endTimes = collect();
+
+        if ($from_date) {
+            $startQuery = \App\Models\Shift::query()->select('id', 'bos_shift_id', 'start_time');
+
+            if (!empty($station_id)) {
+                $startQuery->where('station_id', $station_id);
+            }
+
+            $startQuery->whereDate('start_time', $from_date);
+
+            $startTimes = $startQuery->orderBy('start_time')
+                ->get()
+                ->filter(fn ($shift) => !is_null($shift->start_time))
+                ->map(static function ($shift) {
+                    $time = $shift->start_time instanceof Carbon
+                        ? $shift->start_time->format('H:i:s')
+                        : Carbon::parse($shift->start_time)->format('H:i:s');
+
+                    return [
+                        'time' => $time,
+                        'shift_id' => $shift->id,
+                        'bos_shift_id' => $shift->bos_shift_id,
+                    ];
+                })
+                ->values();
+        }
+
+        if ($to_date) {
+            $endQuery = \App\Models\Shift::query()->select('id', 'bos_shift_id', 'end_time');
+
+            if (!empty($station_id)) {
+                $endQuery->where('station_id', $station_id);
+            }
+
+            $endQuery->whereDate('end_time', $to_date);
+
+            $endTimes = $endQuery->orderBy('end_time')
+                ->get()
+                ->filter(fn ($shift) => !is_null($shift->end_time))
+                ->map(static function ($shift) {
+                    $time = $shift->end_time instanceof Carbon
+                        ? $shift->end_time->format('H:i:s')
+                        : Carbon::parse($shift->end_time)->format('H:i:s');
+
+                    return [
+                        'time' => $time,
+                        'shift_id' => $shift->id,
+                        'bos_shift_id' => $shift->bos_shift_id,
+                    ];
+                })
+                ->values();
+        }
+
+        return response()->json([
+            'start_times' => $startTimes,
+            'end_times' => $endTimes,
         ]);
     }
 }
