@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
 use App\Models\PumpTransaction;
 use App\Models\Station;
 use App\Models\TankInventory;
@@ -1393,44 +1394,58 @@ class HosReportsController extends Controller
         $to_date = $request->input('to_date');
         $station_id = $request->input('station_id');
 
-        if (!$from_date && !$to_date) {
-            return response()->json(['start_times' => [], 'end_times' => []]);
-        }
-
-        $window_start_date = $from_date ?: $to_date;
-        $window_end_date = $to_date ?: $from_date;
-        $window_start = $window_start_date.' 00:00:00';
-        $window_end = $window_end_date.' 23:59:59';
-
-        $query = \App\Models\Shift::query();
-
-        if (!empty($station_id)) {
-            $query->where('station_id', $station_id);
-        }
-
-        $query->where(function ($q) use ($window_start, $window_end) {
-            $q->where('end_time', '>=', $window_start)
-              ->where('start_time', '<=', $window_end);
-        });
-
-        $shifts = $query->get(['start_time', 'end_time']);
-
         $startTimes = collect();
         $endTimes = collect();
 
-        foreach ($shifts as $shift) {
-            if ($shift->start_time) {
-                $startTimes->push($shift->start_time->format('H:i:s'));
+        if ($from_date) {
+            $startQuery = \App\Models\Shift::query()->select('start_time');
+
+            if (!empty($station_id)) {
+                $startQuery->where('station_id', $station_id);
             }
 
-            if ($shift->end_time) {
-                $endTimes->push($shift->end_time->format('H:i:s'));
+            $startQuery->whereDate('start_time', $from_date);
+
+            $startTimes = $startQuery->pluck('start_time')
+                ->filter()
+                ->map(static function ($dateTime) {
+                    if ($dateTime instanceof Carbon) {
+                        return $dateTime->format('H:i:s');
+                    }
+
+                    return Carbon::parse($dateTime)->format('H:i:s');
+                })
+                ->unique()
+                ->sort()
+                ->values();
+        }
+
+        if ($to_date) {
+            $endQuery = \App\Models\Shift::query()->select('end_time');
+
+            if (!empty($station_id)) {
+                $endQuery->where('station_id', $station_id);
             }
+
+            $endQuery->whereDate('end_time', $to_date);
+
+            $endTimes = $endQuery->pluck('end_time')
+                ->filter()
+                ->map(static function ($dateTime) {
+                    if ($dateTime instanceof Carbon) {
+                        return $dateTime->format('H:i:s');
+                    }
+
+                    return Carbon::parse($dateTime)->format('H:i:s');
+                })
+                ->unique()
+                ->sort()
+                ->values();
         }
 
         return response()->json([
-            'start_times' => $startTimes->unique()->sort()->values(),
-            'end_times' => $endTimes->unique()->sort()->values(),
+            'start_times' => $startTimes,
+            'end_times' => $endTimes,
         ]);
     }
 }

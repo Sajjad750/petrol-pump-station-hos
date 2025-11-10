@@ -568,12 +568,28 @@
                         var endTimes = resp.end_times || [];
                         var $from = $('#shift_summary_from_time');
                         var $to = $('#shift_summary_to_time');
+                        var previousFrom = $from.val();
+                        var previousTo = $to.val();
                         var f0 = $from.find('option').first().clone();
                         var t0 = $to.find('option').first().clone();
                         $from.empty().append(f0);
                         $to.empty().append(t0);
-                        startTimes.forEach(function(t) { $from.append($('<option></option>').val(t).text(t)); });
-                        endTimes.forEach(function(t) { $to.append($('<option></option>').val(t).text(t)); });
+                        startTimes.forEach(function(t) {
+                            $from.append($('<option></option>').val(t).text(t));
+                        });
+                        endTimes.forEach(function(t) {
+                            $to.append($('<option></option>').val(t).text(t));
+                        });
+
+                        if (startTimes.length > 0) {
+                            var nextFrom = startTimes.indexOf(previousFrom) !== -1 ? previousFrom : startTimes[0];
+                            $from.val(nextFrom);
+                        }
+
+                        if (endTimes.length > 0) {
+                            var nextTo = endTimes.indexOf(previousTo) !== -1 ? previousTo : endTimes[endTimes.length - 1];
+                            $to.val(nextTo);
+                        }
                     }
                 });
             }
