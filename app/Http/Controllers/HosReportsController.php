@@ -1429,7 +1429,7 @@ class HosReportsController extends Controller
         $endTimes = collect();
 
         if ($from_date) {
-            $startQuery = \App\Models\Shift::query()->select('start_time');
+            $startQuery = \App\Models\Shift::query()->select('id', 'bos_shift_id', 'start_time');
 
             if (!empty($station_id)) {
                 $startQuery->where('station_id', $station_id);
@@ -1437,22 +1437,25 @@ class HosReportsController extends Controller
 
             $startQuery->whereDate('start_time', $from_date);
 
-            $startTimes = $startQuery->pluck('start_time')
-                ->filter()
-                ->map(static function ($dateTime) {
-                    if ($dateTime instanceof Carbon) {
-                        return $dateTime->format('H:i:s');
-                    }
+            $startTimes = $startQuery->orderBy('start_time')
+                ->get()
+                ->filter(fn ($shift) => !is_null($shift->start_time))
+                ->map(static function ($shift) {
+                    $time = $shift->start_time instanceof Carbon
+                        ? $shift->start_time->format('H:i:s')
+                        : Carbon::parse($shift->start_time)->format('H:i:s');
 
-                    return Carbon::parse($dateTime)->format('H:i:s');
+                    return [
+                        'time' => $time,
+                        'shift_id' => $shift->id,
+                        'bos_shift_id' => $shift->bos_shift_id,
+                    ];
                 })
-                ->unique()
-                ->sort()
                 ->values();
         }
 
         if ($to_date) {
-            $endQuery = \App\Models\Shift::query()->select('end_time');
+            $endQuery = \App\Models\Shift::query()->select('id', 'bos_shift_id', 'end_time');
 
             if (!empty($station_id)) {
                 $endQuery->where('station_id', $station_id);
@@ -1460,17 +1463,20 @@ class HosReportsController extends Controller
 
             $endQuery->whereDate('end_time', $to_date);
 
-            $endTimes = $endQuery->pluck('end_time')
-                ->filter()
-                ->map(static function ($dateTime) {
-                    if ($dateTime instanceof Carbon) {
-                        return $dateTime->format('H:i:s');
-                    }
+            $endTimes = $endQuery->orderBy('end_time')
+                ->get()
+                ->filter(fn ($shift) => !is_null($shift->end_time))
+                ->map(static function ($shift) {
+                    $time = $shift->end_time instanceof Carbon
+                        ? $shift->end_time->format('H:i:s')
+                        : Carbon::parse($shift->end_time)->format('H:i:s');
 
-                    return Carbon::parse($dateTime)->format('H:i:s');
+                    return [
+                        'time' => $time,
+                        'shift_id' => $shift->id,
+                        'bos_shift_id' => $shift->bos_shift_id,
+                    ];
                 })
-                ->unique()
-                ->sort()
                 ->values();
         }
 

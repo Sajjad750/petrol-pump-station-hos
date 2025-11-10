@@ -576,20 +576,46 @@
                         $from.html('<option value="">All Start Times</option>');
                         $to.html('<option value="">All End Times</option>');
 
-                        startTimes.forEach(function(t) {
-                            $from.append($('<option></option>').val(t).text(t));
+                        startTimes.forEach(function(item) {
+                            var label = item.time;
+                            if (item.bos_shift_id) {
+                                label += ' (BOS #' + item.bos_shift_id + ')';
+                            } else if (item.shift_id) {
+                                label += ' (Shift #' + item.shift_id + ')';
+                            }
+
+                            $from.append(
+                                $('<option></option>')
+                                    .val(item.time)
+                                    .text(label)
+                                    .attr('data-shift-id', item.shift_id || '')
+                                    .attr('data-bos-shift-id', item.bos_shift_id || '')
+                            );
                         });
-                        endTimes.forEach(function(t) {
-                            $to.append($('<option></option>').val(t).text(t));
+                        endTimes.forEach(function(item) {
+                            var label = item.time;
+                            if (item.bos_shift_id) {
+                                label += ' (BOS #' + item.bos_shift_id + ')';
+                            } else if (item.shift_id) {
+                                label += ' (Shift #' + item.shift_id + ')';
+                            }
+
+                            $to.append(
+                                $('<option></option>')
+                                    .val(item.time)
+                                    .text(label)
+                                    .attr('data-shift-id', item.shift_id || '')
+                                    .attr('data-bos-shift-id', item.bos_shift_id || '')
+                            );
                         });
 
                         if (startTimes.length > 0) {
-                            var nextFrom = startTimes.indexOf(previousFrom) !== -1 ? previousFrom : startTimes[0];
+                            var nextFrom = startTimes.some(function(item) { return item.time === previousFrom; }) ? previousFrom : startTimes[0].time;
                             $from.val(nextFrom);
                         }
 
                         if (endTimes.length > 0) {
-                            var nextTo = endTimes.indexOf(previousTo) !== -1 ? previousTo : endTimes[endTimes.length - 1];
+                            var nextTo = endTimes.some(function(item) { return item.time === previousTo; }) ? previousTo : endTimes[endTimes.length - 1].time;
                             $to.val(nextTo);
                         }
 
