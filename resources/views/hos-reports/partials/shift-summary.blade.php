@@ -200,7 +200,9 @@
             function renderIndividualShift(shiftData, shiftIndex) {
                 var shiftHtml = '<div class="shift-card mb-4" style="border: 2px solid #D7D7D7; border-radius: 8px; padding: 20px; background: white; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">';
                 shiftHtml += '<h3 style="color: #333; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #D7D7D7; font-size: 20px;">';
-                shiftHtml += '<i class="fas fa-calendar-alt"></i> Shift ' + (shiftIndex + 1) + ' (ID: #' + shiftData.shift_number + ')';
+                var bosId = shiftData.bos_shift_id ? ('#' + shiftData.bos_shift_id) : 'N/A';
+                var shiftId = shiftData.shift_id ? ('#' + shiftData.shift_id) : 'N/A';
+                shiftHtml += '<i class="fas fa-calendar-alt"></i> Shift ' + (shiftIndex + 1) + ' (BOS Shift ID: ' + bosId + ' | Shift ID: ' + shiftId + ')';
                 shiftHtml += '</h3>';
                 shiftHtml += '<div class="row mb-3">';
                 shiftHtml += '<div class="col-md-6"><strong>Start Time:</strong> ' + formatDateTime(shiftData.start_time) + '</div>';

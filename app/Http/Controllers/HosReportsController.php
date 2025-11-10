@@ -1198,7 +1198,7 @@ class HosReportsController extends Controller
                 'id' => $shift->id,
                 'bos_shift_id' => $shift->bos_shift_id,
                 'station_id' => $shift->station_id,
-                'shift_number' => $shift->id, // Using ID as shift number
+                'shift_number' => $shift->bos_shift_id ?? $shift->id,
                 'start_time' => $shift->start_time ? $shift->start_time->format('Y-m-d H:i:s') : null,
                 'end_time' => $shift->end_time ? $shift->end_time->format('Y-m-d H:i:s') : null,
             ];
@@ -1311,6 +1311,7 @@ class HosReportsController extends Controller
             $individualShifts[] = [
                 'shift_id' => $shiftInfo['id'],
                 'shift_number' => $shiftInfo['shift_number'],
+                'bos_shift_id' => $shiftInfo['bos_shift_id'],
                 'start_time' => $shiftInfo['start_time'],
                 'end_time' => $shiftInfo['end_time'],
                 'payment_mode_summary' => $paymentSummaries->toArray(),
@@ -1390,6 +1391,7 @@ class HosReportsController extends Controller
                 return [
                     'id' => $s['id'],
                     'shift_number' => $s['shift_number'],
+                    'bos_shift_id' => $s['bos_shift_id'],
                     'start_time' => $s['start_time'],
                     'end_time' => $s['end_time'],
                 ];
