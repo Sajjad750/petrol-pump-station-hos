@@ -27,7 +27,7 @@ class FuelGradeController extends Controller
             $data['price'] = $validated['price'];
         }
 
-        $fuelGrade->update($data);
+        //        $fuelGrade->update($data);
 
         // Determine command type
         $command_type = $validated['scheduled_at'] ? 'schedule_fuel_grade_price' : 'update_fuel_grade_price';
@@ -42,6 +42,10 @@ class FuelGradeController extends Controller
                 'price' => $validated['price'],
                 'scheduled_price' => $validated['scheduled_price'] ?? null,
                 'scheduled_at' => $validated['scheduled_at'] ?? null,
+                'source_system' => "HOS",
+                'changed_by_user_name' => auth()->user()->name ?? null,
+                'status' => 'pending',
+                'user_timezone' => $request->user_timezone ?? null,
             ],
             'status' => 'pending',
         ]);
@@ -66,10 +70,10 @@ class FuelGradeController extends Controller
         $validated = $request->validated();
 
         // Update fuel grade in HOS database
-        $fuelGrade->update([
-            'scheduled_price' => $validated['scheduled_price'],
-            'scheduled_at' => $validated['scheduled_at'],
-        ]);
+        //        $fuelGrade->update([
+        //            'scheduled_price' => $validated['scheduled_price'],
+        //            'scheduled_at' => $validated['scheduled_at'],
+        //        ]);
 
         // Create HosCommand
         HosCommand::create([
@@ -80,6 +84,10 @@ class FuelGradeController extends Controller
                 'bos_uuid' => $fuelGrade->bos_uuid,
                 'scheduled_price' => $validated['scheduled_price'],
                 'scheduled_at' => $validated['scheduled_at'],
+                'source_system' => "HOS",
+                'changed_by_user_name' => auth()->user()->name ?? null,
+                'status' => 'pending',
+                'user_timezone' => $request->user_timezone ?? null,
             ],
             'status' => 'pending',
         ]);
