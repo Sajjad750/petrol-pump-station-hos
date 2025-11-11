@@ -50,10 +50,10 @@
             <a class="nav-link @if($tab==='all') active @endif" href="?tab=all">All Notifications</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link disabled">HOS</a>
+            <a class="nav-link @if($tab==='hos') active @endif" href="?tab=hos">HOS</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link disabled">BOS</a>
+            <a class="nav-link @if($tab==='bos') active @endif" href="?tab=bos">BOS</a>
         </li>
         <li class="nav-item">
             <a class="nav-link disabled">Controller</a>
@@ -61,7 +61,17 @@
     </ul>
 
     <div class="card p-4">
-        <div class="fw-bold mb-2">{{ $tab==='unread' ? 'Unread Notifications' : 'All Notifications' }}</div>
+        <div class="fw-bold mb-2">
+            @if($tab === 'unread')
+                Unread Notifications
+            @elseif($tab === 'hos')
+                HOS Alerts
+            @elseif($tab === 'bos')
+                Back Office System Alerts
+            @else
+                All Notifications
+            @endif
+        </div>
         @forelse($alerts as $alert)
             @php
                 $isCritical = in_array($alert->code, [3,6,8]);
@@ -70,7 +80,10 @@
                 // Message generation
                 $message = '';
                 $level = '';
-                if($alert->device_type == 'Pump') {
+                if($alert->device_type == 'BOS') {
+                    $message = 'Back Office System - ' . ($alert->description ?? 'New notification');
+                    $level = 'info';
+                } elseif($alert->device_type == 'Pump') {
                     if($alert->code == 1) { $message = 'Pump '.$alert->device_number.' offline state detected'; $level='high'; }
                     elseif($alert->code == 2) { $message = 'Pump '.$alert->device_number.' overfilling detected'; $level='medium'; }
                 } elseif($alert->device_type == 'Probe') {
@@ -86,7 +99,12 @@
                         default: $message = 'Probe '.$alert->device_number.' unknown alert'; $level=''; break;
                     }
                 }
-                $badge = $level === 'high' ? 'danger' : ($level === 'medium' ? 'warning' : 'secondary');
+                $badge = match($level) {
+                    'high' => 'danger',
+                    'medium' => 'warning',
+                    'info' => 'info',
+                    default => 'secondary'
+                };
                 $icon = $level === 'high' ? 'fa-exclamation-triangle text-danger' : ($level === 'medium' ? 'fa-exclamation-circle text-warning' : 'fa-info-circle text-muted');
             @endphp
             <div class="d-flex align-items-center mb-3 p-3 rounded" style="background:#fafbfc;">

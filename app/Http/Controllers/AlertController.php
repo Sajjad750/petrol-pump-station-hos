@@ -10,12 +10,15 @@ class AlertController extends Controller
 {
     public function index(Request $request)
     {
-        // Only Pump and Probe alerts
-        $alertsQuery = Alert::with('station')->whereIn('device_type', ['Pump', 'Probe']);
+        // Include Pump, Probe, and BOS alerts
+        $alertsQuery = Alert::with('station');
         $tab = $request->get('tab', 'unread');
-        // Tabs support: unread, all, bos, hos, controller (future: use device_type, etc)
+        
+        // Handle different tabs
         $alerts = match($tab) {
             'all' => $alertsQuery->latest('datetime')->get(),
+            'bos' => $alertsQuery->where('device_type', 'BOS')->latest('datetime')->get(),
+            'hos' => $alertsQuery->whereIn('device_type', ['Pump', 'Probe'])->latest('datetime')->get(),
             default => $alertsQuery->where('is_read', false)->latest('datetime')->get(),
         };
         // Counts
