@@ -13,7 +13,13 @@ Route::get('/operations-monitor', [\App\Http\Controllers\OperationsMonitorContro
 
 Route::get('/operations-monitor/stations/{station}', [\App\Http\Controllers\OperationsMonitorController::class, 'show'])->name('operations-monitor.station');
 
-Route::get('/alerts', [\App\Http\Controllers\AlertController::class, 'index'])->name('alerts.index');
+// Alerts
+Route::prefix('alerts')->group(function () {
+    Route::get('/', [\App\Http\Controllers\AlertController::class, 'index'])->name('alerts.index');
+    Route::post('/{alert}/mark-as-read', [\App\Http\Controllers\AlertController::class, 'markAsRead'])->name('alerts.mark-as-read');
+    Route::post('/mark-all-read', [\App\Http\Controllers\AlertController::class, 'markAllAsRead'])->name('alerts.mark-all-read');
+    Route::delete('/{alert}', [\App\Http\Controllers\AlertController::class, 'destroy'])->name('alerts.destroy');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
