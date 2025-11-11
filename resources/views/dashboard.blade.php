@@ -314,14 +314,27 @@
                                     <tbody>
                                         @forelse($stations as $station)
                                             @php
-                                                $status = $station->isOnline() ? ['class' => 'status-online', 'text' => 'Online', 'icon' => 'fas fa-clock'] : 
-                                                         ($station->hasWarning() ? ['class' => 'status-warning', 'text' => 'Warning', 'icon' => 'fas fa-exclamation-triangle'] : 
+                                                $status = $station->isOnline() ? ['class' => 'status-online', 'text' => 'Online', 'icon' => 'fas fa-clock'] :
+                                                         ($station->hasWarning() ? ['class' => 'status-warning', 'text' => 'Warning', 'icon' => 'fas fa-exclamation-triangle'] :
                                                          ['class' => 'status-offline', 'text' => 'Offline', 'icon' => 'fas fa-eye-slash']);
                                                 $lastSync = $station->last_sync_at ? $station->last_sync_at->diffForHumans() : 'Never';
                                                 $pumpCount = $station->pumps->count();
                                                 $activePumps = $station->pumps->where('is_active', true)->count();
                                                 $pumpPercentage = $pumpCount > 0 ? round(($activePumps / $pumpCount) * 100) : 0;
                                                 $progressColor = $pumpPercentage >= 80 ? '#3b82f6' : ($pumpPercentage >= 50 ? '#f59e0b' : '#ef4444');
+
+                                                $tankInventory = \App\Models\TankInventory::query()
+                                                    ->select('tank', 'product_volume', 'created_at')
+                                                    ->where('station_id', $station->id)
+                                                    ->latest('created_at')
+                                                    ->get()
+                                                    ->groupBy('tank')
+                                                    ->map->first();
+
+                                                $tankTotal = $tankInventory->count();
+                                                $tankOnline = $tankInventory->filter(function ($entry) {
+                                                    return is_null($entry->product_volume) || (float) $entry->product_volume > 0;
+                                                })->count();
                                             @endphp
                                             <tr>
                                                 <td>
@@ -347,7 +360,7 @@
                                                         <span class="pumps-percentage">{{ $pumpPercentage }}%</span>
                                                     </div>
                                                 </td>
-                                                <td>{{ $station->tankMeasurements->count() }}/{{ $station->tankMeasurements->count() }}</td>
+                                                <td>{{ $tankOnline }}/{{ $tankTotal }}</td>
                                                 <td><span class="badge badge-success">0</span></td>
                                                 <td>
                                                     <button class="btn btn-sm btn-primary station-details-btn" data-station-id="{{ $station->id }}">
