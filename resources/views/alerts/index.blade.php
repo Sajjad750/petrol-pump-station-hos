@@ -66,7 +66,7 @@
                 Unread Notifications
             @elseif($tab === 'hos')
                 HOS Alerts
-            @elseif($tab === 'bos')
+            @elseif($tab === 'bosi')
                 Back Office System Alerts
             @else
                 All Notifications
