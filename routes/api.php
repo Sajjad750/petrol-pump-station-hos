@@ -18,6 +18,12 @@ Route::prefix('api')->middleware(['auth:sanctum'])->group(function () {
     Route::post('/roles/{role}/permissions', [\App\Http\Controllers\RoleController::class, 'updatePermissions']);
 });
 
+// BOS Alerts API Routes
+Route::prefix('bos')->middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
+    Route::get('/alerts', [\App\Http\Controllers\AlertController::class, 'getBosAlerts']);
+    Route::post('/alerts/{id}/mark-as-read', [\App\Http\Controllers\AlertController::class, 'markBosAlertAsRead']);
+});
+
 // BOS Sync API Routes
 Route::prefix('sync')->middleware(['bos.api.key', 'throttle:120,1'])->group(function () {
     Route::post('/pump-transactions', [SyncController::class, 'syncPumpTransactions']);
