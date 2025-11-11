@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Station;
 use App\Models\Pump;
-use App\Models\TankMeasurement;
+use App\Models\TankInventory;
 use Illuminate\Http\Request;
 
 class OperationsMonitorController extends Controller
@@ -20,11 +20,14 @@ class OperationsMonitorController extends Controller
         $onlinePumps = Pump::where('status', 'active')->count();
         $offlinePumps = $totalPumps - $onlinePumps;
 
-        // For Tanks, using TankMeasurement for total tank existance
-        $totalTanks = TankMeasurement::distinct('tank')->count('tank');
-        // Placeholders for online/offline
-        $onlineTanks = $totalTanks;
-        $offlineTanks = 0;
+        // Tank overview counts derived from tank inventory snapshots
+        $tankInventoryBase = TankInventory::query();
+        $totalTanks = (clone $tankInventoryBase)->distinct('tank')->count('tank');
+        $onlineTanks = (clone $tankInventoryBase)->where(function ($query) {
+            $query->whereNull('product_volume')
+                ->orWhere('product_volume', '>', 0);
+        })->distinct('tank')->count('tank');
+        $offlineTanks = max(0, $totalTanks - $onlineTanks);
 
         // Alerts placeholder
         $totalAlerts = 0;
@@ -38,11 +41,16 @@ class OperationsMonitorController extends Controller
             $online = $station->pumps->filter(fn ($pump) => $pump->status === 'active')->count();
             $pumpPercent = $total ? round($online / $total * 100) : 0;
 
-            // Tanks
-            $tankNums = $station->tankMeasurements->pluck('tank')->unique();
-            $tank_total = $tankNums->count();
-            $tank_online = $tank_total; // Assume all online for now
-            $tank_offline = 0; // Default
+            // Tank counts based on inventory records
+            $tank_total = TankInventory::where('station_id', $station->id)->distinct('tank')->count('tank');
+            $tank_online = TankInventory::where('station_id', $station->id)
+                ->where(function ($query) {
+                    $query->whereNull('product_volume')
+                        ->orWhere('product_volume', '>', 0);
+                })
+                ->distinct('tank')
+                ->count('tank');
+            $tank_offline = max(0, $tank_total - $tank_online);
             $tank_percent = $tank_total ? round($tank_online / $tank_total * 100) : 0;
 
             return [
