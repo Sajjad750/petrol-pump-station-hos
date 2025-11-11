@@ -167,37 +167,12 @@
         </div>
     </div>
     
-    @push('scripts')
-    <script>
-        function deleteAlert(alertId) {
-            if (confirm('Are you sure you want to delete this alert?')) {
-                fetch(`/alerts/${alertId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        window.location.reload();
-                    } else {
-                        alert('Failed to delete alert: ' + (data.message || 'Unknown error'));
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred while deleting the alert');
-                });
-            }
-        }
-        
-        // Mark all as read
-        document.getElementById('markAllRead')?.addEventListener('click', function() {
-            fetch('{{ route("alerts.mark-all-read") }}', {
-                method: 'POST',
+@push('scripts')
+<script>
+    function deleteAlert(alertId) {
+        if (confirm('Are you sure you want to delete this alert?')) {
+            fetch(`/alerts/${alertId}`, {
+                method: 'DELETE',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
                     'Accept': 'application/json',
@@ -208,6 +183,53 @@
             .then(data => {
                 if (data.success) {
                     window.location.reload();
+                } else {
+                    alert('Failed to delete alert: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while deleting the alert');
+            });
+        }
+    }
+    
+    // Mark all as read
+    document.getElementById('markAllRead')?.addEventListener('click', function() {
+        fetch('{{ route("alerts.mark-all-read") }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('Failed to mark all as read: ' + (data.message || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while marking alerts as read');
+        });
+    });
+
+    // Search functionality
+    document.getElementById('searchAlerts')?.addEventListener('keyup', function() {
+        const searchTerm = this.value.toLowerCase();
+        const rows = document.querySelectorAll('.custom-table tbody tr');
+        
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(searchTerm) ? '' : 'none';
+        });
+    });
+</script>
+@endpush
                 } else {
                     alert('Failed to mark all as read: ' + (data.message || 'Unknown error'));
                 }
