@@ -11,22 +11,50 @@ class AlertController extends Controller
 {
     public function index(Request $request)
     {
-        // Only Pump and Probe alerts
-        $alertsQuery = Alert::with('station')->whereIn('device_type', ['Pump', 'Probe']);
         $tab = $request->get('tab', 'unread');
-        // Tabs support: unread, all, bos, hos, controller (future: use device_type, etc)
-        $alerts = match($tab) {
-            'all' => $alertsQuery->latest('datetime')->get(),
-            default => $alertsQuery->where('is_read', false)->latest('datetime')->get(),
-        };
-        // Counts
-        $totalToday = $alertsQuery->whereDate('datetime', Carbon::today())->count();
-        $unread = $alertsQuery->where('is_read', false)->count();
-        // Very basic crit/warn logic, adjust as needed
-        $criticalCodes = [3, 6, 8]; // Code 3,6,8 for Probe are 'critical' in API spec
-        $critical = $alertsQuery->whereIn('code', $criticalCodes)->count();
+        
+        // Base query for all alerts (Pump, Probe, and BOS)
+        $alertsQuery = Alert::with('station');
+        
+        // Apply tab filters
+        switch ($tab) {
+            case 'all':
+                $alertsQuery->latest('datetime');
+                break;
+                
+            case 'bos':
+                $alertsQuery->where('device_type', 'BOS')
+                    ->latest('datetime');
+                break;
+                    
+            case 'hos':
+                $alertsQuery->whereIn('device_type', ['Pump', 'Probe'])
+                    ->latest('datetime');
+                break;
+                    
+            case 'unread':
+            default:
+                $alertsQuery->where('is_read', false)
+                    ->latest('datetime');
+                break;
+        }
+        
+        $alerts = $alertsQuery->paginate(25);
+        
+        // Get alert counts for each category
+        $totalToday = Alert::whereDate('created_at', Carbon::today())->count();
+        $unread = Alert::where('is_read', false)->count();
+        
+        // Critical and warning counts for all alert types
+        $criticalCodes = [3, 6, 8];
         $warningCodes = [1, 2, 5, 7];
-        $warning = $alertsQuery->whereIn('code', $warningCodes)->count();
+        
+        $critical = Alert::whereIn('code', $criticalCodes)->count();
+        $warning = Alert::whereIn('code', $warningCodes)->count();
+        
+        // Count by device type for the tabs
+        $bosAlertsCount = Alert::where('device_type', 'BOS')->count();
+        $hosAlertsCount = Alert::whereIn('device_type', ['Pump', 'Probe'])->count();
 
         return view('alerts.index', [
             'alerts' => $alerts,
@@ -34,7 +62,15 @@ class AlertController extends Controller
             'unread' => $unread,
             'critical' => $critical,
             'warning' => $warning,
-            'tab' => $tab
+            'bosAlertsCount' => $bosAlertsCount,
+            'hosAlertsCount' => $hosAlertsCount,
+            'tab' => $tab,
+            'tabs' => [
+                'unread' => 'Unread',
+                'all' => 'All Alerts',
+                'bos' => 'BOS Alerts',
+                'hos' => 'HOS Alerts'
+            ]
         ]);
     }
 
