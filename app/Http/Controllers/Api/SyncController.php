@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\FuelGrade;
 use App\Models\FuelGradePriceHistory;
 use App\Models\HosCommand;
+use App\Models\Alert;
 use App\Models\PaymentModeWiseSummary;
 use App\Models\ProductWiseSummary;
 use App\Models\Pump;
@@ -23,6 +24,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Support\Carbon;
 
 class SyncController extends Controller
 {
@@ -1545,6 +1547,150 @@ class SyncController extends Controller
             'bos_uuid' => $bosData['uuid'],
             'created_at_bos' => $bosData['created_at'] ?? null,
             'updated_at_bos' => $bosData['updated_at'] ?? null,
+        ];
+    }
+
+    /**
+     * Sync alerts from BOS
+     */
+    public function syncAlerts(Request $request): JsonResponse
+    {
+        Log::debug("syncAlerts: ", (array) $request->all());
+
+        $station = $request->get('station');
+        $ptsId = $request->input('pts_id');
+        $alerts = $request->input('data', []);
+
+        $created = 0;
+        $updated = 0;
+        $failed = 0;
+        $errors = [];
+
+        DB::beginTransaction();
+
+        try {
+            foreach ($alerts as $alertData) {
+                try {
+                    if (!isset($alertData['device_type'], $alertData['code'], $alertData['datetime'])) {
+                        throw new \InvalidArgumentException('Alert payload missing required fields.');
+                    }
+
+                    $syncLog = SyncLog::createLog(
+                        $station->id,
+                        'alerts',
+                        'create',
+                        $alertData,
+                        'pending'
+                    );
+
+                    $match = [
+                        'station_id' => $station->id,
+                        'bos_alert_id' => $alertData['id'] ?? null,
+                    ];
+
+                    if (empty($match['bos_alert_id']) && !empty($alertData['uuid'])) {
+                        $match['bos_uuid'] = $alertData['uuid'];
+                    }
+
+                    if (empty($match['bos_alert_id']) && empty($match['bos_uuid'])) {
+                        throw new \InvalidArgumentException('Alert payload missing BOS identifier (id or uuid).');
+                    }
+
+                    $hosAlertData = $this->prepareAlertData($alertData, $station->id);
+
+                    $alert = Alert::updateOrCreate($match, $hosAlertData);
+
+                    $syncLog->markAsSuccessful([
+                        'alert_id' => $alert->id,
+                        'action' => $alert->wasRecentlyCreated ? 'created' : 'updated',
+                    ]);
+
+                    if ($alert->wasRecentlyCreated) {
+                        $created++;
+                    } else {
+                        $updated++;
+                    }
+                } catch (\Throwable $e) {
+                    $failed++;
+                    $errors[] = [
+                        'alert_id' => $alertData['id'] ?? $alertData['uuid'] ?? 'unknown',
+                        'error' => $e->getMessage(),
+                    ];
+
+                    if (isset($syncLog)) {
+                        $syncLog->markAsFailed($e->getMessage());
+                    }
+
+                    Log::error('Failed to sync alert', [
+                        'station_id' => $station->id,
+                        'pts_id' => $ptsId,
+                        'alert_data' => $alertData,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            $station->updateLastSync();
+
+            DB::commit();
+
+            $totalItems = $created + $updated + $failed;
+            $allFailed = $totalItems > 0 && $failed === $totalItems;
+
+            return response()->json([
+                'success' => !$allFailed,
+                'message' => $allFailed
+                    ? "All {$failed} alerts failed to sync"
+                    : "Synced {$created} created, {$updated} updated, {$failed} failed alerts",
+                'data' => [
+                    'created' => $created,
+                    'updated' => $updated,
+                    'failed' => $failed,
+                    'errors' => $errors,
+                ],
+            ], $allFailed ? 422 : 200);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            Log::error('Sync alerts failed', [
+                'station_id' => $station->id,
+                'pts_id' => $ptsId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Sync operation failed: ' . $e->getMessage(),
+                'data' => [
+                    'created' => $created,
+                    'updated' => $updated,
+                    'failed' => $failed,
+                    'errors' => $errors,
+                ],
+            ], 500);
+        }
+    }
+
+    /**
+     * Prepare alert data for HOS storage
+     */
+    private function prepareAlertData(array $bosData, int $stationId): array
+    {
+        $datetime = Carbon::parse($bosData['datetime'])->timezone(config('app.timezone'));
+
+        return [
+            'station_id' => $stationId,
+            'bos_alert_id' => $bosData['id'] ?? null,
+            'bos_uuid' => $bosData['uuid'] ?? null,
+            'device_type' => $bosData['device_type'],
+            'device_number' => $bosData['device_number'] ?? null,
+            'state' => $bosData['state'] ?? $bosData['status'] ?? null,
+            'code' => $bosData['code'],
+            'datetime' => $datetime,
+            'is_read' => (bool) ($bosData['is_read'] ?? false),
+            'meta' => $bosData['meta'] ?? ($bosData['extra'] ?? []),
+            'description' => $bosData['description'] ?? ($bosData['message'] ?? null),
+            'raw_payload' => $bosData,
         ];
     }
 

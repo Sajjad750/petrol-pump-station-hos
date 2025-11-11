@@ -113,6 +113,7 @@
                                 <th>Last Transaction</th>
                                 <th>Pumps</th>
                                 <th>Tanks</th>
+                                <th>Alerts</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -221,10 +222,17 @@
                                             </div>
                                         </div>
                                     </td>
+                                    <td>
+                                        @if ($site['alerts_total'] > 0)
+                                            <span class="badge bg-danger-light text-danger">{{ $site['alerts_total'] }}</span>
+                                        @else
+                                            <span class="badge bg-success-light text-success">0</span>
+                                        @endif
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center">No sites found.</td>
+                                    <td colspan="8" class="text-center">No sites found.</td>
                                 </tr>
                             @endforelse
                         </tbody>

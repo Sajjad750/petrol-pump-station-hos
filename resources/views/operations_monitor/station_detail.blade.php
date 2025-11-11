@@ -140,7 +140,7 @@
                     @endif
                 </div>
                 <div class="flex-grow-1">
-                    <span class="fw-semibold">Stock Alert</span><br>
+                    <span class="fw-semibold">{{ $alert['title'] ?? 'Alert' }}</span><br>
                     <span class="small">{{ $alert['message'] }}</span><br>
                     <span class="text-muted small">{{ $alert['date'] }}</span>
                 </div>
