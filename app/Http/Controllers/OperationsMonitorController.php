@@ -4,62 +4,81 @@ namespace App\Http\Controllers;
 
 use App\Models\Station;
 use App\Models\Pump;
-use App\Models\TankMeasurement;
+use App\Models\TankInventory;
+use App\Models\Alert;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 class OperationsMonitorController extends Controller
 {
     public function index(Request $request)
     {
-        // Summary counts
-        $totalSites = Station::count();
-        $onlineSites = Station::all()->filter(function ($station) { return $station->isOnline(); })->count();
-        $offlineSites = Station::all()->filter(function ($station) { return $station->isOffline(); })->count();
+        $stations = Station::with(['pumps', 'pumpTransactions'])
+            ->withCount('alerts')
+            ->withCount(['alerts as unread_alerts_count' => function ($query) {
+                $query->where('is_read', false);
+            }])
+            ->get();
+
+        $totalSites = $stations->count();
+        $onlineSites = $stations->filter(fn ($station) => $station->isOnline())->count();
+        $offlineSites = $stations->filter(fn ($station) => $station->isOffline())->count();
 
         $totalPumps = Pump::count();
         $onlinePumps = Pump::where('status', 'active')->count();
         $offlinePumps = $totalPumps - $onlinePumps;
 
-        // For Tanks, using TankMeasurement for total tank existance
-        $totalTanks = TankMeasurement::distinct('tank')->count('tank');
-        // Placeholders for online/offline
-        $onlineTanks = $totalTanks;
-        $offlineTanks = 0;
+        $latestTankEntriesByStation = TankInventory::query()
+            ->whereIn('id', function ($query) {
+                $query->selectRaw('MAX(id)')
+                    ->from('tank_inventories')
+                    ->groupBy('station_id', 'tank');
+            })
+            ->get()
+            ->groupBy('station_id');
 
-        // Alerts placeholder
-        $totalAlerts = 0;
-        $normalSites = $onlineSites; // Fallback
-        $sitesWithAlerts = 0;
+        $flatTankEntries = $latestTankEntriesByStation->flatten(1);
+        $totalTanks = $flatTankEntries->count();
+        $onlineTanks = $flatTankEntries->filter(function ($entry) {
+            return is_null($entry->product_volume) || (float) $entry->product_volume > 0;
+        })->count();
+        $offlineTanks = max(0, $totalTanks - $onlineTanks);
 
-        // All Sites Table: Each station row summary
-        $stations = Station::with(['pumps', 'pumpTransactions'])->get();
-        $allSites = $stations->map(function ($station) {
+        $totalAlerts = Alert::count();
+        $sitesWithAlerts = Alert::whereNotNull('station_id')->distinct('station_id')->count('station_id');
+        $normalSites = max(0, $totalSites - $sitesWithAlerts);
+
+        $allSites = $stations->map(function ($station) use ($latestTankEntriesByStation) {
             $total = $station->pumps->count();
             $online = $station->pumps->filter(fn ($pump) => $pump->status === 'active')->count();
             $pumpPercent = $total ? round($online / $total * 100) : 0;
 
-            // Tanks
-            $tankNums = $station->tankMeasurements->pluck('tank')->unique();
-            $tank_total = $tankNums->count();
-            $tank_online = $tank_total; // Assume all online for now
-            $tank_offline = 0; // Default
+            /** @var Collection $tankEntries */
+            $tankEntries = $latestTankEntriesByStation->get($station->id, collect());
+            $tank_total = $tankEntries->count();
+            $tank_online = $tankEntries->filter(function ($entry) {
+                return is_null($entry->product_volume) || (float) $entry->product_volume > 0;
+            })->count();
             $tank_percent = $tank_total ? round($tank_online / $tank_total * 100) : 0;
+
+            $lastTransaction = $station->pumpTransactions->sortByDesc('created_at')->first();
 
             return [
                 'id' => $station->id,
                 'code' => $station->pts_id,
                 'name' => $station->site_name,
-                'status' => $station->isOnline() ? 'online' : 'offline',
-                'last_connected' => $station->last_sync_at ?? null,
-                'last_transaction' => $station->pumpTransactions->sortByDesc('created_at')->first()?->created_at ?? null,
+                'status' => $station->isOnline() ? 'online' : ($station->hasWarning() ? 'warning' : 'offline'),
+                'last_connected' => $station->last_sync_at?->toIso8601String(),
+                'last_transaction' => $lastTransaction?->created_at?->toIso8601String(),
                 'pump_percent' => $pumpPercent,
                 'pump_online' => $online,
                 'pump_total' => $total,
-                // Tank stats for new column/UI
                 'tank_total' => $tank_total,
                 'tank_online' => $tank_online,
-                'tank_offline' => $tank_offline,
+                'tank_offline' => max(0, $tank_total - $tank_online),
                 'tank_percent' => $tank_percent,
+                'alerts_total' => $station->alerts_count ?? 0,
+                'alerts_unread' => $station->unread_alerts_count ?? 0,
             ];
         });
 
@@ -123,22 +142,22 @@ class OperationsMonitorController extends Controller
             ];
         });
 
-        $alerts = [
-            [
-                'type' => 'stock',
-                'level' => 'high',
-                'message' => 'Tank T-04 critical level (<10%)',
-                'tank' => 'T-04',
-                'date' => now()->subDays(1)->format('Y-m-d H:i:s'),
-            ],
-            [
-                'type' => 'stock',
-                'level' => 'medium',
-                'message' => 'Tank T-03 low level (<25%)',
-                'tank' => 'T-03',
-                'date' => now()->subDays(2)->format('Y-m-d H:i:s'),
-            ]
-        ];
+        $alerts = Alert::query()
+            ->where('station_id', $station->id)
+            ->latest('datetime')
+            ->limit(15)
+            ->get()
+            ->map(function (Alert $alert) {
+                $context = $this->formatAlert($alert);
+
+                return [
+                    'title' => $context['title'],
+                    'level' => $context['level'],
+                    'message' => $context['message'],
+                    'date' => $context['date'],
+                ];
+            })
+            ->all();
 
         return view('operations_monitor.station_detail', compact(
             'station',
@@ -152,5 +171,87 @@ class OperationsMonitorController extends Controller
             'tanks',
             'alerts'
         ));
+    }
+
+    private function formatAlert(Alert $alert): array
+    {
+        $level = 'low';
+        $message = $alert->description ?? 'Alert notification received.';
+
+        if ($alert->device_type === 'Pump') {
+            if ($alert->code == 1) {
+                $message = 'Pump '.$alert->device_number.' offline state detected';
+                $level = 'high';
+            } elseif ($alert->code == 2) {
+                $message = 'Pump '.$alert->device_number.' overfilling detected';
+                $level = 'medium';
+            } else {
+                $message = 'Pump '.$alert->device_number.' notification';
+                $level = 'medium';
+            }
+        } elseif ($alert->device_type === 'Probe') {
+            switch ($alert->code) {
+                case 1:
+                    $message = 'Probe '.$alert->device_number.' offline state detected';
+                    $level = 'high';
+
+                    break;
+
+                case 2:
+                    $message = 'Probe '.$alert->device_number.' error detected';
+                    $level = 'medium';
+
+                    break;
+
+                case 3:
+                    $message = 'Probe '.$alert->device_number.' critical high product level';
+                    $level = 'high';
+
+                    break;
+
+                case 4:
+                    $message = 'Probe '.$alert->device_number.' high product level';
+                    $level = 'medium';
+
+                    break;
+
+                case 5:
+                    $message = 'Probe '.$alert->device_number.' low product level';
+                    $level = 'medium';
+
+                    break;
+
+                case 6:
+                    $message = 'Probe '.$alert->device_number.' critical low product level';
+                    $level = 'high';
+
+                    break;
+
+                case 7:
+                    $message = 'Probe '.$alert->device_number.' high water level';
+                    $level = 'medium';
+
+                    break;
+
+                case 8:
+                    $message = 'Probe '.$alert->device_number.' tank leakage detected';
+                    $level = 'high';
+
+                    break;
+
+                default:
+                    $message = 'Probe '.$alert->device_number.' notification';
+                    $level = 'medium';
+
+                    break;
+            }
+        }
+
+        return [
+            'title' => ucfirst($alert->device_type ?? 'Alert'),
+            'level' => $level,
+            'message' => $message,
+            'date' => optional($alert->datetime)->format('Y-m-d H:i:s') ?? '-',
+        ];
     }
 }

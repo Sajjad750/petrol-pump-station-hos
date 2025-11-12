@@ -93,6 +93,14 @@ class Station extends Model
     }
 
     /**
+     * Get all alerts for this station
+     */
+    public function alerts(): HasMany
+    {
+        return $this->hasMany(Alert::class);
+    }
+
+    /**
      * Get all sync logs for this station
      */
     public function syncLogs(): HasMany

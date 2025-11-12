@@ -16,6 +16,10 @@ class DashboardController extends Controller
     public function index()
     {
         $stations = Station::with(['pumpTransactions', 'pumps', 'tankMeasurements'])
+            ->withCount('alerts')
+            ->withCount(['alerts as unread_alerts_count' => function ($query) {
+                $query->where('is_read', false);
+            }])
             ->orderBy('site_name')
             ->get();
 

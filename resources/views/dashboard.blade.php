@@ -348,7 +348,17 @@
                                                     </div>
                                                 </td>
                                                 <td>{{ $station->tankMeasurements->count() }}/{{ $station->tankMeasurements->count() }}</td>
-                                                <td><span class="badge badge-success">0</span></td>
+                                                @php
+                                                    $alertsTotal = $station->alerts_count ?? 0;
+                                                    $alertsUnread = $station->unread_alerts_count ?? 0;
+                                                    $alertBadgeClass = $alertsUnread > 0
+                                                        ? 'badge badge-danger'
+                                                        : ($alertsTotal > 0 ? 'badge badge-warning' : 'badge badge-success');
+                                                    $alertLabel = $alertsUnread > 0
+                                                        ? "{$alertsUnread}/{$alertsTotal}"
+                                                        : $alertsTotal;
+                                                @endphp
+                                                <td><span class="{{ $alertBadgeClass }}">{{ $alertLabel }}</span></td>
                                                 <td>
                                                     <button class="btn btn-sm btn-primary station-details-btn" data-station-id="{{ $station->id }}">
                                                         <i class="fas fa-eye"></i> View

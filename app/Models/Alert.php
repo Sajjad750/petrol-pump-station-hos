@@ -11,6 +11,8 @@ class Alert extends Model
 
     protected $fillable = [
         'station_id',
+        'bos_alert_id',
+        'bos_uuid',
         'device_type',
         'device_number',
         'state',
@@ -19,12 +21,14 @@ class Alert extends Model
         'is_read',
         'meta',
         'description',
+        'raw_payload',
     ];
 
     protected $casts = [
         'is_read' => 'boolean',
         'datetime' => 'datetime',
         'meta' => 'array',
+        'raw_payload' => 'array',
     ];
 
     public function station()
