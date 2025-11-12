@@ -67,7 +67,7 @@
 </div>
 
 <!-- Combined Summary Section (shown when view_mode is 'summary') -->
-<div id="combined-summary-section">
+<div id="combined-summary-section" style="display: none;">
     <!-- Payment Mode Wise Summary Table -->
     <div class="card custom-card mb-3">
         <div class="card-header custom-card-header">
@@ -201,8 +201,7 @@
                 var shiftHtml = '<div class="shift-card mb-4" style="border: 2px solid #D7D7D7; border-radius: 8px; padding: 20px; background: white; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">';
                 shiftHtml += '<h3 style="color: #333; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #D7D7D7; font-size: 20px;">';
                 var bosId = shiftData.bos_shift_id ? ('#' + shiftData.bos_shift_id) : 'N/A';
-                var shiftId = shiftData.shift_id ? ('#' + shiftData.shift_id) : 'N/A';
-                shiftHtml += '<i class="fas fa-calendar-alt"></i> Shift ' + (shiftIndex + 1) + ' (BOS Shift ID: ' + bosId + ' | Shift ID: ' + shiftId + ')';
+                shiftHtml += '<i class="fas fa-calendar-alt"></i> Shift ' + (shiftIndex + 1) + ' (BOS Shift ID: ' + bosId + ')';
                 shiftHtml += '</h3>';
                 shiftHtml += '<div class="row mb-3">';
                 shiftHtml += '<div class="col-md-6"><strong>Start Time:</strong> ' + formatDateTime(shiftData.start_time) + '</div>';
@@ -249,8 +248,13 @@
                 shiftHtml += '<tbody>';
                 if (shiftData.product_summary && shiftData.product_summary.length > 0) {
                     shiftData.product_summary.forEach(function(item) {
+                        var productName = item.product_name || item.product || 'N/A';
+                        var productLabel = productName;
+                        if (item.product_name && item.product && item.product_name !== item.product) {
+                            productLabel = item.product_name + ' (' + item.product + ')';
+                        }
                         shiftHtml += '<tr>';
-                        shiftHtml += '<td>' + (item.product || 'N/A') + '</td>';
+                        shiftHtml += '<td>' + productLabel + '</td>';
                         shiftHtml += '<td class="text-right">' + parseFloat(item.txn_volume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
                         shiftHtml += '<td class="text-right">' + parseFloat(item.amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
                         shiftHtml += '</tr>';
@@ -278,10 +282,15 @@
                 if (shiftData.pump_summary && shiftData.pump_summary.length > 0) {
                     var totalTotalizerVolume = 0;
                     shiftData.pump_summary.forEach(function(item) {
+                        var pumpProductName = item.product_name || item.product || 'N/A';
+                        var pumpProductLabel = pumpProductName;
+                        if (item.product_name && item.product && item.product_name !== item.product) {
+                            pumpProductLabel = item.product_name + ' (' + item.product + ')';
+                        }
                         var totalizerVolume = parseFloat(item.totalizer_volume || 0);
                         totalTotalizerVolume += totalizerVolume;
                         shiftHtml += '<tr>';
-                        shiftHtml += '<td>' + (item.product || 'N/A') + '</td>';
+                        shiftHtml += '<td>' + pumpProductLabel + '</td>';
                         shiftHtml += '<td class="text-center">' + (item.pump_no || 'N/A') + '</td>';
                         shiftHtml += '<td class="text-center">' + (item.nozzle_no || 'N/A') + '</td>';
                         shiftHtml += '<td class="text-right">' + parseFloat(item.start_totalizer || 0).toLocaleString('en-US', {minimumFractionDigits: 3, maximumFractionDigits: 3}) + '</td>';
@@ -323,13 +332,13 @@
 
             // Function to render combined Payment Mode Wise Summary
             function renderCombinedPaymentSummary(data, totalVolume, totalAmount) {
-                const tbody = $('#payment-mode-summary-tbody');
-                const tfoot = $('#payment-mode-summary-tfoot');
+                var tbody = $('#payment-mode-summary-tbody');
+                var tfoot = $('#payment-mode-summary-tfoot');
                 tbody.empty();
                 
                 if (data && data.length > 0) {
                     data.forEach(function(item) {
-                        const row = $('<tr>');
+                        var row = $('<tr>');
                         row.append($('<td>').text(item.mop || 'N/A'));
                         row.append($('<td>').addClass('text-right').text(parseFloat(item.volume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
                         row.append($('<td>').addClass('text-right').text(parseFloat(item.amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
@@ -346,14 +355,19 @@
 
             // Function to render combined Product Wise Summary
             function renderCombinedProductSummary(data, totalVolume, totalAmount) {
-                const tbody = $('#product-summary-tbody');
-                const tfoot = $('#product-summary-tfoot');
+                var tbody = $('#product-summary-tbody');
+                var tfoot = $('#product-summary-tfoot');
                 tbody.empty();
                 
                 if (data && data.length > 0) {
                     data.forEach(function(item) {
-                        const row = $('<tr>');
-                        row.append($('<td>').text(item.product || 'N/A'));
+                        var productName = item.product_name || item.product || 'N/A';
+                        var productLabel = productName;
+                        if (item.product_name && item.product && item.product_name !== item.product) {
+                            productLabel = item.product_name + ' (' + item.product + ')';
+                        }
+                        var row = $('<tr>');
+                        row.append($('<td>').text(productLabel));
                         row.append($('<td>').addClass('text-right').text(parseFloat(item.txn_volume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
                         row.append($('<td>').addClass('text-right').text(parseFloat(item.amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
                         tbody.append(row);
@@ -369,14 +383,19 @@
 
             // Function to render combined Pump Wise Summary
             function renderCombinedPumpSummary(data, totalTotalizerVolume, totalTxnVolume, totalAmount) {
-                const tbody = $('#pump-summary-tbody');
-                const tfoot = $('#pump-summary-tfoot');
+                var tbody = $('#pump-summary-tbody');
+                var tfoot = $('#pump-summary-tfoot');
                 tbody.empty();
                 
                 if (data && data.length > 0) {
                     data.forEach(function(item) {
-                        const row = $('<tr>');
-                        row.append($('<td>').text(item.product || 'N/A'));
+                        var pumpProductName = item.product_name || item.product || 'N/A';
+                        var pumpProductLabel = pumpProductName;
+                        if (item.product_name && item.product && item.product_name !== item.product) {
+                            pumpProductLabel = item.product_name + ' (' + item.product + ')';
+                        }
+                        var row = $('<tr>');
+                        row.append($('<td>').text(pumpProductLabel));
                         row.append($('<td>').addClass('text-center').text(item.pump_no || 'N/A'));
                         row.append($('<td>').addClass('text-center').text(item.nozzle_no || 'N/A'));
                         row.append($('<td>').addClass('text-right').text(parseFloat(item.start_totalizer || 0).toLocaleString('en-US', {minimumFractionDigits: 3, maximumFractionDigits: 3})));
@@ -396,9 +415,18 @@
                 }
             }
 
+            function clearCombinedSummaryTables() {
+                $('#payment-mode-summary-tbody').html('<tr><td colspan="3" class="text-center">No data available. Please apply filters.</td></tr>');
+                $('#payment-mode-summary-tfoot').hide();
+                $('#product-summary-tbody').html('<tr><td colspan="3" class="text-center">No data available. Please apply filters.</td></tr>');
+                $('#product-summary-tfoot').hide();
+                $('#pump-summary-tbody').html('<tr><td colspan="8" class="text-center">No data available. Please apply filters.</td></tr>');
+                $('#pump-summary-tfoot').hide();
+            }
+
             // Load shift summary data
             function loadShiftSummary() {
-                const filters = {
+                var filters = {
                     station_id: $('#shift_summary_station_id').val(),
                     from_date: $('#shift_summary_from_date').val(),
                     to_date: $('#shift_summary_to_date').val(),
@@ -412,7 +440,7 @@
                     method: 'GET',
                     data: filters,
                     success: function(response) {
-                        const viewMode = response.view_mode || filters.view_mode || 'individual';
+                        var viewMode = response.view_mode || filters.view_mode || 'individual';
                         
                         if (viewMode === 'summary') {
                             // Show combined summary section
@@ -430,6 +458,7 @@
                         } else {
                             // Show individual shifts section (each shift with its own 3 tables)
                             $('#combined-summary-section').hide();
+                            clearCombinedSummaryTables();
                             
                             const individualSection = $('#individual-shifts-section');
                             individualSection.empty();
@@ -536,7 +565,18 @@
             });
 
             // Auto-filter on dropdown change
-            $('#shift_summary_station_id, #shift_summary_view_mode').on('change', function() {
+            $('#shift_summary_station_id').on('change', function() {
+                loadShiftSummary();
+            });
+
+            $('#shift_summary_view_mode').on('change', function() {
+                var selectedMode = $(this).val();
+                if (selectedMode === 'summary') {
+                    $('#combined-summary-section').show();
+                } else {
+                    $('#combined-summary-section').hide();
+                    clearCombinedSummaryTables();
+                }
                 loadShiftSummary();
             });
 
