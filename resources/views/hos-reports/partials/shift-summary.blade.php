@@ -79,8 +79,8 @@
                 <thead>
                     <tr>
                         <th>MOP</th>
-                        <th class="text-right">Volume (L)</th>
-                        <th class="text-right">Amount (SAR)</th>
+                        <th class="text-left">Volume (L)</th>
+                        <th class="text-left">Amount (SAR)</th>
                     </tr>
                 </thead>
                 <tbody id="payment-mode-summary-tbody">
@@ -91,8 +91,8 @@
                 <tfoot id="payment-mode-summary-tfoot" style="display: none;">
                     <tr style="background-color: #f5f5f5; font-weight: bold;">
                         <td>Total</td>
-                        <td class="text-right" id="payment-mode-total-volume">0.00</td>
-                        <td class="text-right" id="payment-mode-total-amount">0.00</td>
+                        <td class="text-left" id="payment-mode-total-volume">0.00</td>
+                        <td class="text-left" id="payment-mode-total-amount">0.00</td>
                     </tr>
                 </tfoot>
             </table>
@@ -111,8 +111,8 @@
                 <thead>
                     <tr>
                         <th>Product</th>
-                        <th class="text-right">TXN Volume</th>
-                        <th class="text-right">Amount (SAR)</th>
+                        <th class="text-left">TXN Volume</th>
+                        <th class="text-left">Amount (SAR)</th>
                     </tr>
                 </thead>
                 <tbody id="product-summary-tbody">
@@ -123,8 +123,8 @@
                 <tfoot id="product-summary-tfoot" style="display: none;">
                     <tr style="background-color: #f5f5f5; font-weight: bold;">
                         <td>Total</td>
-                        <td class="text-right" id="product-total-volume">0.00</td>
-                        <td class="text-right" id="product-total-amount">0.00</td>
+                        <td class="text-left" id="product-total-volume">0.00</td>
+                        <td class="text-left" id="product-total-amount">0.00</td>
                     </tr>
                 </tfoot>
             </table>
@@ -145,11 +145,11 @@
                         <th>Product</th>
                         <th class="text-center">Pump No</th>
                         <th class="text-center">Nozzle No</th>
-                        <th class="text-right">Start Totalizer</th>
-                        <th class="text-right">End Totalizer</th>
-                        <th class="text-right">Totalizer Volume</th>
-                        <th class="text-right">TXN Volume</th>
-                        <th class="text-right">Amount (SAR)</th>
+                        <th class="text-left">Start Totalizer</th>
+                        <th class="text-left">End Totalizer</th>
+                        <th class="text-left">Totalizer Volume</th>
+                        <th class="text-left">TXN Volume</th>
+                        <th class="text-left">Amount (SAR)</th>
                     </tr>
                 </thead>
                 <tbody id="pump-summary-tbody">
@@ -159,10 +159,10 @@
                 </tbody>
                 <tfoot id="pump-summary-tfoot" style="display: none;">
                     <tr style="background-color: #f5f5f5; font-weight: bold;">
-                        <td colspan="5" class="text-right">Total</td>
-                        <td class="text-right" id="pump-total-totalizer-volume">0.000</td>
-                        <td class="text-right" id="pump-total-txn-volume">0.00</td>
-                        <td class="text-right" id="pump-total-amount">0.00</td>
+                        <td colspan="5" class="text-left">Total</td>
+                        <td class="text-left" id="pump-total-totalizer-volume">0.000</td>
+                        <td class="text-left" id="pump-total-txn-volume">0.00</td>
+                        <td class="text-left" id="pump-total-amount">0.00</td>
                     </tr>
                 </tfoot>
             </table>
@@ -222,14 +222,14 @@
                     shiftData.payment_mode_summary.forEach(function(item) {
                         shiftHtml += '<tr>';
                         shiftHtml += '<td>' + (item.mop || 'N/A') + '</td>';
-                        shiftHtml += '<td class="text-right">' + parseFloat(item.volume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
-                        shiftHtml += '<td class="text-right">' + parseFloat(item.amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
+                        shiftHtml += '<td class="text-left">' + parseFloat(item.volume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
+                        shiftHtml += '<td class="text-left">' + parseFloat(item.amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
                         shiftHtml += '</tr>';
                     });
                     shiftHtml += '<tfoot style="background-color: #f5f5f5; font-weight: bold;"><tr>';
                     shiftHtml += '<td>Total</td>';
-                    shiftHtml += '<td class="text-right">' + parseFloat(shiftData.total_payment_volume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
-                    shiftHtml += '<td class="text-right">' + parseFloat(shiftData.total_payment_amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
+                    shiftHtml += '<td class="text-left">' + parseFloat(shiftData.total_payment_volume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
+                    shiftHtml += '<td class="text-left">' + parseFloat(shiftData.total_payment_amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
                     shiftHtml += '</tr></tfoot>';
                 } else {
                     shiftHtml += '<tr><td colspan="3" class="text-center">No data available</td></tr>';
@@ -255,14 +255,14 @@
                         }
                         shiftHtml += '<tr>';
                         shiftHtml += '<td>' + productLabel + '</td>';
-                        shiftHtml += '<td class="text-right">' + parseFloat(item.txn_volume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
-                        shiftHtml += '<td class="text-right">' + parseFloat(item.amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
+                        shiftHtml += '<td class="text-left">' + parseFloat(item.txn_volume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
+                        shiftHtml += '<td class="text-left">' + parseFloat(item.amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
                         shiftHtml += '</tr>';
                     });
                     shiftHtml += '<tfoot style="background-color: #f5f5f5; font-weight: bold;"><tr>';
                     shiftHtml += '<td>Total</td>';
-                    shiftHtml += '<td class="text-right">' + parseFloat(shiftData.total_product_volume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
-                    shiftHtml += '<td class="text-right">' + parseFloat(shiftData.total_product_amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
+                    shiftHtml += '<td class="text-left">' + parseFloat(shiftData.total_product_volume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
+                    shiftHtml += '<td class="text-left">' + parseFloat(shiftData.total_product_amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
                     shiftHtml += '</tr></tfoot>';
                 } else {
                     shiftHtml += '<tr><td colspan="3" class="text-center">No data available</td></tr>';
@@ -293,18 +293,18 @@
                         shiftHtml += '<td>' + pumpProductLabel + '</td>';
                         shiftHtml += '<td class="text-center">' + (item.pump_no || 'N/A') + '</td>';
                         shiftHtml += '<td class="text-center">' + (item.nozzle_no || 'N/A') + '</td>';
-                        shiftHtml += '<td class="text-right">' + parseFloat(item.start_totalizer || 0).toLocaleString('en-US', {minimumFractionDigits: 3, maximumFractionDigits: 3}) + '</td>';
-                        shiftHtml += '<td class="text-right">' + parseFloat(item.end_totalizer || 0).toLocaleString('en-US', {minimumFractionDigits: 3, maximumFractionDigits: 3}) + '</td>';
-                        shiftHtml += '<td class="text-right">' + totalizerVolume.toLocaleString('en-US', {minimumFractionDigits: 3, maximumFractionDigits: 3}) + '</td>';
-                        shiftHtml += '<td class="text-right">' + parseFloat(item.txn_volume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
-                        shiftHtml += '<td class="text-right">' + parseFloat(item.amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
+                        shiftHtml += '<td class="text-left">' + parseFloat(item.start_totalizer || 0).toLocaleString('en-US', {minimumFractionDigits: 3, maximumFractionDigits: 3}) + '</td>';
+                        shiftHtml += '<td class="text-left">' + parseFloat(item.end_totalizer || 0).toLocaleString('en-US', {minimumFractionDigits: 3, maximumFractionDigits: 3}) + '</td>';
+                        shiftHtml += '<td class="text-left">' + totalizerVolume.toLocaleString('en-US', {minimumFractionDigits: 3, maximumFractionDigits: 3}) + '</td>';
+                        shiftHtml += '<td class="text-left">' + parseFloat(item.txn_volume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
+                        shiftHtml += '<td class="text-left">' + parseFloat(item.amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
                         shiftHtml += '</tr>';
                     });
                     shiftHtml += '<tfoot style="background-color: #f5f5f5; font-weight: bold;"><tr>';
                     shiftHtml += '<td colspan="5" class="text-right">Total</td>';
-                    shiftHtml += '<td class="text-right">' + totalTotalizerVolume.toLocaleString('en-US', {minimumFractionDigits: 3, maximumFractionDigits: 3}) + '</td>';
-                    shiftHtml += '<td class="text-right">' + parseFloat(shiftData.total_pump_txn_volume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
-                    shiftHtml += '<td class="text-right">' + parseFloat(shiftData.total_pump_amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
+                    shiftHtml += '<td class="text-left">' + totalTotalizerVolume.toLocaleString('en-US', {minimumFractionDigits: 3, maximumFractionDigits: 3}) + '</td>';
+                    shiftHtml += '<td class="text-left">' + parseFloat(shiftData.total_pump_txn_volume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
+                    shiftHtml += '<td class="text-left">' + parseFloat(shiftData.total_pump_amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
                     shiftHtml += '</tr></tfoot>';
                 } else {
                     shiftHtml += '<tr><td colspan="8" class="text-center">No data available</td></tr>';
@@ -340,8 +340,8 @@
                     data.forEach(function(item) {
                         var row = $('<tr>');
                         row.append($('<td>').text(item.mop || 'N/A'));
-                        row.append($('<td>').addClass('text-right').text(parseFloat(item.volume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
-                        row.append($('<td>').addClass('text-right').text(parseFloat(item.amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
+                        row.append($('<td>').addClass('text-left').text(parseFloat(item.volume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
+                        row.append($('<td>').addClass('text-left').text(parseFloat(item.amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
                         tbody.append(row);
                     });
                     tfoot.show();
@@ -368,8 +368,8 @@
                         }
                         var row = $('<tr>');
                         row.append($('<td>').text(productLabel));
-                        row.append($('<td>').addClass('text-right').text(parseFloat(item.txn_volume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
-                        row.append($('<td>').addClass('text-right').text(parseFloat(item.amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
+                        row.append($('<td>').addClass('text-left').text(parseFloat(item.txn_volume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
+                        row.append($('<td>').addClass('text-left').text(parseFloat(item.amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
                         tbody.append(row);
                     });
                     tfoot.show();
@@ -398,11 +398,11 @@
                         row.append($('<td>').text(pumpProductLabel));
                         row.append($('<td>').addClass('text-center').text(item.pump_no || 'N/A'));
                         row.append($('<td>').addClass('text-center').text(item.nozzle_no || 'N/A'));
-                        row.append($('<td>').addClass('text-right').text(parseFloat(item.start_totalizer || 0).toLocaleString('en-US', {minimumFractionDigits: 3, maximumFractionDigits: 3})));
-                        row.append($('<td>').addClass('text-right').text(parseFloat(item.end_totalizer || 0).toLocaleString('en-US', {minimumFractionDigits: 3, maximumFractionDigits: 3})));
-                        row.append($('<td>').addClass('text-right').text(parseFloat(item.totalizer_volume || 0).toLocaleString('en-US', {minimumFractionDigits: 3, maximumFractionDigits: 3})));
-                        row.append($('<td>').addClass('text-right').text(parseFloat(item.txn_volume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
-                        row.append($('<td>').addClass('text-right').text(parseFloat(item.amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
+                        row.append($('<td>').addClass('text-left').text(parseFloat(item.start_totalizer || 0).toLocaleString('en-US', {minimumFractionDigits: 3, maximumFractionDigits: 3})));
+                        row.append($('<td>').addClass('text-left').text(parseFloat(item.end_totalizer || 0).toLocaleString('en-US', {minimumFractionDigits: 3, maximumFractionDigits: 3})));
+                        row.append($('<td>').addClass('text-left').text(parseFloat(item.totalizer_volume || 0).toLocaleString('en-US', {minimumFractionDigits: 3, maximumFractionDigits: 3})));
+                        row.append($('<td>').addClass('text-left').text(parseFloat(item.txn_volume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
+                        row.append($('<td>').addClass('text-left').text(parseFloat(item.amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
                         tbody.append(row);
                     });
                     tfoot.show();
