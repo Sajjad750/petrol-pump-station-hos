@@ -49,7 +49,30 @@
                         </div>
                         <div class="d-flex justify-content-between">
                             <span class="text-danger small"><i class="fas fa-circle me-1" style="font-size:8px;"></i>Offline</span>
-                            <span class="fw-medium">{{ $offlinePumps }}</span>
+                            <span class="fw-medium">{{ $offlinePumpsTotal }}</span>
+                        </div>
+                        <div class="mt-2 pt-2 border-top">
+                            <div class="small text-muted mb-1">Status Breakdown</div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-info small"><i class="fas fa-circle me-1" style="font-size:6px;"></i>Idle</span>
+                                <span class="small">{{ $idlePumps }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-primary small"><i class="fas fa-circle me-1" style="font-size:6px;"></i>Filling</span>
+                                <span class="small">{{ $fillingPumps }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-warning small"><i class="fas fa-circle me-1" style="font-size:6px;"></i>End of Transaction</span>
+                                <span class="small">{{ $endOfTransactionPumps }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-danger small"><i class="fas fa-circle me-1" style="font-size:6px;"></i>Offline</span>
+                                <span class="small">{{ $offlinePumps }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-secondary small"><i class="fas fa-circle me-1" style="font-size:6px;"></i>Pump Lock</span>
+                                <span class="small">{{ $pumplockPumps }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -161,22 +184,46 @@
                                             <span class="text-muted small">{{ $site['pump_percent'] }}%</span>
                                             <!-- Pump Breakdown Toast -->
                                             <div class="pump-breakdown-toast monitor-toast"
-                                                style="display:none; position:absolute; top:38px; left:50%; transform:translateX(-50%); min-width:220px; z-index:1000; background:#041432; color:#fff; border-radius:24px; padding:24px 18px 12px 18px; box-shadow:0 4px 16px rgba(4,16,46,.10); font-size:1rem; font-family:inherit;">
+                                                style="display:none; position:absolute; top:38px; left:50%; transform:translateX(-50%); min-width:240px; z-index:1000; background:#041432; color:#fff; border-radius:24px; padding:24px 18px 12px 18px; box-shadow:0 4px 16px rgba(4,16,46,.10); font-size:1rem; font-family:inherit;">
                                                 <div style="font-weight:600; font-size:1.2rem; margin-bottom:8px;">Pump
                                                     Breakdown</div>
-                                                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                                                    <div>Online</div>
-                                                    <div style="color:#3461ee; font-weight:500;">{{ $site['pump_online'] }}
-                                                        ({{ number_format($site['pump_total'] > 0 ? (100 * $site['pump_online']) / $site['pump_total'] : 0, 1) }}%)
+                                                <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
+                                                    <div>Idle</div>
+                                                    <div style="color:#3b82f6; font-weight:500;">{{ $site['pump_idle'] ?? 0 }}
+                                                        ({{ number_format($site['pump_total'] > 0 ? (100 * ($site['pump_idle'] ?? 0)) / $site['pump_total'] : 0, 1) }}%)
+                                                    </div>
+                                                </div>
+                                                <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
+                                                    <div>Filling</div>
+                                                    <div style="color:#6366f1; font-weight:500;">{{ $site['pump_filling'] ?? 0 }}
+                                                        ({{ number_format($site['pump_total'] > 0 ? (100 * ($site['pump_filling'] ?? 0)) / $site['pump_total'] : 0, 1) }}%)
+                                                    </div>
+                                                </div>
+                                                <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
+                                                    <div>End of Transaction</div>
+                                                    <div style="color:#f59e0b; font-weight:500;">{{ $site['pump_end_of_transaction'] ?? 0 }}
+                                                        ({{ number_format($site['pump_total'] > 0 ? (100 * ($site['pump_end_of_transaction'] ?? 0)) / $site['pump_total'] : 0, 1) }}%)
+                                                    </div>
+                                                </div>
+                                                <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
+                                                    <div>Offline</div>
+                                                    <div style="color:#ef4444; font-weight:500;">{{ $site['pump_offline'] ?? 0 }}
+                                                        ({{ number_format($site['pump_total'] > 0 ? (100 * ($site['pump_offline'] ?? 0)) / $site['pump_total'] : 0, 1) }}%)
                                                     </div>
                                                 </div>
                                                 <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-                                                    <div>Offline</div>
-                                                    <div style="color:#22c55e; font-weight:500;">{{ $site['pump_total'] - $site['pump_online'] }}
-                                                        ({{ number_format($site['pump_total'] > 0 ? (100 * ($site['pump_total'] - $site['pump_online'])) / $site['pump_total'] : 0, 1) }}%)
+                                                    <div>Pump Lock</div>
+                                                    <div style="color:#6b7280; font-weight:500;">{{ $site['pump_pumplock'] ?? 0 }}
+                                                        ({{ number_format($site['pump_total'] > 0 ? (100 * ($site['pump_pumplock'] ?? 0)) / $site['pump_total'] : 0, 1) }}%)
                                                     </div>
                                                 </div>
                                                 <hr style="margin:7px 0 10px 0; opacity:.15; border-color:#fff;">
+                                                <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
+                                                    <div>Online (Operational)</div>
+                                                    <div style="color:#22c55e; font-weight:500;">{{ $site['pump_online'] }}
+                                                        ({{ number_format($site['pump_total'] > 0 ? (100 * $site['pump_online']) / $site['pump_total'] : 0, 1) }}%)
+                                                    </div>
+                                                </div>
                                                 <div style="display:flex; justify-content:space-between; font-weight:700;">
                                                     <div>Total</div>
                                                     <div>{{ $site['pump_total'] }}</div>

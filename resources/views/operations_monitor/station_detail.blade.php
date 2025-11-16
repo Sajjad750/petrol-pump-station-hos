@@ -61,10 +61,18 @@
                             <td>{{ $pump['product'] ?? '-' }}</td>
                             <td>{{ $pump['nozzles'] ?? '-' }}</td>
                             <td>
-                                @if($pump['status'] == 'online')
-                                    <span class="badge bg-success-light text-success">online</span>
+                                @if($pump['status'] == 'idle')
+                                    <span class="badge bg-info-light text-info">Idle</span>
+                                @elseif($pump['status'] == 'filling')
+                                    <span class="badge bg-primary-light text-primary">Filling</span>
+                                @elseif($pump['status'] == 'end_of_transaction')
+                                    <span class="badge bg-warning-light text-warning">End of Transaction</span>
+                                @elseif($pump['status'] == 'offline')
+                                    <span class="badge bg-danger-light text-danger">Offline</span>
+                                @elseif($pump['status'] == 'pumplock')
+                                    <span class="badge bg-secondary-light text-secondary">Pump Lock</span>
                                 @else
-                                    <span class="badge bg-secondary-light text-muted">offline</span>
+                                    <span class="badge bg-secondary-light text-muted">{{ ucfirst($pump['status'] ?? 'Unknown') }}</span>
                                 @endif
                             </td>
                         </tr>

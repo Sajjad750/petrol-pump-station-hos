@@ -25,8 +25,18 @@ class OperationsMonitorController extends Controller
         $offlineSites = $stations->filter(fn ($station) => $station->isOffline())->count();
 
         $totalPumps = Pump::count();
-        $onlinePumps = Pump::where('status', 'active')->count();
-        $offlinePumps = $totalPumps - $onlinePumps;
+
+        // Count pumps by status
+        $idlePumps = Pump::where('status', 'idle')->count();
+        $fillingPumps = Pump::where('status', 'filling')->count();
+        $endOfTransactionPumps = Pump::where('status', 'end_of_transaction')->count();
+        $offlinePumps = Pump::where('status', 'offline')->count();
+        $pumplockPumps = Pump::where('status', 'pumplock')->count();
+
+        // Operational pumps are: idle, filling, end_of_transaction
+        $onlinePumps = $idlePumps + $fillingPumps + $endOfTransactionPumps;
+        // Non-operational pumps are: offline, pumplock
+        $offlinePumpsTotal = $offlinePumps + $pumplockPumps;
 
         $latestTankEntriesByStation = TankInventory::query()
             ->whereIn('id', function ($query) {
@@ -50,7 +60,16 @@ class OperationsMonitorController extends Controller
 
         $allSites = $stations->map(function ($station) use ($latestTankEntriesByStation) {
             $total = $station->pumps->count();
-            $online = $station->pumps->filter(fn ($pump) => $pump->status === 'active')->count();
+
+            // Count pumps by status for this station
+            $idle = $station->pumps->filter(fn ($pump) => $pump->status === 'idle')->count();
+            $filling = $station->pumps->filter(fn ($pump) => $pump->status === 'filling')->count();
+            $endOfTransaction = $station->pumps->filter(fn ($pump) => $pump->status === 'end_of_transaction')->count();
+            $offline = $station->pumps->filter(fn ($pump) => $pump->status === 'offline')->count();
+            $pumplock = $station->pumps->filter(fn ($pump) => $pump->status === 'pumplock')->count();
+
+            // Operational pumps are: idle, filling, end_of_transaction
+            $online = $idle + $filling + $endOfTransaction;
             $pumpPercent = $total ? round($online / $total * 100) : 0;
 
             /** @var Collection $tankEntries */
@@ -73,6 +92,11 @@ class OperationsMonitorController extends Controller
                 'pump_percent' => $pumpPercent,
                 'pump_online' => $online,
                 'pump_total' => $total,
+                'pump_idle' => $idle,
+                'pump_filling' => $filling,
+                'pump_end_of_transaction' => $endOfTransaction,
+                'pump_offline' => $offline,
+                'pump_pumplock' => $pumplock,
                 'tank_total' => $tank_total,
                 'tank_online' => $tank_online,
                 'tank_offline' => max(0, $tank_total - $tank_online),
@@ -88,7 +112,12 @@ class OperationsMonitorController extends Controller
             'offlineSites',
             'totalPumps',
             'onlinePumps',
+            'offlinePumpsTotal',
+            'idlePumps',
+            'fillingPumps',
+            'endOfTransactionPumps',
             'offlinePumps',
+            'pumplockPumps',
             'totalTanks',
             'onlineTanks',
             'offlineTanks',
@@ -109,13 +138,18 @@ class OperationsMonitorController extends Controller
 
         // Pump stats
         $pump_total = $station->pumps->count();
-        $pump_online = $station->pumps->where('status', 'active')->count();
+
+        // Count operational pumps (idle, filling, end_of_transaction)
+        $pump_online = $station->pumps->filter(function ($pump) {
+            return in_array($pump->status, ['idle', 'filling', 'end_of_transaction']);
+        })->count();
+
         $pumps = $station->pumps->map(function ($pump) {
             return [
                 'number' => $pump->name ?? $pump->pump_id ?? '-',
                 'product' => $pump->product ?? '-',
                 'nozzles' => $pump->nozzles ?? '-',
-                'status' => $pump->status === 'active' ? 'online' : 'offline',
+                'status' => $pump->status ?? 'offline',
             ];
         });
 
