@@ -1170,12 +1170,22 @@ class HosReportsController extends Controller
             $windowStart = $windowEnd->copy()->startOfDay();
         }
 
-        if ($windowStart) {
-            $shiftQuery->where('start_time', '>=', $windowStart);
-        }
+        if ($windowStart && $windowEnd) {
+            $shiftQuery->where(function ($query) use ($windowStart, $windowEnd) {
+                $query->whereBetween('start_time', [$windowStart, $windowEnd])
+                    ->orWhereBetween('end_time', [$windowStart, $windowEnd]);
+            });
+        } else {
+            if ($windowStart) {
+                $shiftQuery->where('start_time', '>=', $windowStart);
+            }
 
-        if ($windowEnd) {
-            $shiftQuery->where('start_time', '<=', $windowEnd);
+            if ($windowEnd) {
+                $shiftQuery->where(function ($query) use ($windowEnd) {
+                    $query->whereNull('end_time')
+                        ->orWhere('end_time', '<=', $windowEnd);
+                });
+            }
         }
 
         // Get matching shifts with station info
