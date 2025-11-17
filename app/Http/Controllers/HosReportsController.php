@@ -1155,10 +1155,12 @@ class HosReportsController extends Controller
         }
 
         if ($startBoundary && $endBoundary) {
-            $shiftQuery->where('start_time', '>=', $startBoundary);
-            $shiftQuery->where(function ($query) use ($endBoundary) {
-                $query->whereNull('end_time')
-                    ->orWhere('end_time', '<=', $endBoundary);
+            $shiftQuery->where(function ($query) use ($startBoundary, $endBoundary) {
+                $query->whereBetween('start_time', [$startBoundary, $endBoundary])
+                    ->orWhere(function ($subQuery) use ($startBoundary, $endBoundary) {
+                        $subQuery->whereNotNull('end_time')
+                            ->whereBetween('end_time', [$startBoundary, $endBoundary]);
+                    });
             });
         } else {
             if ($from_date) {
