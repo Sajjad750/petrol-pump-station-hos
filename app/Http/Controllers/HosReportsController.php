@@ -1162,23 +1162,9 @@ class HosReportsController extends Controller
             }
         }
 
-        if ($windowStart && !$windowEnd) {
-            $windowEnd = $windowStart->copy()->endOfDay();
+        if ($windowStart) {
+            $shiftQuery->where('start_time', '>=', $windowStart);
         }
-
-        if ($windowEnd && !$windowStart) {
-            $windowStart = $windowEnd->copy()->startOfDay();
-        }
-
-        if ($windowStart && $windowEnd) {
-            $shiftQuery->where(function ($query) use ($windowStart, $windowEnd) {
-                $query->whereBetween('start_time', [$windowStart, $windowEnd])
-                    ->orWhereBetween('end_time', [$windowStart, $windowEnd]);
-            });
-        } else {
-            if ($windowStart) {
-                $shiftQuery->where('start_time', '>=', $windowStart);
-            }
 
             if ($windowEnd) {
                 $shiftQuery->where(function ($query) use ($windowEnd) {
