@@ -1143,34 +1143,47 @@ class HosReportsController extends Controller
         $from_time = $request->input('from_time');
         $to_time = $request->input('to_time');
 
-        $windowStart = null;
-        $windowEnd = null;
+        $startBoundary = null;
+        $endBoundary = null;
 
-        if ($from_date || $from_time) {
-            $startDate = $from_date ?: $to_date;
-
-            if ($startDate) {
-                $windowStart = Carbon::parse($startDate.' '.($from_time ?: '00:00:00'));
-            }
+        if ($from_date) {
+            $startBoundary = Carbon::parse($from_date.' '.($from_time ?: '00:00:00'));
         }
 
-        if ($to_date || $to_time) {
-            $endDate = $to_date ?: $from_date;
-
-            if ($endDate) {
-                $windowEnd = Carbon::parse($endDate.' '.($to_time ?: '23:59:59'));
-            }
+        if ($to_date) {
+            $endBoundary = Carbon::parse($to_date.' '.($to_time ?: '23:59:59'));
         }
 
-        if ($windowStart) {
-            $shiftQuery->where('start_time', '>=', $windowStart);
-        }
-
-        if ($windowEnd) {
-            $shiftQuery->where(function ($query) use ($windowEnd) {
+        if ($startBoundary && $endBoundary) {
+            $shiftQuery->where('start_time', '>=', $startBoundary);
+            $shiftQuery->where(function ($query) use ($endBoundary) {
                 $query->whereNull('end_time')
-                    ->orWhere('end_time', '<=', $windowEnd);
+                    ->orWhere('end_time', '<=', $endBoundary);
             });
+        } else {
+            if ($from_date) {
+                if ($from_time) {
+                    $exactStart = Carbon::parse($from_date.' '.$from_time);
+                    $shiftQuery->whereBetween('start_time', [
+                        $exactStart->copy()->startOfMinute(),
+                        $exactStart->copy()->endOfMinute(),
+                    ]);
+                } else {
+                    $shiftQuery->whereDate('start_time', $from_date);
+                }
+            }
+
+            if ($to_date) {
+                if ($to_time) {
+                    $exactEnd = Carbon::parse($to_date.' '.$to_time);
+                    $shiftQuery->whereBetween('end_time', [
+                        $exactEnd->copy()->startOfMinute(),
+                        $exactEnd->copy()->endOfMinute(),
+                    ]);
+                } else {
+                    $shiftQuery->whereDate('end_time', $to_date);
+                }
+            }
         }
 
         // Get matching shifts with station info
