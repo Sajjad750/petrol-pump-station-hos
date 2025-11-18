@@ -113,10 +113,10 @@
                                                     : \Illuminate\Support\Carbon::parse($dateToConvert)->format('Y-m-d H:i') }}
                                             </span>
                                         </div>
-                                        @if ($item['changed_by_user_name'] || $item['changed_by'])
+                                        @if ($item['changed_by_user_name'])
                                             <div class="text-muted small">
                                                 Changed by:
-                                                {{ $item['changed_by_user_name'] ?? 'User ID ' . $item['changed_by'] }}
+                                                {{ $item['changed_by_user_name'] }}
                                             </div>
                                         @endif
                                         @if ($item['status'])
