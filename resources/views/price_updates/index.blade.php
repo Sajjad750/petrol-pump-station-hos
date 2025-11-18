@@ -113,12 +113,21 @@
                                                     : \Illuminate\Support\Carbon::parse($dateToConvert)->format('Y-m-d H:i') }}
                                             </span>
                                         </div>
-                                        @if ($item['changed_by_user_name'])
-                                            <div class="text-muted small">Changed by: {{ $item['changed_by_user_name'] }}</div>
+                                        @if ($item['changed_by_user_name'] || $item['changed_by'])
+                                            <div class="text-muted small">
+                                                Changed by:
+                                                {{ $item['changed_by_user_name'] ?? 'User ID ' . $item['changed_by'] }}
+                                            </div>
                                         @endif
+                                        @if ($item['status'])
+                                            <div class="text-muted small">Status: {{ $item['status'] }}</div>
+                                        @endif
+                                        @if ($item['source_system'])
+                                            <div class="text-muted small">Source system: {{ $item['source_system'] }}</div>
+                                        @endif
+                                        <div class="text-muted small">Change type: {{ $item['change_type'] ?? '' }}</div>
                                     </div>
                                     <div class="text-right">
-                                        <div class="text-muted">{{ $item['change_type'] ?? 'Price Change' }}</div>
                                         <div>
                                             @php
                                                 $from = $item['price_from'];

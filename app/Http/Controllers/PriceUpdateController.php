@@ -36,6 +36,9 @@ class PriceUpdateController extends Controller
                     'price_to' => $historyItem->new_price,
                     'change_type' => $historyItem->change_type,
                     'changed_by_user_name' => $historyItem->changed_by_user_name,
+                    'changed_by' => $historyItem->changed_by,
+                    'status' => $historyItem->status,
+                    'source_system' => $historyItem->source_system,
                 ];
             });
 
