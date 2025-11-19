@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ScheduleBulkFuelGradePriceRequest;
 use App\Models\FuelGrade;
 use App\Models\FuelGradePriceHistory;
+use App\Models\HosCommand;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -156,7 +158,7 @@ class PriceUpdateController extends Controller
             $row['station_name'] = $fuelGrade->station->site_name ?? '-';
 
             // Add checkbox HTML (will be shown conditionally in frontend)
-            $row['checkbox'] = '<input type="checkbox" class="fuel-grade-checkbox" value="' . $fuelGrade->id . '" data-name="' . htmlspecialchars($fuelGrade->name) . '">';
+            $row['checkbox'] = '<input type="checkbox" class="fuel-grade-checkbox" value="' . $fuelGrade->id . '" data-name="' . htmlspecialchars($fuelGrade->name) . '" data-station-id="' . $fuelGrade->station_id . '">';
 
             return $row;
         });
@@ -166,6 +168,84 @@ class PriceUpdateController extends Controller
             'recordsTotal' => $totalData,
             'recordsFiltered' => $totalFiltered,
             'data' => $data,
+        ]);
+    }
+
+    /**
+     * Schedule fuel grade prices for multiple stations in bulk.
+     */
+    public function scheduleBulk(ScheduleBulkFuelGradePriceRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+
+        $fuel_grade_name = $validated['fuel_grade_name'];
+        $station_ids = $validated['station_ids'];
+        $scheduled_price = $validated['scheduled_price'];
+        $scheduled_at = $validated['scheduled_at'];
+
+        // Get fuel_grade_ids which have same fuel_grade name and match the station_ids
+        $fuel_grades = FuelGrade::query()
+            ->where('name', $fuel_grade_name)
+            ->whereIn('station_id', $station_ids)
+            ->get();
+
+        if ($fuel_grades->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No fuel grades found matching the selected criteria.',
+            ], 404);
+        }
+
+        $created_commands = [];
+        $errors = [];
+
+        // Create HOSCommand for each station
+        foreach ($fuel_grades as $fuel_grade) {
+            try {
+                $hos_command = HosCommand::create([
+                    'station_id' => $fuel_grade->station_id,
+                    'command_type' => 'schedule_fuel_grade_price',
+                    'command_data' => [
+                        'bos_fuel_grade_id' => $fuel_grade->bos_fuel_grade_id,
+                        'bos_uuid' => $fuel_grade->bos_uuid,
+                        'scheduled_price' => $scheduled_price,
+                        'scheduled_at' => $scheduled_at,
+                        'source_system' => 'HOS',
+                        'changed_by' => auth()->id(),
+                        'changed_by_user_name' => auth()->user()->name ?? null,
+                        'status' => 'pending',
+                        'user_timezone' => $validated['user_timezone'] ?? null,
+                    ],
+                    'status' => 'pending',
+                ]);
+
+                $created_commands[] = $hos_command->id;
+            } catch (\Exception $e) {
+                $errors[] = "Failed to create command for station ID {$fuel_grade->station_id}: {$e->getMessage()}";
+            }
+        }
+
+        if (count($created_commands) === 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create any commands. ' . implode(' ', $errors),
+            ], 500);
+        }
+
+        $message = count($created_commands) . ' price schedule command(s) queued successfully';
+
+        if (count($errors) > 0) {
+            $message .= '. Some errors occurred: ' . implode(' ', $errors);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+            'data' => [
+                'commands_created' => count($created_commands),
+                'command_ids' => $created_commands,
+                'errors' => $errors,
+            ],
         ]);
     }
 }

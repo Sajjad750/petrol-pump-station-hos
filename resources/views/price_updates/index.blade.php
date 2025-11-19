@@ -258,22 +258,92 @@
                 const time = $('#effective_time').val();
                 const scheduledAt = date && time ? (date + 'T' + time) : '';
 
+                // Frontend validation
                 if (!productName) {
-                    alert('Please select a product.');
+                    Swal.fire('Validation Error', 'Please select a product.', 'error');
                     return;
                 }
-                if (!price) {
-                    alert('Please enter the new price.');
+                if (!price || parseFloat(price) <= 0) {
+                    Swal.fire('Validation Error', 'Please enter a valid price greater than 0.', 'error');
+                    return;
+                }
+                if (!date) {
+                    Swal.fire('Validation Error', 'Please select an effective date.', 'error');
+                    return;
+                }
+                if (!time) {
+                    Swal.fire('Validation Error', 'Please select an effective time.', 'error');
                     return;
                 }
                 if (!scheduledAt) {
-                    alert('Please select both effective date and time.');
+                    Swal.fire('Validation Error', 'Please select both effective date and time.', 'error');
                     return;
                 }
 
-                // Note: This will need to be updated based on your next requirements
-                // For now, showing an alert that this needs implementation
-                alert('Schedule functionality will be implemented based on your next requirements.');
+                // Get selected checkboxes
+                const selectedCheckboxes = $('.fuel-grade-checkbox:checked');
+                if (selectedCheckboxes.length === 0) {
+                    Swal.fire('Validation Error', 'Please select at least one fuel grade from the table.', 'error');
+                    return;
+                }
+
+                // Collect station_ids from selected checkboxes
+                const stationIds = [];
+                selectedCheckboxes.each(function() {
+                    const stationId = $(this).data('station-id');
+                    if (stationId && stationIds.indexOf(stationId) === -1) {
+                        stationIds.push(stationId);
+                    }
+                });
+
+                if (stationIds.length === 0) {
+                    Swal.fire('Validation Error', 'Unable to determine station IDs from selected items.', 'error');
+                    return;
+                }
+
+                // Show loading
+                Swal.fire({
+                    title: 'Processing...',
+                    text: 'Scheduling prices for selected stations',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Send AJAX request
+                $.ajax({
+                    url: "{{ route('price-updates.schedule-bulk') }}",
+                    type: 'POST',
+                    data: {
+                        fuel_grade_name: productName,
+                        station_ids: stationIds,
+                        scheduled_price: price,
+                        scheduled_at: scheduledAt,
+                        user_timezone: USER_TIMEZONE,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        Swal.fire('Success', response.message || 'Price schedule commands queued successfully', 'success');
+                        // Reload table
+                        table.ajax.reload();
+                        // Clear form
+                        $('#new_price').val('');
+                        $('#effective_date').val('');
+                        $('#effective_time').val('');
+                        // Uncheck all checkboxes
+                        $('.fuel-grade-checkbox').prop('checked', false);
+                    },
+                    error: function(xhr) {
+                        let errorMsg = 'An error occurred';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        } else if (xhr.responseJSON && xhr.responseJSON.errors) {
+                            errorMsg = Object.values(xhr.responseJSON.errors).flat().join('<br>');
+                        }
+                        Swal.fire('Error', errorMsg, 'error');
+                    }
+                });
             });
 
             // Override Update button to behave like direct Schedule on this page
