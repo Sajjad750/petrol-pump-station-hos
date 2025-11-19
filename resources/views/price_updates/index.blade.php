@@ -14,36 +14,28 @@
                         <div class="row">
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <label for="station_select">Station</label>
-                                    <select id="station_select" class="form-control">
-                                        <option value="">Select station</option>
-                                        @foreach ($stations as $station)
-                                            <option value="{{ $station->id }}">{{ $station->site_name }}</option>
+                                    <label for="product_select">Product (Fuel grade)</label>
+                                    <select id="product_select" class="form-control">
+                                        <option value="">Select product</option>
+                                        @foreach ($fuel_grades as $fuel_grade_name)
+                                            <option value="{{ $fuel_grade_name }}">{{ $fuel_grade_name }}</option>
                                         @endforeach
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <label for="product_select">Product</label>
-                                    <select id="product_select" class="form-control" disabled>
-                                        <option value="">Select product</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-2">
-                                <div class="form-group">
                                     <label for="new_price">New Price</label>
                                     <input id="new_price" type="number" step="0.01" min="0" class="form-control" placeholder="0.00">
                                 </div>
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-md-3">
                                 <div class="form-group">
                                     <label for="effective_date">Effective Date</label>
                                     <input id="effective_date" type="date" class="form-control">
                                 </div>
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-md-3">
                                 <div class="form-group">
                                     <label for="effective_time">Effective Time</label>
                                     <input id="effective_time" type="time" class="form-control">
@@ -53,8 +45,8 @@
                         <div class="d-flex justify-content-end">
                             <button id="apply_prefill" type="button" class="btn btn-primary">Schedule Price</button>
                         </div>
-                        <small class="text-muted d-block mt-2">Schedules the selected product price for the chosen station,
-                            date and time.</small>
+                        <small class="text-muted d-block mt-2">Schedules the selected product price for the chosen date and
+                            time.</small>
                     </div>
                 </div>
 
@@ -67,20 +59,15 @@
                             <table id="fuel-grades-table" class="table-bordered table">
                                 <thead class="custom-table-header">
                                     <tr>
+                                        <th class="checkbox-column" style="display: none;"></th>
                                         <th>ID</th>
-                                        <th>Station</th>
-                                        <th>UUID</th>
-                                        <th>PTS Fuel Grade ID</th>
+                                        <th>Site Name</th>
+                                        <th>BOS Fuel Grade ID</th>
                                         <th>Name</th>
                                         <th>Price</th>
                                         <th>Scheduled Price</th>
                                         <th>Scheduled At</th>
-                                        <th>Price Status</th>
-                                        <th>Expansion Coefficient</th>
-                                        <th>Blend Status</th>
-                                        <th>Blend Info</th>
-                                        <th>BOS Fuel Grade ID</th>
-
+                                        <th>Status</th>
                                     </tr>
                                 </thead>
                             </table>
@@ -158,111 +145,120 @@
     <script>
         $(document).ready(function() {
             const USER_TIMEZONE = moment.tz.guess();
-            // Load products on station change
-            $('#station_select').on('change', function() {
-                const stationId = $(this).val();
-                $('#product_select').prop('disabled', true).empty().append('<option value="">Select product</option>');
-                if (!stationId) {
-                    // also refresh table filter
-                    $('#fuel-grades-table').DataTable().draw();
-                    return;
-                }
-                $.get("{{ route('price-updates.products') }}", {
-                    station_id: stationId
-                }, function(response) {
-                    const products = response.products || [];
-                    products.forEach(function(p) {
-                        $('#product_select').append($('<option></option>').val(p.id).text(p.name));
-                    });
-                    $('#product_select').prop('disabled', false);
-                    $('#fuel-grades-table').DataTable().draw();
-                });
-            });
 
-            // DataTable (same source as fuel grades, but filtered by station/product)
+            // DataTable for price updates
             var table = $('#fuel-grades-table').DataTable({
                 'processing': true,
                 'serverSide': true,
                 'ajax': {
-                    'url': "{{ route('fuel_grades') }}",
+                    'url': "{{ route('price-updates.datatable') }}",
                     'data': function(d) {
-                        d.name = '';
-                        d.min_price = '';
-                        d.max_price = '';
-                        d.station_id = $('#station_select').val();
+                        d.name = $('#product_select').val() || '';
                     }
                 },
-                'order': [0, 'desc'],
+                'order': [
+                    [1, 'desc']
+                ],
                 'columns': [{
-                        data: 'id'
+                        data: 'checkbox',
+                        name: 'checkbox',
+                        orderable: false,
+                        searchable: false,
+                        className: 'checkbox-column'
                     },
                     {
-                        data: 'station.site_name',
-                        defaultContent: '-'
+                        data: 'id',
+                        name: 'id'
                     },
                     {
-                        data: 'uuid',
-                        defaultContent: '-'
-                    },
-                    {
-                        data: 'pts_fuel_grade_id',
-                        defaultContent: '-'
-                    },
-                    {
-                        data: 'name',
-                        defaultContent: '-'
-                    },
-                    {
-                        data: 'price',
-                        defaultContent: '0.00'
-                    },
-                    {
-                        data: 'scheduled_price',
-                        defaultContent: '-'
-                    },
-                    {
-                        data: 'scheduled_at',
-                        defaultContent: '-'
-                    },
-                    {
-                        data: 'price_status',
-                        defaultContent: '-'
-                    },
-                    {
-                        data: 'expansion_coefficient',
-                        defaultContent: '-'
-                    },
-                    {
-                        data: 'blend_status',
-                        defaultContent: '-'
-                    },
-                    {
-                        data: 'blend_info',
+                        data: 'station_name',
+                        name: 'station.site_name',
                         defaultContent: '-'
                     },
                     {
                         data: 'bos_fuel_grade_id',
+                        name: 'bos_fuel_grade_id',
                         defaultContent: '-'
                     },
-
-                ]
+                    {
+                        data: 'name',
+                        name: 'name',
+                        defaultContent: '-'
+                    },
+                    {
+                        data: 'price',
+                        name: 'price',
+                        defaultContent: '0.00'
+                    },
+                    {
+                        data: 'scheduled_price',
+                        name: 'scheduled_price',
+                        defaultContent: '-'
+                    },
+                    {
+                        data: 'scheduled_at',
+                        name: 'scheduled_at',
+                        defaultContent: '-',
+                        render: function(data, type, row) {
+                            if (data && data !== '-' && type === 'display') {
+                                // Parse UTC datetime and convert to user timezone
+                                const utcMoment = moment.utc(data, 'YYYY-MM-DD HH:mm:ss');
+                                if (utcMoment.isValid()) {
+                                    return utcMoment.tz(USER_TIMEZONE).format('YYYY-MM-DD HH:mm:ss');
+                                }
+                            }
+                            return data || '-';
+                        }
+                    },
+                    {
+                        data: 'status',
+                        name: 'status',
+                        orderable: false,
+                        searchable: false,
+                        defaultContent: '-'
+                    }
+                ],
+                'columnDefs': [{
+                    'targets': 0,
+                    'visible': false,
+                    'orderable': false
+                }],
+                destroy: true,
             });
+
+            // Show/hide checkboxes based on product selection
+            function toggleCheckboxes() {
+                const productSelected = $('#product_select').val() !== '';
+
+                if (productSelected) {
+                    table.column(0).visible(true);
+                    $('th.checkbox-column').show();
+                } else {
+                    table.column(0).visible(false);
+                    $('th.checkbox-column').hide();
+                    // Uncheck all checkboxes when product is deselected
+                    $('.fuel-grade-checkbox').prop('checked', false);
+                }
+            }
+
+            // Update table when product selection changes
+            $('#product_select').on('change', function() {
+                toggleCheckboxes();
+                table.ajax.reload();
+            });
+
+            // Initial state - hide checkboxes
+            toggleCheckboxes();
 
             // Direct schedule on click (no modal)
             $('#apply_prefill').on('click', function() {
-                const stationId = $('#station_select').val();
-                const productId = $('#product_select').val();
-                const productName = $('#product_select option:selected').text();
+                const productName = $('#product_select').val();
                 const price = $('#new_price').val();
                 const date = $('#effective_date').val();
                 const time = $('#effective_time').val();
                 const scheduledAt = date && time ? (date + 'T' + time) : '';
 
-                if (!stationId) {
-                    alert('Please select a station first.');
-                    return;
-                }
-                if (!productId) {
+                if (!productName) {
                     alert('Please select a product.');
                     return;
                 }
@@ -275,32 +271,9 @@
                     return;
                 }
 
-                // Direct submit to schedule endpoint
-                const url = '{{ route('fuel-grades.schedule-price', ':id') }}'.replace(':id', productId);
-                $.ajax({
-                    url: url,
-                    type: 'POST',
-                    data: {
-                        scheduled_price: price,
-                        scheduled_at: scheduledAt,
-                        user_timezone: USER_TIMEZONE,
-                        _token: '{{ csrf_token() }}',
-                        _method: 'PUT'
-                    },
-                    success: function(response) {
-                        Swal.fire('Success', response.message || 'Price schedule command queued successfully', 'success');
-                        $('#fuel-grades-table').DataTable().draw();
-                    },
-                    error: function(xhr) {
-                        let errorMsg = 'An error occurred';
-                        if (xhr.responseJSON && xhr.responseJSON.message) {
-                            errorMsg = xhr.responseJSON.message;
-                        } else if (xhr.responseJSON && xhr.responseJSON.errors) {
-                            errorMsg = Object.values(xhr.responseJSON.errors).flat().join('<br>');
-                        }
-                        Swal.fire('Error', errorMsg, 'error');
-                    }
-                });
+                // Note: This will need to be updated based on your next requirements
+                // For now, showing an alert that this needs implementation
+                alert('Schedule functionality will be implemented based on your next requirements.');
             });
 
             // Override Update button to behave like direct Schedule on this page
