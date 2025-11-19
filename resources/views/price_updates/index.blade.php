@@ -87,7 +87,7 @@
                                         <div class="font-weight-bold">{{ $item['product_name'] }}</div>
                                         <div class="text-muted">
                                             @php
-                                                $dateToConvert = $item['effective_at'] ?? $item['created_at'];
+                                                $dateToConvert = $item['effective_at'];
                                                 $utcTimestamp =
                                                     $dateToConvert instanceof \Carbon\Carbon
                                                         ? $dateToConvert->utc()->toIso8601String()
@@ -107,12 +107,37 @@
                                             </div>
                                         @endif
                                         @if ($item['status'])
-                                            <div class="text-muted small">Status: {{ $item['status'] }}</div>
+                                            <div class="text-muted small">
+                                                Status:
+                                                @if (strtolower($item['status']) === 'applied')
+                                                    <span class="badge badge-success">{{ $item['status'] }}</span>
+                                                @else
+                                                    <span class="badge badge-secondary">{{ $item['status'] }}</span>
+                                                @endif
+                                            </div>
                                         @endif
                                         @if ($item['source_system'])
-                                            <div class="text-muted small">Source system: {{ $item['source_system'] }}</div>
+                                            <div class="text-muted small">
+                                                Source system:
+                                                @if (strtoupper($item['source_system']) === 'HOS')
+                                                    <span class="badge badge-primary">{{ $item['source_system'] }}</span>
+                                                @elseif(strtoupper($item['source_system']) === 'BOS')
+                                                    <span class="badge badge-info">{{ $item['source_system'] }}</span>
+                                                @else
+                                                    <span class="badge badge-secondary">{{ $item['source_system'] }}</span>
+                                                @endif
+                                            </div>
                                         @endif
-                                        <div class="text-muted small">Change type: {{ $item['change_type'] ?? '' }}</div>
+                                        <div class="text-muted small">
+                                            Change type:
+                                            @if (strtolower($item['change_type'] ?? '') === 'instant')
+                                                <span class="badge badge-warning">{{ $item['change_type'] ?? '' }}</span>
+                                            @elseif(strtolower($item['change_type'] ?? '') === 'scheduled')
+                                                <span class="badge badge-success">{{ $item['change_type'] ?? '' }}</span>
+                                            @else
+                                                <span class="badge badge-secondary">{{ $item['change_type'] ?? '' }}</span>
+                                            @endif
+                                        </div>
                                     </div>
                                     <div class="text-right">
                                         <div>
