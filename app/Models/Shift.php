@@ -38,7 +38,7 @@ class Shift extends Model
      */
     public function productWiseSummaries(): HasMany
     {
-        return $this->hasMany(ProductWiseSummary::class, 'shift_id', 'id');
+        return $this->hasMany(ProductWiseSummary::class, 'bos_shift_id', 'bos_shift_id');
     }
 
     /**

@@ -1228,7 +1228,7 @@ class HosReportsController extends Controller
 
             $productSummaryRows = ProductWiseSummary::query()
                 ->leftJoin('fuel_grades', function ($join) {
-                    $join->on('product_wise_summaries.fuel_grade_id', '=', 'fuel_grades.id')
+                    $join->on('product_wise_summaries.fuel_grade_id', '=', 'fuel_grades.bos_fuel_grade_id')
                         ->on('product_wise_summaries.station_id', '=', 'fuel_grades.station_id');
                 })
                 ->select(
