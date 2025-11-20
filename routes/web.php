@@ -67,6 +67,12 @@ Route::middleware('auth')->group(function () {
     Route::get('price-updates/products', [\App\Http\Controllers\PriceUpdateController::class, 'products'])
         ->middleware('permission:view-fuel-grades')
         ->name('price-updates.products');
+    Route::get('price-updates/datatable', [\App\Http\Controllers\PriceUpdateController::class, 'dataTable'])
+        ->middleware('permission:view-fuel-grades')
+        ->name('price-updates.datatable');
+    Route::post('price-updates/schedule-bulk', [\App\Http\Controllers\PriceUpdateController::class, 'scheduleBulk'])
+        ->middleware('permission:view-fuel-grades')
+        ->name('price-updates.schedule-bulk');
 
     // Shifts
     Route::get('shifts', \App\Http\Controllers\ShiftListController::class)->name('shifts.index');
