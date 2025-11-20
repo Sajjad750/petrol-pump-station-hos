@@ -11,6 +11,8 @@ use App\Models\TankInventory;
 use App\Models\TankDelivery;
 use App\Models\TankMeasurement;
 use App\Models\Shift;
+use App\Models\PaymentModeWiseSummary;
+use App\Models\ProductWiseSummary;
 
 class HosReportsController extends Controller
 {
@@ -1206,6 +1208,52 @@ class HosReportsController extends Controller
             ]);
         }
 
+        $bosShiftIds = collect($shiftData)->pluck('bos_shift_id')->filter()->unique()->values();
+        $stationIds = collect($shiftData)->pluck('station_id')->filter()->unique()->values();
+
+        $paymentSummariesByShift = collect();
+        $productSummariesByShift = collect();
+
+        if ($bosShiftIds->isNotEmpty() && $stationIds->isNotEmpty()) {
+            $paymentSummaryRows = PaymentModeWiseSummary::query()
+                ->select('station_id', 'bos_shift_id', 'mop', DB::raw('SUM(volume) as total_volume'), DB::raw('SUM(amount) as total_amount'))
+                ->whereIn('station_id', $stationIds)
+                ->whereIn('bos_shift_id', $bosShiftIds)
+                ->groupBy('station_id', 'bos_shift_id', 'mop')
+                ->get();
+
+            $paymentSummariesByShift = $paymentSummaryRows->groupBy(function ($row) {
+                return $row->station_id.'|'.$row->bos_shift_id;
+            });
+
+            $productSummaryRows = ProductWiseSummary::query()
+                ->leftJoin('fuel_grades', function ($join) {
+                    $join->on('product_wise_summaries.fuel_grade_id', '=', 'fuel_grades.id')
+                        ->on('product_wise_summaries.station_id', '=', 'fuel_grades.station_id');
+                })
+                ->select(
+                    'product_wise_summaries.station_id',
+                    'product_wise_summaries.bos_shift_id',
+                    'product_wise_summaries.fuel_grade_id',
+                    DB::raw('COALESCE(fuel_grades.name, "N/A") as product_name'),
+                    DB::raw('SUM(product_wise_summaries.volume) as total_volume'),
+                    DB::raw('SUM(product_wise_summaries.amount) as total_amount')
+                )
+                ->whereIn('product_wise_summaries.station_id', $stationIds)
+                ->whereIn('product_wise_summaries.bos_shift_id', $bosShiftIds)
+                ->groupBy(
+                    'product_wise_summaries.station_id',
+                    'product_wise_summaries.bos_shift_id',
+                    'product_wise_summaries.fuel_grade_id',
+                    'fuel_grades.name'
+                )
+                ->get();
+
+            $productSummariesByShift = $productSummaryRows->groupBy(function ($row) {
+                return $row->station_id.'|'.$row->bos_shift_id;
+            });
+        }
+
         // Get all shift IDs
         $shiftIds = collect($shiftData)->pluck('id')->toArray();
 
@@ -1218,6 +1266,27 @@ class HosReportsController extends Controller
         $combinedPumpSummary = collect();
 
         foreach ($shiftData as $shiftInfo) {
+            $shiftKey = $shiftInfo['station_id'].'|'.$shiftInfo['bos_shift_id'];
+
+            $paymentSummaries = ($paymentSummariesByShift->get($shiftKey) ?? collect())->map(function ($row) {
+                return [
+                    'mop' => $row->mop ?: 'N/A',
+                    'volume' => (float) $row->total_volume,
+                    'amount' => (float) $row->total_amount,
+                ];
+            })->values();
+
+            $productSummaries = ($productSummariesByShift->get($shiftKey) ?? collect())->map(function ($row) {
+                $productName = $row->product_name ?: 'N/A';
+
+                return [
+                    'product' => $productName,
+                    'product_name' => $productName,
+                    'txn_volume' => (float) $row->total_volume,
+                    'amount' => (float) $row->total_amount,
+                ];
+            })->values();
+
             // Get all transactions for this shift using bos_shift_id
             $shiftTransactions = PumpTransaction::query()
                 ->leftJoin('fuel_grades', function ($join) use ($shiftInfo) {
