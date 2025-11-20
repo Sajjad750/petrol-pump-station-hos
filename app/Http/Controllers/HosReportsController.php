@@ -11,8 +11,6 @@ use App\Models\TankInventory;
 use App\Models\TankDelivery;
 use App\Models\TankMeasurement;
 use App\Models\Shift;
-use App\Models\PaymentModeWiseSummary;
-use App\Models\ProductWiseSummary;
 
 class HosReportsController extends Controller
 {
@@ -1220,48 +1218,50 @@ class HosReportsController extends Controller
         $combinedPumpSummary = collect();
 
         foreach ($shiftData as $shiftInfo) {
-            // Get Payment Mode Wise Summary for this shift using bos_shift_id
-            $paymentSummaries = PaymentModeWiseSummary::where('bos_shift_id', $shiftInfo['bos_shift_id'])
-                ->where('station_id', $shiftInfo['station_id'])
-                ->orderBy('mop')
-                ->get()
-                ->groupBy('mop')
-                ->map(function ($group) {
-                    return [
-                        'mop' => $group->first()->mop,
-                        'volume' => $group->sum('volume'),
-                        'amount' => $group->sum('amount'),
-                    ];
+            // Get all transactions for this shift using bos_shift_id
+            $shiftTransactions = PumpTransaction::query()
+                ->leftJoin('fuel_grades', function ($join) use ($shiftInfo) {
+                    $join->on('pump_transactions.pts_fuel_grade_id', '=', 'fuel_grades.id')
+                         ->on('pump_transactions.station_id', '=', 'fuel_grades.station_id');
                 })
-                ->values();
-
-            // Get Product Wise Summary for this shift using bos_shift_id
-            $productSummaries = ProductWiseSummary::with('fuelGrade')
-                ->where('bos_shift_id', $shiftInfo['bos_shift_id'])
-                ->where('station_id', $shiftInfo['station_id'])
-                ->get()
-                ->map(function ($item) {
-                    return [
-                        'product' => optional($item->fuelGrade)->name ?? 'N/A',
-                        'txn_volume' => $item->volume ?? 0,
-                        'amount' => $item->amount ?? 0,
-                    ];
-                })
-                ->groupBy('product')
-                ->map(function ($group) {
-                    return [
-                        'product' => $group->first()['product'],
-                        'txn_volume' => $group->sum('txn_volume'),
-                        'amount' => $group->sum('amount'),
-                    ];
-                })
-                ->values();
-
-            // Get Pump Wise Summary for this shift using bos_shift_id
-            $shiftTransactions = PumpTransaction::where('bos_shift_id', $shiftInfo['bos_shift_id'])
-                ->where('station_id', $shiftInfo['station_id'])
-                ->with('fuelGrade')
+                ->where('pump_transactions.bos_shift_id', $shiftInfo['bos_shift_id'])
+                ->where('pump_transactions.station_id', $shiftInfo['station_id'])
+                ->select('pump_transactions.*', 'fuel_grades.name as fuel_grade_name')
                 ->get();
+
+            // Calculate Payment Mode Wise Summary from transactions
+            $paymentSummaries = $shiftTransactions
+                ->groupBy('mode_of_payment')
+                ->map(function ($group) {
+                    return [
+                        'mop' => $group->first()->mode_of_payment ?? 'N/A',
+                        'volume' => (float) $group->sum('volume'),
+                        'amount' => (float) $group->sum('amount'),
+                    ];
+                })
+                ->values()
+                ->sortBy('mop')
+                ->values();
+
+            // Calculate Product Wise Summary from transactions
+            $productSummaries = $shiftTransactions
+                ->groupBy(function ($transaction) {
+                    return $transaction->pts_fuel_grade_id ?? 'unknown';
+                })
+                ->map(function ($group) {
+                    $first = $group->first();
+                    $productName = $first->fuel_grade_name ?? 'N/A';
+
+                    return [
+                        'product' => $productName,
+                        'product_name' => $productName,
+                        'txn_volume' => (float) $group->sum('volume'),
+                        'amount' => (float) $group->sum('amount'),
+                    ];
+                })
+                ->values()
+                ->sortBy('product')
+                ->values();
 
             // Group by pump, nozzle, fuel grade for this shift
             $shiftGrouped = $shiftTransactions->groupBy(function ($t) {
@@ -1286,8 +1286,11 @@ class HosReportsController extends Controller
                 $transactionVolume = (float) $group->sum('volume');
                 $amountSar = (float) $group->sum('amount');
 
+                $productName = $first->fuel_grade_name ?? 'Unknown';
+
                 return [
-                    'product' => $first->fuel_grade_name ?? optional($first->fuelGrade)->name ?? 'Unknown',
+                    'product' => $productName,
+                    'product_name' => $productName,
                     'pump_no' => $first->pts_pump_id ?? '-',
                     'nozzle_no' => $first->pts_nozzle_id ?? '-',
                     'start_totalizer' => $startTotalizer ?? 0,
