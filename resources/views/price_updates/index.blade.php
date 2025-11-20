@@ -97,7 +97,7 @@
                             @forelse($history as $item)
                                 <div class="list-group-item d-flex justify-content-between align-items-center">
                                     <div>
-                                        <div class="font-weight-bold">{{ $item['product_name'] }}</div>
+                                        <div class="font-weight-medium">{{ $item['product_name'] }}</div>
                                         <div class="text-muted">
                                             @php
                                                 $dateToConvert = $item['effective_at'] ?? $item['created_at'];
