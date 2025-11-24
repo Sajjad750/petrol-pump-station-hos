@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
 use App\Models\PumpTransaction;
 use App\Models\Station;
 use App\Models\TankInventory;
@@ -1264,6 +1263,8 @@ class HosReportsController extends Controller
         $combinedPumpSummary = collect();
 
         foreach ($shiftData as $shiftInfo) {
+            $shiftKey = $shiftInfo['station_id'].'|'.$shiftInfo['bos_shift_id'];
+
             $shiftTransactions = PumpTransaction::query()
                 ->leftJoin('fuel_grades', function ($join) use ($shiftInfo) {
                     $join->on('pump_transactions.pts_fuel_grade_id', '=', 'fuel_grades.id')
@@ -1274,30 +1275,15 @@ class HosReportsController extends Controller
                 ->select('pump_transactions.*', 'fuel_grades.name as fuel_grade_name')
                 ->get();
 
-            $transactionPaymentSummary = $this->summarizePaymentsFromTransactions($shiftTransactions);
-            $transactionProductSummary = $this->summarizeProductsFromTransactions($shiftTransactions);
-
-            $paymentSummaries = ($paymentSummariesByShift->get($shiftInfo['id']) ?? collect())->map(function ($row) {
+            $paymentSummaries = ($paymentSummariesByShift->get($shiftKey) ?? collect())->map(function ($row) {
                 return [
                     'mop' => $row->mop ?: 'N/A',
                     'volume' => (float) $row->total_volume,
                     'amount' => (float) $row->total_amount,
                 ];
-            });
+            })->values()->sortBy('mop')->values();
 
-            if ($paymentSummaries->isEmpty()) {
-                $paymentSummaries = $transactionPaymentSummary->values();
-            } else {
-                $paymentSummaries = $paymentSummaries->keyBy('mop');
-                $transactionPaymentSummary->each(function ($item, $mop) use (&$paymentSummaries) {
-                    if (!$paymentSummaries->has($mop)) {
-                        $paymentSummaries->put($mop, $item);
-                    }
-                });
-                $paymentSummaries = $paymentSummaries->values()->sortBy('mop')->values();
-            }
-
-            $productSummaries = ($productSummariesByShift->get($shiftInfo['id']) ?? collect())->map(function ($row) {
+            $productSummaries = ($productSummariesByShift->get($shiftKey) ?? collect())->map(function ($row) {
                 $productName = $row->product_name ?: 'N/A';
 
                 return [
@@ -1306,19 +1292,7 @@ class HosReportsController extends Controller
                     'txn_volume' => (float) $row->total_volume,
                     'amount' => (float) $row->total_amount,
                 ];
-            });
-
-            if ($productSummaries->isEmpty()) {
-                $productSummaries = $transactionProductSummary->values();
-            } else {
-                $productSummaries = $productSummaries->keyBy('product');
-                $transactionProductSummary->each(function ($item, $productName) use (&$productSummaries) {
-                    if (!$productSummaries->has($productName)) {
-                        $productSummaries->put($productName, $item);
-                    }
-                });
-                $productSummaries = $productSummaries->values()->sortBy('product')->values();
-            }
+            })->values()->sortBy('product')->values();
 
             // Group by pump, nozzle, fuel grade for this shift
             $shiftGrouped = $shiftTransactions->groupBy(function ($t) {
@@ -1465,40 +1439,6 @@ class HosReportsController extends Controller
             'pump_total_txn_volume' => $combinedPumpTotalTxnVolume,
             'pump_total_amount' => $combinedPumpTotalAmount,
         ]);
-    }
-
-    /**
-     * Build payment mode summary from raw transactions.
-     */
-    private function summarizePaymentsFromTransactions(Collection $transactions): Collection
-    {
-        return $transactions->groupBy(function ($transaction) {
-            return $transaction->mode_of_payment ?: 'N/A';
-        })->map(function ($group, $mop) {
-            return [
-                'mop' => $mop,
-                'volume' => (float) $group->sum('volume'),
-                'amount' => (float) $group->sum('amount'),
-            ];
-        });
-    }
-
-    /**
-     * Build product wise summary from raw transactions.
-     */
-    private function summarizeProductsFromTransactions(Collection $transactions): Collection
-    {
-        return $transactions->groupBy(function ($transaction) {
-            return $transaction->fuel_grade_name
-                ?? ($transaction->pts_fuel_grade_id ? 'Product '.$transaction->pts_fuel_grade_id : 'N/A');
-        })->map(function ($group, $productName) {
-            return [
-                'product' => $productName,
-                'product_name' => $productName,
-                'txn_volume' => (float) $group->sum('volume'),
-                'amount' => (float) $group->sum('amount'),
-            ];
-        });
     }
 
     /**
