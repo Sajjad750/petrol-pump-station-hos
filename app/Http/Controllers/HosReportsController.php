@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Collection;
 use App\Models\PumpTransaction;
 use App\Models\Station;
@@ -425,8 +426,13 @@ class HosReportsController extends Controller
      */
     public function exportPdf(Request $request)
     {
-        // TODO: Implement PDF export
-        return response()->json(['message' => 'PDF export not implemented yet']);
+        $tab = $request->input('tab');
+
+        if ($tab === 'shift-summary') {
+            return $this->exportShiftSummaryPdf($request);
+        }
+
+        return response()->json(['message' => 'PDF export not implemented for this tab yet'], 422);
     }
 
     /**
@@ -1465,6 +1471,56 @@ class HosReportsController extends Controller
             'pump_total_txn_volume' => $combinedPumpTotalTxnVolume,
             'pump_total_amount' => $combinedPumpTotalAmount,
         ]);
+    }
+
+    /**
+     * Generate a PDF export for the shift summary report.
+     */
+    private function exportShiftSummaryPdf(Request $request): \Illuminate\Http\Response
+    {
+        $summaryResponse = $this->getShiftSummary($request);
+        $payload = $summaryResponse->getData(true);
+
+        $stationName = null;
+
+        if ($request->filled('station_id')) {
+            $stationName = Station::query()->whereKey($request->input('station_id'))->value('site_name');
+        }
+
+        $filters = array_filter([
+            'Station' => $stationName,
+            'From Date' => $request->input('from_date'),
+            'From Time' => $request->input('from_time'),
+            'To Date' => $request->input('to_date'),
+            'To Time' => $request->input('to_time'),
+        ], fn ($value) => $value !== null && $value !== '');
+
+        $viewMode = $payload['view_mode'] ?? 'individual';
+        $viewModeLabel = $viewMode === 'summary' ? 'Show Summary' : 'Select All';
+        $filters['View Mode'] = $viewModeLabel;
+
+        $pdf = Pdf::loadView('hos-reports.pdf.shift-summary', [
+            'filters' => $filters,
+            'viewMode' => $viewMode,
+            'viewModeLabel' => $viewModeLabel,
+            'individualShifts' => $payload['individual_shifts'] ?? [],
+            'combinedPaymentSummary' => $payload['payment_mode_summary'] ?? [],
+            'combinedProductSummary' => $payload['product_summary'] ?? [],
+            'combinedPumpSummary' => $payload['pump_summary'] ?? [],
+            'combinedTotals' => [
+                'payment_volume' => $payload['payment_mode_total_volume'] ?? 0,
+                'payment_amount' => $payload['payment_mode_total_amount'] ?? 0,
+                'product_volume' => $payload['product_total_volume'] ?? 0,
+                'product_amount' => $payload['product_total_amount'] ?? 0,
+                'pump_totalizer_volume' => $payload['pump_total_totalizer_volume'] ?? 0,
+                'pump_txn_volume' => $payload['pump_total_txn_volume'] ?? 0,
+                'pump_amount' => $payload['pump_total_amount'] ?? 0,
+            ],
+            'shiftsMeta' => $payload['shifts'] ?? [],
+            'generatedAt' => now(),
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->download('shift_summary_'.now()->format('Y-m-d_His').'.pdf');
     }
 
     /**

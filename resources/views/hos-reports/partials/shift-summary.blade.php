@@ -60,6 +60,9 @@
                     <button type="button" id="shift-summary-reset-btn" class="btn btn-dark">
                         <i class="fas fa-redo"></i> Reset
                     </button>
+                    <button type="button" id="shift-summary-export-pdf-btn" class="btn btn-danger">
+                        <i class="fas fa-file-pdf"></i> Export PDF
+                    </button>
                 </div>
             </div>
         </form>
@@ -562,6 +565,14 @@
                 $('#shift_summary_to_time').val('');
                 $('#shift_summary_view_mode').val('summary');
                 loadShiftSummary();
+            });
+
+            // Export to PDF button
+            $('#shift-summary-export-pdf-btn').on('click', function() {
+                var query = $('#shift-summary-filter-form').serialize();
+                var baseUrl = '{{ route('hos-reports.export.pdf') }}';
+                var queryString = query ? (query + '&') : '';
+                window.open(baseUrl + '?' + queryString + 'tab=shift-summary', '_blank');
             });
 
             // Auto-filter on dropdown change
