@@ -1143,39 +1143,43 @@ class HosReportsController extends Controller
         $from_time = $request->input('from_time');
         $to_time = $request->input('to_time');
 
-        $windowStart = null;
-        $windowEnd = null;
+        $startTimestamp = null;
+        $endTimestamp = null;
 
-        if ($from_date || $from_time) {
-            $startDate = $from_date ?: $to_date;
+        if ($from_date) {
+            $startTimestamp = Carbon::parse($from_date.' '.($from_time ?: '00:00:00'));
+        }
 
-            if ($startDate) {
-                $windowStart = Carbon::parse($startDate.' '.($from_time ?: '00:00:00'));
+        if ($to_date) {
+            $endTimestamp = Carbon::parse($to_date.' '.($to_time ?: '23:59:59'));
+        }
+
+        if ($startTimestamp && $endTimestamp) {
+            $shiftQuery->where('start_time', '>=', $startTimestamp)
+                ->where(function ($query) use ($endTimestamp) {
+                    $query->whereNotNull('end_time')
+                        ->where('end_time', '<=', $endTimestamp);
+                });
+        } elseif ($startTimestamp) {
+            if (!empty($from_time)) {
+                $shiftQuery->where('start_time', $startTimestamp);
+            } else {
+                $shiftQuery->whereBetween('start_time', [
+                    $startTimestamp->copy()->startOfDay(),
+                    $startTimestamp->copy()->endOfDay(),
+                ]);
             }
-        }
-
-        if ($to_date || $to_time) {
-            $endDate = $to_date ?: $from_date;
-
-            if ($endDate) {
-                $windowEnd = Carbon::parse($endDate.' '.($to_time ?: '23:59:59'));
+        } elseif ($endTimestamp) {
+            if (!empty($to_time)) {
+                $shiftQuery->whereNotNull('end_time')
+                    ->where('end_time', $endTimestamp);
+            } else {
+                $shiftQuery->whereNotNull('end_time')
+                    ->whereBetween('end_time', [
+                        $endTimestamp->copy()->startOfDay(),
+                        $endTimestamp->copy()->endOfDay(),
+                    ]);
             }
-        }
-
-        if ($windowStart && !$windowEnd) {
-            $windowEnd = $windowStart->copy()->endOfDay();
-        }
-
-        if ($windowEnd && !$windowStart) {
-            $windowStart = $windowEnd->copy()->startOfDay();
-        }
-
-        if ($windowStart) {
-            $shiftQuery->where('start_time', '>=', $windowStart);
-        }
-
-        if ($windowEnd) {
-            $shiftQuery->where('start_time', '<=', $windowEnd);
         }
 
         // Get matching shifts with station info
