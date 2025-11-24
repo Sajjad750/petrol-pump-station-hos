@@ -1214,6 +1214,11 @@ class HosReportsController extends Controller
 
         $bosShiftIds = collect($shiftData)->pluck('bos_shift_id')->filter()->unique()->values();
         $stationIds = collect($shiftData)->pluck('station_id')->filter()->unique()->values();
+        $shiftKeyToId = collect($shiftData)->mapWithKeys(function ($shift) {
+            return [
+                $shift['station_id'].'|'.$shift['bos_shift_id'] => $shift['id'],
+            ];
+        });
 
         $paymentSummariesByShift = collect();
         $productSummariesByShift = collect();
@@ -1226,8 +1231,10 @@ class HosReportsController extends Controller
                 ->groupBy('station_id', 'bos_shift_id', 'mop')
                 ->get();
 
-            $paymentSummariesByShift = $paymentSummaryRows->groupBy(function ($row) {
-                return $row->station_id.'|'.$row->bos_shift_id;
+            $paymentSummariesByShift = $paymentSummaryRows->groupBy(function ($row) use ($shiftKeyToId) {
+                return $shiftKeyToId->get($row->station_id.'|'.$row->bos_shift_id);
+            })->filter(function ($_, $key) {
+                return ! is_null($key);
             });
 
             $productSummaryRows = ProductWiseSummary::query()
@@ -1253,8 +1260,10 @@ class HosReportsController extends Controller
                 )
                 ->get();
 
-            $productSummariesByShift = $productSummaryRows->groupBy(function ($row) {
-                return $row->station_id.'|'.$row->bos_shift_id;
+            $productSummariesByShift = $productSummaryRows->groupBy(function ($row) use ($shiftKeyToId) {
+                return $shiftKeyToId->get($row->station_id.'|'.$row->bos_shift_id);
+            })->filter(function ($_, $key) {
+                return ! is_null($key);
             });
         }
 
@@ -1262,9 +1271,9 @@ class HosReportsController extends Controller
         $individualShifts = [];
 
         // Prepare combined summary data (for 'summary' mode)
-        $combinedPaymentSummary = collect();
-        $combinedProductSummary = collect();
-        $combinedPumpSummary = collect();
+        $combinedPaymentSummary = [];
+        $combinedProductSummary = [];
+        $combinedPumpSummary = [];
 
         foreach ($shiftData as $shiftInfo) {
             $shiftKey = $shiftInfo['station_id'].'|'.$shiftInfo['bos_shift_id'];
@@ -1279,22 +1288,22 @@ class HosReportsController extends Controller
                 ->select('pump_transactions.*', 'fuel_grades.name as fuel_grade_name')
                 ->get();
 
-            $paymentSummaries = ($paymentSummariesByShift->get($shiftKey) ?? collect())->map(function ($row) {
+            $paymentSummaries = ($paymentSummariesByShift->get($shiftInfo['id']) ?? collect())->map(function ($row) {
                 return [
-                    'mop' => $row->mop ?: 'N/A',
-                    'volume' => (float) $row->total_volume,
-                    'amount' => (float) $row->total_amount,
+                'mop' => $row->mop ?: 'N/A',
+                'volume' => (float) $row->total_volume,
+                'amount' => (float) $row->total_amount,
                 ];
             })->values()->sortBy('mop')->values();
 
-            $productSummaries = ($productSummariesByShift->get($shiftKey) ?? collect())->map(function ($row) {
+            $productSummaries = ($productSummariesByShift->get($shiftInfo['id']) ?? collect())->map(function ($row) {
                 $productName = $row->product_name ?: 'N/A';
 
                 return [
-                    'product' => $productName,
-                    'product_name' => $productName,
-                    'txn_volume' => (float) $row->total_volume,
-                    'amount' => (float) $row->total_amount,
+                'product' => $productName,
+                'product_name' => $productName,
+                'txn_volume' => (float) $row->total_volume,
+                'amount' => (float) $row->total_amount,
                 ];
             })->values()->sortBy('product')->values();
 
@@ -1356,63 +1365,67 @@ class HosReportsController extends Controller
 
             // Aggregate for combined summary (for 'summary' mode)
             foreach ($paymentSummaries as $item) {
-                $existing = $combinedPaymentSummary->firstWhere('mop', $item['mop']);
+                $key = $item['mop'] ?: 'N/A';
 
-                if ($existing) {
-                    $existing['volume'] += $item['volume'];
-                    $existing['amount'] += $item['amount'];
-                } else {
-                    $combinedPaymentSummary->push([
-                        'mop' => $item['mop'],
-                        'volume' => $item['volume'],
-                        'amount' => $item['amount'],
-                    ]);
+                if (! isset($combinedPaymentSummary[$key])) {
+                    $combinedPaymentSummary[$key] = [
+                        'mop' => $key,
+                        'volume' => 0,
+                        'amount' => 0,
+                    ];
                 }
+
+                $combinedPaymentSummary[$key]['volume'] += $item['volume'];
+                $combinedPaymentSummary[$key]['amount'] += $item['amount'];
             }
 
             foreach ($productSummaries as $item) {
-                $existing = $combinedProductSummary->firstWhere('product', $item['product']);
+                $key = $item['product'] ?: 'N/A';
 
-                if ($existing) {
-                    $existing['txn_volume'] += $item['txn_volume'];
-                    $existing['amount'] += $item['amount'];
-                } else {
-                    $combinedProductSummary->push([
-                        'product' => $item['product'],
-                        'txn_volume' => $item['txn_volume'],
-                        'amount' => $item['amount'],
-                    ]);
+                if (! isset($combinedProductSummary[$key])) {
+                    $combinedProductSummary[$key] = [
+                        'product' => $key,
+                        'txn_volume' => 0,
+                        'amount' => 0,
+                    ];
                 }
+
+                $combinedProductSummary[$key]['txn_volume'] += $item['txn_volume'];
+                $combinedProductSummary[$key]['amount'] += $item['amount'];
             }
 
             foreach ($pumpSummaries as $item) {
-                $key = $item['product'].'|'.$item['pump_no'].'|'.$item['nozzle_no'];
-                $existing = $combinedPumpSummary->firstWhere('key', $key);
+                $key = ($item['product'] ?: 'N/A').'|'.$item['pump_no'].'|'.$item['nozzle_no'];
 
-                if ($existing) {
-                    // Take minimum start and maximum end across all shifts
-                    $existing['start_totalizer'] = min($existing['start_totalizer'], $item['start_totalizer']);
-                    $existing['end_totalizer'] = max($existing['end_totalizer'], $item['end_totalizer']);
-                    // Recalculate totalizer volume based on new min/max
-                    $existing['totalizer_volume'] = max(0, (float) $existing['end_totalizer'] - (float) $existing['start_totalizer']);
-                    // Sum transaction volume and amount
-                    $existing['txn_volume'] += $item['txn_volume'];
-                    $existing['amount'] += $item['amount'];
-                } else {
-                    $combinedPumpSummary->push(array_merge($item, ['key' => $key]));
+                if (! isset($combinedPumpSummary[$key])) {
+                    $combinedPumpSummary[$key] = array_merge($item, ['key' => $key]);
+
+                    continue;
                 }
+
+                $combinedPumpSummary[$key]['start_totalizer'] = min($combinedPumpSummary[$key]['start_totalizer'], $item['start_totalizer']);
+                $combinedPumpSummary[$key]['end_totalizer'] = max($combinedPumpSummary[$key]['end_totalizer'], $item['end_totalizer']);
+                $combinedPumpSummary[$key]['totalizer_volume'] = max(
+                    0,
+                    (float) $combinedPumpSummary[$key]['end_totalizer'] - (float) $combinedPumpSummary[$key]['start_totalizer']
+                );
+                $combinedPumpSummary[$key]['txn_volume'] += $item['txn_volume'];
+                $combinedPumpSummary[$key]['amount'] += $item['amount'];
             }
         }
 
         // Calculate totals for combined summary
-        $combinedPaymentTotalVolume = $combinedPaymentSummary->sum('volume');
-        $combinedPaymentTotalAmount = $combinedPaymentSummary->sum('amount');
-        $combinedProductTotalVolume = $combinedProductSummary->sum('txn_volume');
-        $combinedProductTotalAmount = $combinedProductSummary->sum('amount');
-        // For pump summary, totalizer volume is sum of individual totalizer volumes (each pump/nozzle/product combination)
-        $combinedPumpTotalTotalizerVolume = $combinedPumpSummary->sum('totalizer_volume');
-        $combinedPumpTotalTxnVolume = $combinedPumpSummary->sum('txn_volume');
-        $combinedPumpTotalAmount = $combinedPumpSummary->sum('amount');
+        $combinedPaymentCollection = collect(array_values($combinedPaymentSummary));
+        $combinedProductCollection = collect(array_values($combinedProductSummary));
+        $combinedPumpCollection = collect(array_values($combinedPumpSummary));
+
+        $combinedPaymentTotalVolume = $combinedPaymentCollection->sum('volume');
+        $combinedPaymentTotalAmount = $combinedPaymentCollection->sum('amount');
+        $combinedProductTotalVolume = $combinedProductCollection->sum('txn_volume');
+        $combinedProductTotalAmount = $combinedProductCollection->sum('amount');
+        $combinedPumpTotalTotalizerVolume = $combinedPumpCollection->sum('totalizer_volume');
+        $combinedPumpTotalTxnVolume = $combinedPumpCollection->sum('txn_volume');
+        $combinedPumpTotalAmount = $combinedPumpCollection->sum('amount');
 
         return response()->json([
             'view_mode' => $viewMode,
@@ -1428,9 +1441,9 @@ class HosReportsController extends Controller
             'individual_shifts' => $individualShifts,
             // Combined summary data (for 'summary' mode)
             // Remove 'key' from pump summary before returning
-            'payment_mode_summary' => $combinedPaymentSummary->values()->toArray(),
-            'product_summary' => $combinedProductSummary->values()->toArray(),
-            'pump_summary' => $combinedPumpSummary->map(function ($item) {
+            'payment_mode_summary' => $combinedPaymentCollection->sortBy('mop')->values()->toArray(),
+            'product_summary' => $combinedProductCollection->sortBy('product')->values()->toArray(),
+            'pump_summary' => $combinedPumpCollection->map(function ($item) {
                 unset($item['key']);
 
                 return $item;
