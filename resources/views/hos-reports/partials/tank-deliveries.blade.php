@@ -48,20 +48,6 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label for="deliveries_volume_min">Volume Min (L)</label>
-                        <input type="number" step="0.01" class="form-control" id="deliveries_volume_min" name="volume_min" placeholder="Min Volume">
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label for="deliveries_volume_max">Volume Max (L)</label>
-                        <input type="number" step="0.01" class="form-control" id="deliveries_volume_max" name="volume_max" placeholder="Max Volume">
-                    </div>
-                </div>
-            </div>
-            <div class="row">
                 <div class="col-md-12 d-flex justify-content-end" style="gap: 10px;">
                     <button type="button" id="deliveries-filter-btn" class="btn btn-dark">
                         <i class="fas fa-filter"></i> Search Filters
@@ -95,7 +81,7 @@
                         <th>Date & Time <span class="sort-indicator"><i class="fas fa-sort"></i></span></th>
                         <th>Tank</th>
                         <th>Product</th>
-                        <th class="text-right">Volume (L)</th>
+                        <th>Volume (L)</th>
                     </tr>
                 </thead>
                 <tbody>

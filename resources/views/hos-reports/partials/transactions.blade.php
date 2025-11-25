@@ -41,7 +41,9 @@
                 <div class="col-md-2">
                     <div class="form-group">
                         <label for="transaction_pump_id">Pump ID</label>
-                        <input type="text" class="form-control" id="transaction_pump_id" name="pump_id" placeholder="Pump ID">
+                        <select class="form-control" id="transaction_pump_id" name="pump_id">
+                            <option value="">All Pumps</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -472,6 +474,7 @@
                 $('#transaction_pump_id').val('');
                 $('#transaction_mop').val('');
                 $('#transaction_product_id').val('');
+                loadPumps('');
                 transactionsTable.draw();
             });
 
@@ -531,9 +534,45 @@
                                 $('<option></option>').val(station.id).text(station.site_name)
                             );
                         });
+
+                        // After stations load, ensure pumps are loaded for current selection (if any)
+                        loadPumps($('#transaction_station_id').val());
                     }
                 }
             });
+
+            function loadPumps(stationId) {
+                $.ajax({
+                    url: "{{ route('hos-reports.pumps') }}",
+                    method: 'GET',
+                    data: { station_id: stationId },
+                    success: function(response) {
+                        var $pumpSelect = $('#transaction_pump_id');
+                        var previousValue = $pumpSelect.val();
+
+                        // Reset options
+                        $pumpSelect.empty().append('<option value="">All Pumps</option>');
+
+                        if (response.pumps && response.pumps.length) {
+                            response.pumps.forEach(function(pump) {
+                                var label = pump.pts_pump_id ? 'Pump ' + pump.pts_pump_id : (pump.pump_id || ('Pump #' + pump.id));
+
+                                if (pump.name) {
+                                    label += ' - ' + pump.name;
+                                }
+
+                                $pumpSelect.append(
+                                    $('<option></option>').val(pump.pts_pump_id).text(label)
+                                );
+                            });
+                        }
+
+                        if (previousValue && $pumpSelect.find('option[value="' + previousValue + '"]').length) {
+                            $pumpSelect.val(previousValue);
+                        }
+                    }
+                });
+            }
 
             // Load fuel grades/products for dropdown
             $.ajax({
@@ -552,6 +591,9 @@
 
             // Auto-filter on dropdown change
             $('#transaction_station_id, #transaction_mop, #transaction_product_id').on('change', function() {
+                if (this.id === 'transaction_station_id') {
+                    loadPumps($(this).val());
+                }
                 transactionsTable.draw();
             });
         });

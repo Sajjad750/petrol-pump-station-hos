@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
 use App\Models\PumpTransaction;
+use App\Models\Pump;
 use App\Models\Station;
 use App\Models\TankInventory;
 use App\Models\TankDelivery;
@@ -55,6 +56,34 @@ class HosReportsController extends Controller
     {
         return response()->json([
             'stations' => Station::select('id', 'site_name')->orderBy('site_name')->get(),
+        ]);
+    }
+
+    /**
+     * Get pumps for dropdown (optionally filtered by station).
+     */
+    public function getPumps(Request $request)
+    {
+        $query = Pump::query()
+            ->select('id', 'station_id', 'pts_pump_id', 'pump_id', 'name')
+            ->orderByRaw('COALESCE(pts_pump_id, pump_id, id)');
+
+        if ($request->filled('station_id')) {
+            $query->where('station_id', $request->input('station_id'));
+        }
+
+        $pumps = $query->get()->map(function ($pump) {
+            return [
+                'id' => $pump->id,
+                'station_id' => $pump->station_id,
+                'pts_pump_id' => $pump->pts_pump_id,
+                'pump_id' => $pump->pump_id,
+                'name' => $pump->name,
+            ];
+        });
+
+        return response()->json([
+            'pumps' => $pumps,
         ]);
     }
 
