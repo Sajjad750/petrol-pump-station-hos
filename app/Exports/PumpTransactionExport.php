@@ -21,58 +21,76 @@ class PumpTransactionExport implements FromQuery, WithHeadings, WithMapping, Wit
 
     public function query()
     {
-        $query = PumpTransaction::query()->with(['pump', 'shift', 'station']);
+        $query = PumpTransaction::query()->with(['station', 'fuelGrade']);
 
-        // Apply filters
-        if (!empty($this->filters['from_date'])) {
-            $query->whereDate('created_at', '>=', $this->filters['from_date']);
-        }
+        $fromDate = $this->filters['from_date'] ?? null;
+        $toDate = $this->filters['to_date'] ?? null;
+        $fromTime = $this->filters['from_time'] ?? '00:00:00';
+        $toTime = $this->filters['to_time'] ?? '23:59:59';
 
-        if (!empty($this->filters['to_date'])) {
-            $query->whereDate('created_at', '<=', $this->filters['to_date']);
-        }
-
-        if (!empty($this->filters['from_time']) && !empty($this->filters['to_time'])) {
-            $query->whereTime('created_at', '>=', $this->filters['from_time'])
-                  ->whereTime('created_at', '<=', $this->filters['to_time']);
+        if ($fromDate && $toDate) {
+            $query->whereBetween('date_time_start', [
+                $fromDate . ' ' . $fromTime,
+                $toDate . ' ' . $toTime,
+            ]);
+        } elseif ($fromDate) {
+            $query->where('date_time_start', '>=', $fromDate . ' ' . $fromTime);
+        } elseif ($toDate) {
+            $query->where('date_time_start', '<=', $toDate . ' ' . $toTime);
         }
 
         if (!empty($this->filters['station_id'])) {
             $query->where('station_id', $this->filters['station_id']);
         }
 
-        return $query->orderBy('created_at', 'desc');
+        if (!empty($this->filters['pump_id'])) {
+            $query->where('pts_pump_id', 'like', '%' . $this->filters['pump_id'] . '%');
+        }
+
+        if (!empty($this->filters['mode_of_payment'])) {
+            $query->where('mode_of_payment', $this->filters['mode_of_payment']);
+        }
+
+        if (!empty($this->filters['product_id'])) {
+            $query->where('pts_fuel_grade_id', $this->filters['product_id']);
+        }
+
+        return $query->orderBy('date_time_start', 'desc');
     }
 
     public function headings(): array
     {
         return [
-            'ID',
-            'Device ID',
-            'Pump Name',
-            'Shift ID',
-            'Total Volume',
-            'Total Amount',
-            'Unit Price',
-            'Transaction Date',
-            'Transaction Time',
-            'Status',
+            'Site',
+            'Transaction ID',
+            'Date & Time',
+            'Pump',
+            'Nozzle',
+            'Product',
+            'Unit Price (SAR)',
+            'Volume (L)',
+            'Amount (SAR)',
+            'Payment Mode',
         ];
     }
 
     public function map($transaction): array
     {
+        $dateTime = $transaction->date_time_start
+            ? Carbon::parse($transaction->date_time_start)->format('Y-m-d H:i:s')
+            : '';
+
         return [
-            $transaction->id,
-            $transaction->device_id,
-            $transaction->pump?->name ?? 'N/A',
-            $transaction->shift_id,
-            number_format($transaction->total_volume, 2) . ' L',
-            '₹' . number_format($transaction->total_amount, 2),
-            '₹' . number_format($transaction->unit_price, 2),
-            Carbon::parse($transaction->created_at)->format('Y-m-d'),
-            Carbon::parse($transaction->created_at)->format('H:i:s'),
-            ucfirst($transaction->status ?? 'N/A'),
+            $transaction->station->site_name ?? '',
+            $transaction->transaction_number ?? '',
+            $dateTime,
+            $transaction->pts_pump_id ?? '',
+            $transaction->pts_nozzle_id ?? '',
+            $transaction->fuelGrade->name ?? '',
+            $transaction->price !== null ? round((float) $transaction->price, 2) : 0,
+            $transaction->volume !== null ? round((float) $transaction->volume, 2) : 0,
+            $transaction->amount !== null ? round((float) $transaction->amount, 2) : 0,
+            ucfirst($transaction->mode_of_payment ?? ''),
         ];
     }
 

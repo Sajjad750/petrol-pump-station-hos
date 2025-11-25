@@ -7,8 +7,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Builder;
+use Maatwebsite\Excel\Facades\Excel;
 use App\Models\PumpTransaction;
 use App\Models\Station;
+use App\Models\Pump;
 use App\Models\TankInventory;
 use App\Models\TankDelivery;
 use App\Models\TankMeasurement;
@@ -97,62 +100,20 @@ class HosReportsController extends Controller
         $orderDir = $request->input('order.0.dir', 'desc');
         $orderColumn = $columns[$orderColumnIndex] ?? 'date_time_start';
 
+        $filters = $request->only([
+            'from_date',
+            'to_date',
+            'from_time',
+            'to_time',
+            'station_id',
+            'pump_id',
+            'mode_of_payment',
+            'product_id',
+        ]);
+
         // Eager load relationships
-        $query = PumpTransaction::query()
-            ->with(['station', 'fuelGrade'])
-            ->leftJoin('stations', 'pump_transactions.station_id', '=', 'stations.id')
-            ->leftJoin('fuel_grades', function ($join) {
-                $join->on('pump_transactions.pts_fuel_grade_id', '=', 'fuel_grades.id')
-                     ->on('pump_transactions.station_id', '=', 'fuel_grades.station_id');
-            })
-//            ->leftJoin('pts_users', function ($join) {
-//                $join->on('pump_transactions.pts_user_id', '=', 'pts_users.pts_user_id')
-//                     ->on('pump_transactions.station_id', '=', 'pts_users.station_id');
-//            })
-            ->select('pump_transactions.*');
-
-        // Date and Time Filters
-        if ($request->filled('from_date') || $request->filled('to_date') || $request->filled('from_time') || $request->filled('to_time')) {
-            $from_date = $request->input('from_date');
-            $to_date = $request->input('to_date');
-            $from_time = $request->input('from_time', '00:00:00');
-            $to_time = $request->input('to_time', '23:59:59');
-
-            if ($from_date && $to_date) {
-                // Both dates provided
-                $from_datetime = $from_date.' '.$from_time;
-                $to_datetime = $to_date.' '.$to_time;
-                $query->whereBetween('pump_transactions.date_time_start', [$from_datetime, $to_datetime]);
-            } elseif ($from_date) {
-                // Only from_date provided
-                $from_datetime = $from_date.' '.$from_time;
-                $query->where('pump_transactions.date_time_start', '>=', $from_datetime);
-            } elseif ($to_date) {
-                // Only to_date provided
-                $to_datetime = $to_date.' '.$to_time;
-                $query->where('pump_transactions.date_time_start', '<=', $to_datetime);
-            }
-        }
-
-        // Station Filter
-        if ($request->filled('station_id')) {
-            $query->where('pump_transactions.station_id', $request->input('station_id'));
-        }
-
-        // Pump ID Filter
-        if ($request->filled('pump_id')) {
-            $query->where('pump_transactions.pts_pump_id', 'like', '%'.$request->input('pump_id').'%');
-        }
-
-        // Mode of Payment Filter
-        if ($request->filled('mode_of_payment')) {
-            $query->where('pump_transactions.mode_of_payment', $request->input('mode_of_payment'));
-        }
-
-        // Product (Fuel Grade) Filter
-        if ($request->filled('product_id')) {
-            $query->where('pump_transactions.pts_fuel_grade_id', $request->input('product_id'));
-        }
+        $query = $this->baseTransactionsQuery(true);
+        $this->applyTransactionFilters($query, $filters);
 
         // Global search for all columns
         if ($request->has('search') && $request->input('search.value') != '') {
@@ -432,7 +393,87 @@ class HosReportsController extends Controller
             return $this->exportShiftSummaryPdf($request);
         }
 
-        return response()->json(['message' => 'PDF export not implemented for this tab yet'], 422);
+        return $this->exportTransactionsPdf($request);
+    }
+
+    /**
+     * Export pump transactions to PDF.
+     */
+    protected function exportTransactionsPdf(Request $request)
+    {
+        $filters = $request->only([
+            'from_date',
+            'to_date',
+            'from_time',
+            'to_time',
+            'station_id',
+            'pump_id',
+            'mode_of_payment',
+            'product_id',
+        ]);
+
+        $query = $this->baseTransactionsQuery(false);
+        $this->applyTransactionFilters($query, $filters);
+
+        $transactions = $query->orderBy('pump_transactions.date_time_start', 'desc')->get();
+
+        $pdf = Pdf::loadView('reports.pump_transactions_pdf', [
+            'transactions' => $transactions,
+            'filters' => $filters,
+        ]);
+
+        return $pdf->download('pump_transactions_' . now()->format('Y-m-d_His') . '.pdf');
+    }
+
+    protected function baseTransactionsQuery(bool $withJoins = true): Builder
+    {
+        $query = PumpTransaction::query()->with(['station', 'fuelGrade']);
+
+        if ($withJoins) {
+            $query->leftJoin('stations', 'pump_transactions.station_id', '=', 'stations.id')
+                ->leftJoin('fuel_grades', function ($join) {
+                    $join->on('pump_transactions.pts_fuel_grade_id', '=', 'fuel_grades.id')
+                        ->on('pump_transactions.station_id', '=', 'fuel_grades.station_id');
+                })
+                ->select('pump_transactions.*');
+        }
+
+        return $query;
+    }
+
+    protected function applyTransactionFilters(Builder $query, array $filters): void
+    {
+        $fromDate = $filters['from_date'] ?? null;
+        $toDate = $filters['to_date'] ?? null;
+        $fromTime = $filters['from_time'] ?? '00:00:00';
+        $toTime = $filters['to_time'] ?? '23:59:59';
+
+        if ($fromDate && $toDate) {
+            $query->whereBetween('pump_transactions.date_time_start', [
+                $fromDate . ' ' . $fromTime,
+                $toDate . ' ' . $toTime,
+            ]);
+        } elseif ($fromDate) {
+            $query->where('pump_transactions.date_time_start', '>=', $fromDate . ' ' . $fromTime);
+        } elseif ($toDate) {
+            $query->where('pump_transactions.date_time_start', '<=', $toDate . ' ' . $toTime);
+        }
+
+        if (!empty($filters['station_id'])) {
+            $query->where('pump_transactions.station_id', $filters['station_id']);
+        }
+
+        if (!empty($filters['pump_id'])) {
+            $query->where('pump_transactions.pts_pump_id', 'like', '%' . $filters['pump_id'] . '%');
+        }
+
+        if (!empty($filters['mode_of_payment'])) {
+            $query->where('pump_transactions.mode_of_payment', $filters['mode_of_payment']);
+        }
+
+        if (!empty($filters['product_id'])) {
+            $query->where('pump_transactions.pts_fuel_grade_id', $filters['product_id']);
+        }
     }
 
     /**

@@ -10,14 +10,14 @@
         h2 { font-size: 18px; margin-top: 25px; }
         h3 { font-size: 16px; margin-top: 20px; }
         h4 { font-size: 14px; margin-top: 15px; }
-        .header { border-bottom: 3px solid #5051F9; padding-bottom: 10px; margin-bottom: 20px; }
+        .header { border-bottom: 3px solidrgb(0, 0, 0); padding-bottom: 10px; margin-bottom: 20px; }
         .meta { margin-bottom: 6px; color: #4b5563; }
         .filters, .shift-card { border: 1px solid #d1d5db; border-radius: 8px; padding: 15px; margin-bottom: 18px; }
-        .filters { background-color: #f8fafc; }
+        .filters { background-color:rgb(0, 0, 0); }
         .filter-item { display: inline-block; margin-right: 18px; margin-bottom: 6px; }
         .filter-label { font-weight: 600; color: #111827; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10px; }
-        th { background-color: #5051F9; color: #fff; padding: 6px 5px; text-align: left; }
+        th { background-color:rgb(0, 0, 0); color: #fff; padding: 6px 5px; text-align: left; }
         td { padding: 5px; border-bottom: 1px solid #e5e7eb; }
         tr:nth-child(even) { background-color: #f9fafb; }
         .totals-row { background-color: #eef2ff; font-weight: 600; }
