@@ -104,12 +104,17 @@
 $(document).ready(function() {
     // Load stations for dropdown
     $.ajax({
-        url: '{{ route('hos-reports.stations') }}',
+        url: "{{ route('hos-reports.stations') }}",
         method: 'GET',
         success: function(response) {
             if (response.stations) {
+                var $stationSelect = $('#analytical_sales_station_id');
+
+                // Remove previously added station options to avoid duplicates
+                $stationSelect.find('option:not(:first)').remove();
+
                 response.stations.forEach(function(station) {
-                    $('#analytical_sales_station_id').append(
+                    $stationSelect.append(
                         $('<option></option>').val(station.id).text(station.site_name)
                     );
                 });
@@ -119,7 +124,7 @@ $(document).ready(function() {
 
     // Load fuel grades for dropdown
     $.ajax({
-        url: '{{ route('hos-reports.fuel-grades') }}',
+        url: "{{ route('hos-reports.fuel-grades') }}",
         method: 'GET',
         success: function(response) {
             if (response.fuel_grades) {
@@ -173,7 +178,7 @@ $(document).ready(function() {
         };
 
         $.ajax({
-            url: '{{ route('hos-reports.analytical-sales') }}',
+            url: "{{ route('hos-reports.analytical-sales') }}",
             method: 'GET',
             data: filters,
             success: function(response) {

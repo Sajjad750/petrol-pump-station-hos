@@ -171,12 +171,17 @@
 $(document).ready(function() {
     // Load stations for dropdown
     $.ajax({
-        url: '{{ route('hos-reports.stations') }}',
+        url: "{{ route('hos-reports.stations') }}",
         method: 'GET',
         success: function(response) {
             if (response.stations) {
+                var $stationSelect = $('#tank_monitoring_station_id');
+
+                // Remove previously added options to prevent duplicates
+                $stationSelect.find('option:not(:first)').remove();
+
                 response.stations.forEach(function(station) {
-                    $('#tank_monitoring_station_id').append(
+                    $stationSelect.append(
                         $('<option></option>').val(station.id).text(station.site_name)
                     );
                 });
@@ -186,7 +191,7 @@ $(document).ready(function() {
 
     // Load fuel grades for dropdown
     $.ajax({
-        url: '{{ route('hos-reports.fuel-grades') }}',
+        url: "{{ route('hos-reports.fuel-grades') }}",
         method: 'GET',
         success: function(response) {
             if (response.fuel_grades) {
@@ -203,7 +208,7 @@ $(document).ready(function() {
     function loadTanks() {
         const stationId = $('#tank_monitoring_station_id').val();
         $.ajax({
-            url: '{{ route('hos-reports.tanks-from-measurements') }}',
+            url: "{{ route('hos-reports.tanks-from-measurements') }}",
             method: 'GET',
             data: { station_id: stationId },
             success: function(response) {
@@ -334,7 +339,7 @@ $(document).ready(function() {
         };
 
         $.ajax({
-            url: '{{ route('hos-reports.tank-monitoring') }}',
+            url: "{{ route('hos-reports.tank-monitoring') }}",
             method: 'GET',
             data: filters,
             success: function(response) {

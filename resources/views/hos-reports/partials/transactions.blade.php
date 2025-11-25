@@ -286,7 +286,7 @@
                 'paging': true,
                 'orderCellsTop': false,
                 'ajax': {
-                    'url': '{{ route('hos-reports.transactions.data') }}',
+                    'url': "{{ route('hos-reports.transactions.data') }}",
                     'type': 'GET',
                     'error': function(xhr, error, thrown) {
                         console.error('AJAX Error:', error);
@@ -496,7 +496,7 @@
                     product_id: $('#transaction_product_id').val()
                 };
                 const queryString = $.param(filters);
-                window.location.href = '{{ route('hos-reports.export.excel') }}?' + queryString;
+                window.location.href = "{{ route('hos-reports.export.excel') }}?" + queryString;
             });
 
             // Export to PDF
@@ -512,17 +512,22 @@
                     product_id: $('#transaction_product_id').val()
                 };
                 const queryString = $.param(filters);
-                window.location.href = '{{ route('hos-reports.export.pdf') }}?' + queryString;
+                window.location.href = "{{ route('hos-reports.export.pdf') }}?" + queryString;
             });
 
             // Load stations for dropdown
             $.ajax({
-                url: '{{ route('hos-reports.stations') }}',
+                url: "{{ route('hos-reports.stations') }}",
                 method: 'GET',
                 success: function(response) {
                     if (response.stations) {
+                        var $stationSelect = $('#transaction_station_id');
+
+                        // Remove previously added options to prevent duplicates
+                        $stationSelect.find('option:not(:first)').remove();
+
                         response.stations.forEach(function(station) {
-                            $('#transaction_station_id').append(
+                            $stationSelect.append(
                                 $('<option></option>').val(station.id).text(station.site_name)
                             );
                         });
@@ -532,7 +537,7 @@
 
             // Load fuel grades/products for dropdown
             $.ajax({
-                url: '{{ route('hos-reports.fuel-grades') }}',
+                url: "{{ route('hos-reports.fuel-grades') }}",
                 method: 'GET',
                 success: function(response) {
                     if (response.fuel_grades) {

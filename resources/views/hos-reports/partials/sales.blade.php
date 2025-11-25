@@ -106,7 +106,7 @@
                 'paging': true,
                 'orderCellsTop': false,
                 'ajax': {
-                    'url': '{{ route('hos-reports.sales') }}',
+                    'url': "{{ route('hos-reports.sales') }}",
                     'type': 'GET',
                     'error': function(xhr, error, thrown) {
                         console.error('AJAX Error:', error);
@@ -267,7 +267,7 @@
                     station_id: $('#sales_station_id').val()
                 };
                 const queryString = $.param(filters);
-                window.location.href = '{{ route('hos-reports.sales.export.excel') }}?' + queryString;
+                window.location.href = "{{ route('hos-reports.sales.export.excel') }}?" + queryString;
             });
 
             // Export to PDF
@@ -280,17 +280,22 @@
                     station_id: $('#sales_station_id').val()
                 };
                 const queryString = $.param(filters);
-                window.location.href = '{{ route('hos-reports.sales.export.pdf') }}?' + queryString;
+                window.location.href = "{{ route('hos-reports.sales.export.pdf') }}?" + queryString;
             });
 
             // Load stations for dropdown
             $.ajax({
-                url: '{{ route('hos-reports.stations') }}',
+                url: "{{ route('hos-reports.stations') }}",
                 method: 'GET',
                 success: function(response) {
                     if (response.stations) {
+                        var $stationSelect = $('#sales_station_id');
+
+                        // Remove any previously appended stations to avoid duplicates
+                        $stationSelect.find('option:not(:first)').remove();
+
                         response.stations.forEach(function(station) {
-                            $('#sales_station_id').append(
+                            $stationSelect.append(
                                 $('<option></option>').val(station.id).text(station.site_name)
                             );
                         });

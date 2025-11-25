@@ -73,99 +73,100 @@
         <div class="card-header custom-card-header">
             <h6 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-table"></i> Payment Mode Wise Summary</h6>
         </div>
-    <div class="card-body" style="padding: 0;">
-        <div class="table-responsive">
-            <table id="payment-mode-summary-table" class="table">
-                <thead>
-                    <tr>
-                        <th>MOP</th>
-                        <th class="text-left">Volume (L)</th>
-                        <th class="text-left">Amount (SAR)</th>
-                    </tr>
-                </thead>
-                <tbody id="payment-mode-summary-tbody">
-                    <tr>
-                        <td colspan="3" class="text-center">No data available. Please apply filters.</td>
-                    </tr>
-                </tbody>
-                <tfoot id="payment-mode-summary-tfoot" style="display: none;">
-                    <tr style="background-color: #f5f5f5; font-weight: bold;">
-                        <td>Total</td>
-                        <td class="text-left" id="payment-mode-total-volume">0.00</td>
-                        <td class="text-left" id="payment-mode-total-amount">0.00</td>
-                    </tr>
-                </tfoot>
-            </table>
+        <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+                <table id="payment-mode-summary-table" class="table">
+                    <thead>
+                        <tr>
+                            <th>MOP</th>
+                            <th class="text-left">Volume (L)</th>
+                            <th class="text-left">Amount (SAR)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="payment-mode-summary-tbody">
+                        <tr>
+                            <td colspan="3" class="text-center">No data available. Please apply filters.</td>
+                        </tr>
+                    </tbody>
+                    <tfoot id="payment-mode-summary-tfoot" style="display: none;">
+                        <tr style="background-color: #f5f5f5; font-weight: bold;">
+                            <td>Total</td>
+                            <td class="text-left" id="payment-mode-total-volume">0.00</td>
+                            <td class="text-left" id="payment-mode-total-amount">0.00</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Product Wise Summary Table -->
-<div class="card custom-card mb-3">
-    <div class="card-header custom-card-header">
-        <h6 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-table"></i> Product Wise Summary</h6>
-    </div>
-    <div class="card-body" style="padding: 0;">
-        <div class="table-responsive">
-            <table id="product-summary-table" class="table">
-                <thead>
-                    <tr>
-                        <th>Product</th>
-                        <th class="text-left">TXN Volume</th>
-                        <th class="text-left">Amount (SAR)</th>
-                    </tr>
-                </thead>
-                <tbody id="product-summary-tbody">
-                    <tr>
-                        <td colspan="3" class="text-center">No data available. Please apply filters.</td>
-                    </tr>
-                </tbody>
-                <tfoot id="product-summary-tfoot" style="display: none;">
-                    <tr style="background-color: #f5f5f5; font-weight: bold;">
-                        <td>Total</td>
-                        <td class="text-left" id="product-total-volume">0.00</td>
-                        <td class="text-left" id="product-total-amount">0.00</td>
-                    </tr>
-                </tfoot>
-            </table>
+    <!-- Product Wise Summary Table -->
+    <div class="card custom-card mb-3">
+        <div class="card-header custom-card-header">
+            <h6 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-table"></i> Product Wise Summary</h6>
+        </div>
+        <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+                <table id="product-summary-table" class="table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th class="text-left">TXN Volume</th>
+                            <th class="text-left">Amount (SAR)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="product-summary-tbody">
+                        <tr>
+                            <td colspan="3" class="text-center">No data available. Please apply filters.</td>
+                        </tr>
+                    </tbody>
+                    <tfoot id="product-summary-tfoot" style="display: none;">
+                        <tr style="background-color: #f5f5f5; font-weight: bold;">
+                            <td>Total</td>
+                            <td class="text-left" id="product-total-volume">0.00</td>
+                            <td class="text-left" id="product-total-amount">0.00</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Pump Wise Summary Table -->
-<div class="card custom-card mb-3">
-    <div class="card-header custom-card-header">
-        <h6 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-table"></i> Pump Wise Summary</h6>
-    </div>
-    <div class="card-body" style="padding: 0;">
-        <div class="table-responsive">
-            <table id="pump-summary-table" class="table">
-                <thead>
-                    <tr>
-                        <th>Product</th>
-                        <th class="text-center">Pump No</th>
-                        <th class="text-center">Nozzle No</th>
-                        <th class="text-left">Start Totalizer</th>
-                        <th class="text-left">End Totalizer</th>
-                        <th class="text-left">Totalizer Volume</th>
-                        <th class="text-left">TXN Volume</th>
-                        <th class="text-left">Amount (SAR)</th>
-                    </tr>
-                </thead>
-                <tbody id="pump-summary-tbody">
-                    <tr>
-                        <td colspan="8" class="text-center">No data available. Please apply filters.</td>
-                    </tr>
-                </tbody>
-                <tfoot id="pump-summary-tfoot" style="display: none;">
-                    <tr style="background-color: #f5f5f5; font-weight: bold;">
-                        <td colspan="5" class="text-left">Total</td>
-                        <td class="text-left" id="pump-total-totalizer-volume">0.000</td>
-                        <td class="text-left" id="pump-total-txn-volume">0.00</td>
-                        <td class="text-left" id="pump-total-amount">0.00</td>
-                    </tr>
-                </tfoot>
-            </table>
+    <!-- Pump Wise Summary Table -->
+    <div class="card custom-card mb-3">
+        <div class="card-header custom-card-header">
+            <h6 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-table"></i> Pump Wise Summary</h6>
+        </div>
+        <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+                <table id="pump-summary-table" class="table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th class="text-center">Pump No</th>
+                            <th class="text-center">Nozzle No</th>
+                            <th class="text-left">Start Totalizer</th>
+                            <th class="text-left">End Totalizer</th>
+                            <th class="text-left">Totalizer Volume</th>
+                            <th class="text-left">TXN Volume</th>
+                            <th class="text-left">Amount (SAR)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pump-summary-tbody">
+                        <tr>
+                            <td colspan="8" class="text-center">No data available. Please apply filters.</td>
+                        </tr>
+                    </tbody>
+                    <tfoot id="pump-summary-tfoot" style="display: none;">
+                        <tr style="background-color: #f5f5f5; font-weight: bold;">
+                            <td colspan="5" class="text-left">Total</td>
+                            <td class="text-left" id="pump-total-totalizer-volume">0.000</td>
+                            <td class="text-left" id="pump-total-txn-volume">0.00</td>
+                            <td class="text-left" id="pump-total-amount">0.00</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -178,6 +179,21 @@
 @push('js')
     <script>
         $(document).ready(function() {
+            // Initialize view mode - hide combined summary tables if "Select All" is default
+            var initialViewMode = $('#shift_summary_view_mode').val() || 'summary';
+            if (initialViewMode === 'individual') {
+                // Hide combined summary tables immediately on page load
+                $('#combined-summary-section').hide().css({
+                    'display': 'none !important',
+                    'visibility': 'hidden'
+                });
+                $('#individual-shifts-section').hide().css('display', 'none');
+            } else {
+                // Keep combined summary hidden until data loads (it has display:none by default)
+                $('#combined-summary-section').css('display', 'none');
+                $('#individual-shifts-section').hide().css('display', 'none');
+            }
+
             // Function to format date/time
             function formatDateTime(dateTimeStr) {
                 if (!dateTimeStr) return '';
@@ -317,12 +333,17 @@
 
             // Load stations for dropdown
             $.ajax({
-                url: '{{ route('hos-reports.stations') }}',
+                url: "{{ route('hos-reports.stations') }}",
                 method: 'GET',
                 success: function(response) {
                     if (response.stations) {
+                        var $stationSelect = $('#shift_summary_station_id');
+
+                        // Clear previously appended stations to avoid duplicates
+                        $stationSelect.find('option:not(:first)').remove();
+
                         response.stations.forEach(function(station) {
-                            $('#shift_summary_station_id').append(
+                            $stationSelect.append(
                                 $('<option></option>').val(station.id).text(station.site_name)
                             );
                         });
@@ -424,7 +445,7 @@
                 $('#pump-summary-tfoot').hide();
             }
 
-            // Load shift summary data
+            // Load shift summary data (invoked manually from the Search button only)
             function loadShiftSummary() {
                 var filters = {
                     station_id: $('#shift_summary_station_id').val(),
@@ -435,17 +456,22 @@
                     view_mode: $('#shift_summary_view_mode').val()
                 };
 
-                $.ajax({
-                    url: '{{ route('hos-reports.shift-summary') }}',
-                    method: 'GET',
-                    data: filters,
-                    success: function(response) {
+                $.get("{{ route('hos-reports.shift-summary') }}", filters)
+                    .done(function(response) {
+                        try {
+                            console.log('[Shift Summary] Request payload:', filters);
+                            console.log('[Shift Summary] Response payload:', response);
+                        } catch (e) {}
+
                         var viewMode = response.view_mode || filters.view_mode || 'individual';
                         
                         if (viewMode === 'summary') {
                             // Show combined summary section
-                            $('#individual-shifts-section').hide().removeClass('show-individual-shifts');
-                            $('#combined-summary-section').show();
+                            $('#individual-shifts-section').hide().removeClass('show-individual-shifts').css('display', 'none');
+                            $('#combined-summary-section').show().css({
+                                'display': 'block',
+                                'visibility': 'visible'
+                            });
                             
                             // Populate Payment Mode Wise Summary
                             renderCombinedPaymentSummary(response.payment_mode_summary || [], response.payment_mode_total_volume || 0, response.payment_mode_total_amount || 0);
@@ -457,7 +483,11 @@
                             renderCombinedPumpSummary(response.pump_summary || [], response.pump_total_totalizer_volume || 0, response.pump_total_txn_volume || 0, response.pump_total_amount || 0);
                         } else {
                             // Show individual shifts section (each shift with its own 3 tables)
-                            $('#combined-summary-section').hide();
+                            // Completely hide the combined summary section
+                            $('#combined-summary-section').hide().css({
+                                'display': 'none',
+                                'visibility': 'hidden'
+                            });
                             clearCombinedSummaryTables();
                             
                             const individualSection = $('#individual-shifts-section');
@@ -537,19 +567,23 @@
                                 individualSection.html('<div class="alert alert-warning text-center">' + errorMsg + '</div>');
                             }
                         }
-                    },
-                    error: function(xhr, error, thrown) {
+                    })
+                    .fail(function(xhr) {
                         var errorMsg = 'Error loading shift summary. Please try again.';
                         if (xhr.responseJSON && xhr.responseJSON.message) {
                             errorMsg = 'Error: ' + xhr.responseJSON.message;
                         }
                         $('#individual-shifts-section, #combined-summary-section').html('<div class="alert alert-danger text-center">' + errorMsg + '</div>');
-                    }
-                });
+                    });
             }
 
-            // Apply filters button
+            // Apply filters button (only entry point to fetch shift summary data)
             $('#shift-summary-filter-btn').on('click', function() {
+                loadShiftSummary();
+            });
+
+            $('#shift-summary-filter-form').on('submit', function(e) {
+                e.preventDefault();
                 loadShiftSummary();
             });
 
@@ -561,24 +595,29 @@
                 $('#shift_summary_from_time').val('');
                 $('#shift_summary_to_time').val('');
                 $('#shift_summary_view_mode').val('summary');
-                loadShiftSummary();
-            });
-
-            // Auto-filter on dropdown change
-            $('#shift_summary_station_id').on('change', function() {
-                loadShiftSummary();
             });
 
             $('#shift_summary_view_mode').on('change', function() {
                 var selectedMode = $(this).val();
                 if (selectedMode === 'summary') {
-                    $('#combined-summary-section').show();
+                    // Show combined summary tables
+                    $('#combined-summary-section').show().css({
+                        'display': 'block',
+                        'visibility': 'visible'
+                    });
+                    $('#individual-shifts-section').hide().css('display', 'none');
                 } else {
-                    $('#combined-summary-section').hide();
+                    // Completely hide combined summary tables when "Select All" is chosen
+                    $('#combined-summary-section').hide().css({
+                        'display': 'none',
+                        'visibility': 'hidden'
+                    });
                     clearCombinedSummaryTables();
+                    // Clear individual shifts section initially
+                    $('#individual-shifts-section').empty().hide();
                 }
-                loadShiftSummary();
             });
+
 
             function resetTimeDropdowns() {
                 $('#shift_summary_from_time').html('<option value="">All Start Times</option>');
@@ -593,7 +632,7 @@
                     return;
                 }
                 $.ajax({
-                    url: '{{ route('hos-reports.shift-times') }}',
+                    url: "{{ route('hos-reports.shift-times') }}",
                     method: 'GET',
                     data: {
                         from_date: fromDate,
@@ -660,9 +699,6 @@
                         }
 
                         // When both dates are selected and auto times chosen, ensure filters can run without manual change
-                        if (startTimes.length > 0 && endTimes.length > 0 && $('#shift_summary_view_mode').val() === 'summary') {
-                            loadShiftSummary();
-                        }
                     }
                 });
             }
@@ -678,15 +714,6 @@
                 if (seeded) loadTimesForDateRange();
             })();
 
-            // Trigger data load only when both times selected (or both empty = all day)
-            $('#shift_summary_from_time, #shift_summary_to_time').on('change', function() {
-                var fromT = $('#shift_summary_from_time').val();
-                var toT = $('#shift_summary_to_time').val();
-                // If either is empty, wait for user to complete selection
-                if (fromT === '' || toT === '') { return; }
-                try { console.log('[Shift Summary] Time changed: ' + JSON.stringify({ from_time: fromT, to_time: toT })); } catch (e) {}
-                loadShiftSummary();
-            });
         });
     </script>
 @endpush

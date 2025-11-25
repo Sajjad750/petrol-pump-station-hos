@@ -1237,16 +1237,27 @@ class HosReportsController extends Controller
                 return ! is_null($key);
             });
 
+            // First, get product summaries grouped by station, shift, and BOS fuel grade ID
+            // Join with fuel_grades using either local ID or BOS ID for matching
             $productSummaryRows = ProductWiseSummary::query()
                 ->leftJoin('fuel_grades', function ($join) {
-                    $join->on('product_wise_summaries.fuel_grade_id', '=', 'fuel_grades.bos_fuel_grade_id')
-                        ->on('product_wise_summaries.station_id', '=', 'fuel_grades.station_id');
+                    $join->on('product_wise_summaries.station_id', '=', 'fuel_grades.station_id')
+                        ->where(function ($q) {
+                            $q->where(function ($subQ) {
+                                $subQ->whereColumn('product_wise_summaries.fuel_grade_id', 'fuel_grades.id')
+                                    ->whereNotNull('product_wise_summaries.fuel_grade_id');
+                            })
+                              ->orWhere(function ($subQ) {
+                                  $subQ->whereColumn('product_wise_summaries.bos_fuel_grade_id', 'fuel_grades.bos_fuel_grade_id')
+                                      ->whereNotNull('product_wise_summaries.bos_fuel_grade_id');
+                              });
+                        });
                 })
                 ->select(
                     'product_wise_summaries.station_id',
                     'product_wise_summaries.bos_shift_id',
-                    'product_wise_summaries.fuel_grade_id',
-                    DB::raw('COALESCE(fuel_grades.name, "N/A") as product_name'),
+                    'product_wise_summaries.bos_fuel_grade_id',
+                    DB::raw('COALESCE(MAX(fuel_grades.name), "N/A") as product_name'),
                     DB::raw('SUM(product_wise_summaries.volume) as total_volume'),
                     DB::raw('SUM(product_wise_summaries.amount) as total_amount')
                 )
@@ -1255,8 +1266,7 @@ class HosReportsController extends Controller
                 ->groupBy(
                     'product_wise_summaries.station_id',
                     'product_wise_summaries.bos_shift_id',
-                    'product_wise_summaries.fuel_grade_id',
-                    'fuel_grades.name'
+                    'product_wise_summaries.bos_fuel_grade_id'
                 )
                 ->get();
 

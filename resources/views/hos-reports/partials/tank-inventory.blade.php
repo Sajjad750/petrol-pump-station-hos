@@ -234,7 +234,7 @@
                 'paging': true,
                 'orderCellsTop': false,
                 'ajax': {
-                    'url': '{{ route('hos-reports.tank-inventory') }}',
+                    'url': "{{ route('hos-reports.tank-inventory') }}",
                     'type': 'GET',
                     'error': function(xhr, error, thrown) {
                         console.error('AJAX Error:', error);
@@ -411,7 +411,7 @@
                     tank: $('#inventory_tank').val()
                 };
                 const queryString = $.param(filters);
-                window.location.href = '{{ route('hos-reports.tank-inventory.export.excel') }}?' + queryString;
+                window.location.href = "{{ route('hos-reports.tank-inventory.export.excel') }}?" + queryString;
             });
 
             // Export to PDF
@@ -426,17 +426,22 @@
                     tank: $('#inventory_tank').val()
                 };
                 const queryString = $.param(filters);
-                window.location.href = '{{ route('hos-reports.tank-inventory.export.pdf') }}?' + queryString;
+                window.location.href = "{{ route('hos-reports.tank-inventory.export.pdf') }}?" + queryString;
             });
 
             // Load stations for dropdown
             $.ajax({
-                url: '{{ route('hos-reports.stations') }}',
+                url: "{{ route('hos-reports.stations') }}",
                 method: 'GET',
                 success: function(response) {
                     if (response.stations) {
+                        var $stationSelect = $('#inventory_station_id');
+
+                        // Remove previously added stations to avoid duplicates
+                        $stationSelect.find('option:not(:first)').remove();
+
                         response.stations.forEach(function(station) {
-                            $('#inventory_station_id').append(
+                            $stationSelect.append(
                                 $('<option></option>').val(station.id).text(station.site_name)
                             );
                         });
@@ -446,7 +451,7 @@
 
             // Load fuel grades for dropdown
             $.ajax({
-                url: '{{ route('hos-reports.fuel-grades') }}',
+                url: "{{ route('hos-reports.fuel-grades') }}",
                 method: 'GET',
                 success: function(response) {
                     if (response.fuel_grades) {
@@ -462,8 +467,8 @@
             // Load tanks for dropdown
             function loadTanks() {
                 const stationId = $('#inventory_station_id').val();
-                $.ajax({
-                    url: '{{ route('hos-reports.tanks') }}',
+            $.ajax({
+                url: "{{ route('hos-reports.tanks') }}",
                     method: 'GET',
                     data: { station_id: stationId },
                     success: function(response) {
