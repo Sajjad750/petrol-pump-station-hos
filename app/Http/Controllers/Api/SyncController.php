@@ -1802,7 +1802,7 @@ class SyncController extends Controller
             'data.*.utc_offset' => 'nullable|integer',
         ]);
 
-        $authorizedStation = $request->get('station');
+//        $authorizedStation = $request->get('station');
         $defaultPtsId = $request->input('pts_id');
         $devices = $request->input('data', []);
 
@@ -1826,15 +1826,15 @@ class SyncController extends Controller
                     continue;
                 }
 
-                if ($authorizedStation && $authorizedStation->pts_id !== $targetPtsId) {
-                    $failed++;
-                    $errors[] = [
-                        'pts_id' => $targetPtsId,
-                        'error' => 'PTS ID does not match the authenticated station',
-                    ];
-
-                    continue;
-                }
+//                if ($authorizedStation && $authorizedStation->pts_id !== $targetPtsId) {
+//                    $failed++;
+//                    $errors[] = [
+//                        'pts_id' => $targetPtsId,
+//                        'error' => 'PTS ID does not match the authenticated station',
+//                    ];
+//
+//                    continue;
+//                }
 
                 $station = Station::where('pts_id', $targetPtsId)->first();
 
