@@ -32,6 +32,8 @@
                         <select class="form-control" id="shift_summary_from_time" name="from_time">
                             <option value="">All Start Times</option>
                         </select>
+                        <input type="hidden" id="shift_summary_from_shift_id" name="from_shift_id">
+                        <input type="hidden" id="shift_summary_from_bos_shift_id" name="from_bos_shift_id">
                     </div>
                 </div>
                 <div class="col-md-2">
@@ -40,6 +42,8 @@
                         <select class="form-control" id="shift_summary_to_time" name="to_time">
                             <option value="">All End Times</option>
                         </select>
+                        <input type="hidden" id="shift_summary_to_shift_id" name="to_shift_id">
+                        <input type="hidden" id="shift_summary_to_bos_shift_id" name="to_bos_shift_id">
                     </div>
                 </div>
                 <div class="col-md-2">
@@ -67,6 +71,10 @@
             </div>
         </form>
     </div>
+</div>
+
+<div id="shift-summary-placeholder" class="alert alert-info text-center" style="display: none;">
+    Please select a station, date range, shift time, and view mode to load the summary.
 </div>
 
 <!-- Combined Summary Section (shown when view_mode is 'summary') -->
@@ -181,6 +189,27 @@
 @push('js')
     <script>
         $(document).ready(function() {
+            var shiftSummaryDefaultMessage = 'Please select a station, date range, shift time, and view mode to load the summary.';
+
+            function areShiftSummaryFiltersComplete(filters) {
+                return filters.station_id && filters.from_date && filters.to_date && filters.from_time && filters.to_time && filters.view_mode;
+            }
+
+            function showShiftSummaryPlaceholder(message) {
+                var placeholder = $('#shift-summary-placeholder');
+                placeholder.html(message || shiftSummaryDefaultMessage).show();
+                $('#combined-summary-section').hide();
+                clearCombinedSummaryTables();
+                $('#individual-shifts-section')
+                    .hide()
+                    .removeClass('show-individual-shifts')
+                    .empty();
+            }
+
+            function hideShiftSummaryPlaceholder() {
+                $('#shift-summary-placeholder').hide();
+            }
+
             // Function to format date/time
             function formatDateTime(dateTimeStr) {
                 if (!dateTimeStr) return '';
@@ -204,7 +233,7 @@
                 var shiftHtml = '<div class="shift-card mb-4" style="border: 2px solid #D7D7D7; border-radius: 8px; padding: 20px; background: white; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">';
                 shiftHtml += '<h3 style="color: #333; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #D7D7D7; font-size: 20px;">';
                 var bosId = shiftData.bos_shift_id ? ('#' + shiftData.bos_shift_id) : 'N/A';
-                shiftHtml += '<i class="fas fa-calendar-alt"></i> Shift ' + (shiftIndex + 1) + ' (BOS Shift ID: ' + bosId + ')';
+                shiftHtml += '<i class="fas fa-calendar-alt"></i> Shift ' + (shiftIndex + 1) + ' (Shift ID: ' + bosId + ')';
                 shiftHtml += '</h3>';
                 shiftHtml += '<div class="row mb-3">';
                 shiftHtml += '<div class="col-md-6"><strong>Start Time:</strong> ' + formatDateTime(shiftData.start_time) + '</div>';
@@ -324,11 +353,15 @@
                 method: 'GET',
                 success: function(response) {
                     if (response.stations) {
+                        var $select = $('#shift_summary_station_id');
+                        var firstOption = $select.find('option').first();
+                        var optionsHtml = firstOption.length ? firstOption.prop('outerHTML') : '<option value=\"\">All Stations</option>';
+
                         response.stations.forEach(function(station) {
-                            $('#shift_summary_station_id').append(
-                                $('<option></option>').val(station.id).text(station.site_name)
-                            );
+                            optionsHtml += '<option value=\"' + station.id + '\">' + station.site_name + '</option>';
                         });
+
+                        $select.html(optionsHtml);
                     }
                 }
             });
@@ -429,20 +462,43 @@
 
             // Load shift summary data
             function loadShiftSummary() {
+                updateShiftIdFields();
+
+                var fromTimeOption = $('#shift_summary_from_time option:selected');
+                var toTimeOption = $('#shift_summary_to_time option:selected');
+
                 var filters = {
                     station_id: $('#shift_summary_station_id').val(),
                     from_date: $('#shift_summary_from_date').val(),
                     to_date: $('#shift_summary_to_date').val(),
                     from_time: $('#shift_summary_from_time').val(),
                     to_time: $('#shift_summary_to_time').val(),
-                    view_mode: $('#shift_summary_view_mode').val()
+                    view_mode: $('#shift_summary_view_mode').val(),
+                    from_shift_id: fromTimeOption.data('shift-id') || '',
+                    from_bos_shift_id: fromTimeOption.data('bos-shift-id') || '',
+                    to_shift_id: toTimeOption.data('shift-id') || '',
+                    to_bos_shift_id: toTimeOption.data('bos-shift-id') || ''
                 };
+
+                if (!areShiftSummaryFiltersComplete(filters)) {
+                    showShiftSummaryPlaceholder();
+                    return;
+                }
+
+                hideShiftSummaryPlaceholder();
 
                 $.ajax({
                     url: '{{ route('hos-reports.shift-summary') }}',
                     method: 'GET',
                     data: filters,
                     success: function(response) {
+                        if (response.filters_complete === false) {
+                            showShiftSummaryPlaceholder(response.message);
+                            return;
+                        }
+
+                        hideShiftSummaryPlaceholder();
+
                         var viewMode = response.view_mode || filters.view_mode || 'individual';
                         
                         if (viewMode === 'summary') {
@@ -546,7 +602,7 @@
                         if (xhr.responseJSON && xhr.responseJSON.message) {
                             errorMsg = 'Error: ' + xhr.responseJSON.message;
                         }
-                        $('#individual-shifts-section, #combined-summary-section').html('<div class="alert alert-danger text-center">' + errorMsg + '</div>');
+                        showShiftSummaryPlaceholder('<div class="text-danger mb-0">' + errorMsg + '</div>');
                     }
                 });
             }
@@ -563,6 +619,7 @@
                 $('#shift_summary_to_date').val('');
                 $('#shift_summary_from_time').val('');
                 $('#shift_summary_to_time').val('');
+                updateShiftIdFields();
                 $('#shift_summary_view_mode').val('summary');
                 loadShiftSummary();
             });
@@ -601,6 +658,7 @@
                 var toDate = $('#shift_summary_to_date').val();
                 if (!fromDate && !toDate) {
                     resetTimeDropdowns();
+                    updateShiftIdFields();
                     return;
                 }
                 $.ajax({
@@ -670,6 +728,8 @@
                             $to.val(nextTo);
                         }
 
+                        updateShiftIdFields();
+
                         // When both dates are selected and auto times chosen, ensure filters can run without manual change
                         if (startTimes.length > 0 && endTimes.length > 0 && $('#shift_summary_view_mode').val() === 'summary') {
                             loadShiftSummary();
@@ -687,17 +747,31 @@
             (function initTimes(){
                 var seeded = $('#shift_summary_from_date').val() || $('#shift_summary_to_date').val();
                 if (seeded) loadTimesForDateRange();
+                updateShiftIdFields();
             })();
 
             // Trigger data load only when both times selected (or both empty = all day)
             $('#shift_summary_from_time, #shift_summary_to_time').on('change', function() {
                 var fromT = $('#shift_summary_from_time').val();
                 var toT = $('#shift_summary_to_time').val();
+                updateShiftIdFields();
                 // If either is empty, wait for user to complete selection
                 if (fromT === '' || toT === '') { return; }
                 try { console.log('[Shift Summary] Time changed: ' + JSON.stringify({ from_time: fromT, to_time: toT })); } catch (e) {}
                 loadShiftSummary();
             });
+
+            function updateShiftIdFields() {
+                var fromOption = $('#shift_summary_from_time option:selected');
+                var toOption = $('#shift_summary_to_time option:selected');
+
+                $('#shift_summary_from_shift_id').val(fromOption.data('shift-id') || '');
+                $('#shift_summary_from_bos_shift_id').val(fromOption.data('bos-shift-id') || '');
+                $('#shift_summary_to_shift_id').val(toOption.data('shift-id') || '');
+                $('#shift_summary_to_bos_shift_id').val(toOption.data('bos-shift-id') || '');
+            }
+
+            showShiftSummaryPlaceholder();
         });
     </script>
 @endpush

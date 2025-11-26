@@ -289,11 +289,15 @@
                 method: 'GET',
                 success: function(response) {
                     if (response.stations) {
+                        var $select = $('#sales_station_id');
+                        var firstOption = $select.find('option').first();
+                        var optionsHtml = firstOption.length ? firstOption.prop('outerHTML') : '<option value=\"\">All Stations</option>';
+
                         response.stations.forEach(function(station) {
-                            $('#sales_station_id').append(
-                                $('<option></option>').val(station.id).text(station.site_name)
-                            );
+                            optionsHtml += '<option value=\"' + station.id + '\">' + station.site_name + '</option>';
                         });
+
+                        $select.html(optionsHtml);
                     }
                 }
             });

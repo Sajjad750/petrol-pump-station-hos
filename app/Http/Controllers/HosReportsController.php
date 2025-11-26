@@ -1178,6 +1178,34 @@ class HosReportsController extends Controller
      */
     public function getShiftSummary(Request $request)
     {
+        $viewMode = $request->input('view_mode', 'individual');
+
+        $requiredFilters = collect([
+            'station_id',
+            'from_date',
+            'to_date',
+            'from_time',
+            'to_time',
+            'view_mode',
+        ]);
+
+        $missingFilters = $requiredFilters->filter(function ($key) use ($request) {
+            $value = $request->input($key);
+
+            return $value === null || $value === '';
+        })->values();
+
+        if ($missingFilters->isNotEmpty()) {
+            return response()->json(array_merge(
+                $this->emptyShiftSummaryPayload($viewMode),
+                [
+                    'filters_complete' => false,
+                    'missing_filters' => $missingFilters,
+                    'message' => 'Please select station, date range, shift and mode filters to view the summary.',
+                ]
+            ));
+        }
+
         // Build query to get shifts based on filters
         $shiftQuery = Shift::query();
 
@@ -1185,6 +1213,11 @@ class HosReportsController extends Controller
         if ($request->filled('station_id')) {
             $shiftQuery->where('station_id', $request->input('station_id'));
         }
+
+        $fromShiftId = $request->filled('from_shift_id') ? (int) $request->input('from_shift_id') : null;
+        $toShiftId = $request->filled('to_shift_id') ? (int) $request->input('to_shift_id') : null;
+        $fromBosShiftId = $request->filled('from_bos_shift_id') ? (int) $request->input('from_bos_shift_id') : null;
+        $toBosShiftId = $request->filled('to_bos_shift_id') ? (int) $request->input('to_bos_shift_id') : null;
 
         $from_date = $request->input('from_date');
         $to_date = $request->input('to_date');
@@ -1226,8 +1259,32 @@ class HosReportsController extends Controller
             $shiftQuery->where('start_time', '<=', $windowEnd);
         }
 
+        if (!is_null($fromBosShiftId) || !is_null($toBosShiftId)) {
+            $minBos = min(array_filter([$fromBosShiftId, $toBosShiftId], fn ($value) => !is_null($value))) ?? null;
+            $maxBos = max(array_filter([$fromBosShiftId, $toBosShiftId], fn ($value) => !is_null($value))) ?? null;
+
+            if (!is_null($minBos) && !is_null($maxBos)) {
+                $shiftQuery->whereBetween('bos_shift_id', [$minBos, $maxBos]);
+            } elseif (!is_null($minBos)) {
+                $shiftQuery->where('bos_shift_id', '>=', $minBos);
+            } elseif (!is_null($maxBos)) {
+                $shiftQuery->where('bos_shift_id', '<=', $maxBos);
+            }
+        } elseif (!is_null($fromShiftId) || !is_null($toShiftId)) {
+            $minId = min(array_filter([$fromShiftId, $toShiftId], fn ($value) => !is_null($value))) ?? null;
+            $maxId = max(array_filter([$fromShiftId, $toShiftId], fn ($value) => !is_null($value))) ?? null;
+
+            if (!is_null($minId) && !is_null($maxId)) {
+                $shiftQuery->whereBetween('id', [$minId, $maxId]);
+            } elseif (!is_null($minId)) {
+                $shiftQuery->where('id', '>=', $minId);
+            } elseif (!is_null($maxId)) {
+                $shiftQuery->where('id', '<=', $maxId);
+            }
+        }
+
         // Get matching shifts with station info
-        $shifts = $shiftQuery->with('station')->orderBy('start_time', 'desc')->get();
+        $shifts = $shiftQuery->with('station')->orderBy('start_time')->get();
 
         // Get shift IDs and BOS shift IDs grouped by station
         $shiftData = [];
@@ -1243,17 +1300,14 @@ class HosReportsController extends Controller
             ];
         }
 
-        $viewMode = $request->input('view_mode', 'individual'); // Default to 'individual'
-
         if (empty($shiftData)) {
-            return response()->json([
-                'view_mode' => $viewMode,
-                'shifts' => [],
-                'individual_shifts' => [],
-                'payment_mode_summary' => [],
-                'product_summary' => [],
-                'pump_summary' => [],
-            ]);
+            return response()->json(array_merge(
+                $this->emptyShiftSummaryPayload($viewMode),
+                [
+                    'filters_complete' => true,
+                    'missing_filters' => [],
+                ]
+            ));
         }
 
         $bosShiftIds = collect($shiftData)->pluck('bos_shift_id')->filter()->unique()->values();
@@ -1271,7 +1325,7 @@ class HosReportsController extends Controller
                 ->get();
 
             $paymentSummariesByShift = $paymentSummaryRows->groupBy(function ($row) {
-                return $row->station_id.'|'.$row->bos_shift_id;
+                return $this->stationShiftKey($row->station_id, $row->bos_shift_id);
             });
 
             $productSummaryRows = ProductWiseSummary::query()
@@ -1298,7 +1352,7 @@ class HosReportsController extends Controller
                 ->get();
 
             $productSummariesByShift = $productSummaryRows->groupBy(function ($row) {
-                return $row->station_id.'|'.$row->bos_shift_id;
+                return $this->stationShiftKey($row->station_id, $row->bos_shift_id);
             });
         }
 
@@ -1306,9 +1360,9 @@ class HosReportsController extends Controller
         $individualShifts = [];
 
         // Prepare combined summary data (for 'summary' mode)
-        $combinedPaymentSummary = collect();
-        $combinedProductSummary = collect();
-        $combinedPumpSummary = collect();
+        $combinedPaymentSummary = [];
+        $combinedProductSummary = [];
+        $combinedPumpSummary = [];
 
         foreach ($shiftData as $shiftInfo) {
             $shiftTransactions = PumpTransaction::query()
@@ -1324,7 +1378,9 @@ class HosReportsController extends Controller
             $transactionPaymentSummary = $this->summarizePaymentsFromTransactions($shiftTransactions);
             $transactionProductSummary = $this->summarizeProductsFromTransactions($shiftTransactions);
 
-            $paymentSummaries = ($paymentSummariesByShift->get($shiftInfo['id']) ?? collect())->map(function ($row) {
+            $shiftKey = $this->stationShiftKey($shiftInfo['station_id'], $shiftInfo['bos_shift_id']);
+
+            $paymentSummariesFromTable = ($paymentSummariesByShift->get($shiftKey) ?? collect())->map(function ($row) {
                 return [
                     'mop' => $row->mop ?: 'N/A',
                     'volume' => (float) $row->total_volume,
@@ -1332,40 +1388,15 @@ class HosReportsController extends Controller
                 ];
             });
 
-            if ($paymentSummaries->isEmpty()) {
-                $paymentSummaries = $transactionPaymentSummary->values();
-            } else {
-                $paymentSummaries = $paymentSummaries->keyBy('mop');
-                $transactionPaymentSummary->each(function ($item, $mop) use (&$paymentSummaries) {
-                    if (!$paymentSummaries->has($mop)) {
-                        $paymentSummaries->put($mop, $item);
-                    }
-                });
-                $paymentSummaries = $paymentSummaries->values()->sortBy('mop')->values();
+            $paymentSummaries = $transactionPaymentSummary->values();
+
+            if ($paymentSummaries->isEmpty() && $paymentSummariesFromTable->isNotEmpty()) {
+                $paymentSummaries = $paymentSummariesFromTable->values();
             }
 
-            $productSummaries = ($productSummariesByShift->get($shiftInfo['id']) ?? collect())->map(function ($row) {
-                $productName = $row->product_name ?: 'N/A';
+            $paymentSummaries = $paymentSummaries->sortBy('mop')->values();
 
-                return [
-                    'product' => $productName,
-                    'product_name' => $productName,
-                    'txn_volume' => (float) $row->total_volume,
-                    'amount' => (float) $row->total_amount,
-                ];
-            });
-
-            if ($productSummaries->isEmpty()) {
-                $productSummaries = $transactionProductSummary->values();
-            } else {
-                $productSummaries = $productSummaries->keyBy('product');
-                $transactionProductSummary->each(function ($item, $productName) use (&$productSummaries) {
-                    if (!$productSummaries->has($productName)) {
-                        $productSummaries->put($productName, $item);
-                    }
-                });
-                $productSummaries = $productSummaries->values()->sortBy('product')->values();
-            }
+            $productSummaries = $transactionProductSummary->values();
 
             // Group by pump, nozzle, fuel grade for this shift
             $shiftGrouped = $shiftTransactions->groupBy(function ($t) {
@@ -1425,66 +1456,103 @@ class HosReportsController extends Controller
 
             // Aggregate for combined summary (for 'summary' mode)
             foreach ($paymentSummaries as $item) {
-                $existing = $combinedPaymentSummary->firstWhere('mop', $item['mop']);
+                $key = $item['mop'] ?? 'N/A';
 
-                if ($existing) {
-                    $existing['volume'] += $item['volume'];
-                    $existing['amount'] += $item['amount'];
-                } else {
-                    $combinedPaymentSummary->push([
-                        'mop' => $item['mop'],
-                        'volume' => $item['volume'],
-                        'amount' => $item['amount'],
-                    ]);
+                if (!array_key_exists($key, $combinedPaymentSummary)) {
+                    $combinedPaymentSummary[$key] = [
+                        'mop' => $key,
+                        'volume' => 0,
+                        'amount' => 0,
+                    ];
                 }
+
+                $combinedPaymentSummary[$key]['volume'] += $item['volume'] ?? 0;
+                $combinedPaymentSummary[$key]['amount'] += $item['amount'] ?? 0;
             }
 
             foreach ($productSummaries as $item) {
-                $existing = $combinedProductSummary->firstWhere('product', $item['product']);
+                $key = $item['product'] ?? 'N/A';
 
-                if ($existing) {
-                    $existing['txn_volume'] += $item['txn_volume'];
-                    $existing['amount'] += $item['amount'];
-                } else {
-                    $combinedProductSummary->push([
-                        'product' => $item['product'],
-                        'txn_volume' => $item['txn_volume'],
-                        'amount' => $item['amount'],
-                    ]);
+                if (!array_key_exists($key, $combinedProductSummary)) {
+                    $combinedProductSummary[$key] = [
+                        'product' => $key,
+                        'txn_volume' => 0,
+                        'amount' => 0,
+                    ];
                 }
+
+                $combinedProductSummary[$key]['txn_volume'] += $item['txn_volume'] ?? 0;
+                $combinedProductSummary[$key]['amount'] += $item['amount'] ?? 0;
             }
 
             foreach ($pumpSummaries as $item) {
-                $key = $item['product'].'|'.$item['pump_no'].'|'.$item['nozzle_no'];
-                $existing = $combinedPumpSummary->firstWhere('key', $key);
+                $pumpNo = $item['pump_no'] ?? '-';
 
-                if ($existing) {
-                    // Take minimum start and maximum end across all shifts
-                    $existing['start_totalizer'] = min($existing['start_totalizer'], $item['start_totalizer']);
-                    $existing['end_totalizer'] = max($existing['end_totalizer'], $item['end_totalizer']);
-                    // Recalculate totalizer volume based on new min/max
-                    $existing['totalizer_volume'] = max(0, (float) $existing['end_totalizer'] - (float) $existing['start_totalizer']);
-                    // Sum transaction volume and amount
-                    $existing['txn_volume'] += $item['txn_volume'];
-                    $existing['amount'] += $item['amount'];
-                } else {
-                    $combinedPumpSummary->push(array_merge($item, ['key' => $key]));
+                if (!array_key_exists($pumpNo, $combinedPumpSummary)) {
+                    $combinedPumpSummary[$pumpNo] = [
+                        'product' => $item['product'] ?? 'N/A',
+                        'product_name' => $item['product_name'] ?? $item['product'] ?? 'N/A',
+                        'pump_no' => $pumpNo,
+                        'nozzle_no' => $item['nozzle_no'] ?? '-',
+                        'start_totalizer' => $item['start_totalizer'] ?? null,
+                        'end_totalizer' => $item['end_totalizer'] ?? null,
+                        'totalizer_volume' => 0,
+                        'txn_volume' => 0,
+                        'amount' => 0,
+                    ];
                 }
+
+                $existing = $combinedPumpSummary[$pumpNo];
+
+                if (!is_null($item['start_totalizer'])) {
+                    if (is_null($existing['start_totalizer'])) {
+                        $existing['start_totalizer'] = $item['start_totalizer'];
+                    } else {
+                        $existing['start_totalizer'] = min($existing['start_totalizer'], $item['start_totalizer']);
+                    }
+                }
+
+                if (!is_null($item['end_totalizer'])) {
+                    if (is_null($existing['end_totalizer'])) {
+                        $existing['end_totalizer'] = $item['end_totalizer'];
+                    } else {
+                        $existing['end_totalizer'] = max($existing['end_totalizer'], $item['end_totalizer']);
+                    }
+                }
+
+                if (!empty($item['product_name']) && ($existing['product_name'] === 'N/A' || $existing['product_name'] === null)) {
+                    $existing['product_name'] = $item['product_name'];
+                    $existing['product'] = $item['product_name'];
+                }
+
+                if (!empty($item['nozzle_no']) && $existing['nozzle_no'] !== $item['nozzle_no']) {
+                    $existing['nozzle_no'] = 'Multiple';
+                }
+
+                $existing['txn_volume'] += $item['txn_volume'] ?? 0;
+                $existing['amount'] += $item['amount'] ?? 0;
+
+                $startValue = $existing['start_totalizer'] ?? 0;
+                $endValue = $existing['end_totalizer'] ?? 0;
+                $existing['totalizer_volume'] = max(0, (float) $endValue - (float) $startValue);
+
+                $combinedPumpSummary[$pumpNo] = $existing;
             }
         }
 
         // Calculate totals for combined summary
-        $combinedPaymentTotalVolume = $combinedPaymentSummary->sum('volume');
-        $combinedPaymentTotalAmount = $combinedPaymentSummary->sum('amount');
-        $combinedProductTotalVolume = $combinedProductSummary->sum('txn_volume');
-        $combinedProductTotalAmount = $combinedProductSummary->sum('amount');
-        // For pump summary, totalizer volume is sum of individual totalizer volumes (each pump/nozzle/product combination)
-        $combinedPumpTotalTotalizerVolume = $combinedPumpSummary->sum('totalizer_volume');
-        $combinedPumpTotalTxnVolume = $combinedPumpSummary->sum('txn_volume');
-        $combinedPumpTotalAmount = $combinedPumpSummary->sum('amount');
+        $combinedPaymentTotalVolume = array_sum(array_column($combinedPaymentSummary, 'volume'));
+        $combinedPaymentTotalAmount = array_sum(array_column($combinedPaymentSummary, 'amount'));
+        $combinedProductTotalVolume = array_sum(array_column($combinedProductSummary, 'txn_volume'));
+        $combinedProductTotalAmount = array_sum(array_column($combinedProductSummary, 'amount'));
+        $combinedPumpTotalTotalizerVolume = array_sum(array_column($combinedPumpSummary, 'totalizer_volume'));
+        $combinedPumpTotalTxnVolume = array_sum(array_column($combinedPumpSummary, 'txn_volume'));
+        $combinedPumpTotalAmount = array_sum(array_column($combinedPumpSummary, 'amount'));
 
         return response()->json([
             'view_mode' => $viewMode,
+            'filters_complete' => true,
+            'missing_filters' => [],
             'shifts' => collect($shiftData)->map(function ($s) {
                 return [
                     'id' => $s['id'],
@@ -1497,13 +1565,9 @@ class HosReportsController extends Controller
             'individual_shifts' => $individualShifts,
             // Combined summary data (for 'summary' mode)
             // Remove 'key' from pump summary before returning
-            'payment_mode_summary' => $combinedPaymentSummary->values()->toArray(),
-            'product_summary' => $combinedProductSummary->values()->toArray(),
-            'pump_summary' => $combinedPumpSummary->map(function ($item) {
-                unset($item['key']);
-
-                return $item;
-            })->values()->toArray(),
+            'payment_mode_summary' => array_values($combinedPaymentSummary),
+            'product_summary' => array_values($combinedProductSummary),
+            'pump_summary' => array_values($combinedPumpSummary),
             'payment_mode_total_volume' => $combinedPaymentTotalVolume,
             'payment_mode_total_amount' => $combinedPaymentTotalAmount,
             'product_total_volume' => $combinedProductTotalVolume,
@@ -1512,6 +1576,30 @@ class HosReportsController extends Controller
             'pump_total_txn_volume' => $combinedPumpTotalTxnVolume,
             'pump_total_amount' => $combinedPumpTotalAmount,
         ]);
+    }
+
+    private function emptyShiftSummaryPayload(string $viewMode): array
+    {
+        return [
+            'view_mode' => $viewMode,
+            'shifts' => [],
+            'individual_shifts' => [],
+            'payment_mode_summary' => [],
+            'product_summary' => [],
+            'pump_summary' => [],
+            'payment_mode_total_volume' => 0,
+            'payment_mode_total_amount' => 0,
+            'product_total_volume' => 0,
+            'product_total_amount' => 0,
+            'pump_total_totalizer_volume' => 0,
+            'pump_total_txn_volume' => 0,
+            'pump_total_amount' => 0,
+        ];
+    }
+
+    private function stationShiftKey(?int $stationId, ?int $bosShiftId): string
+    {
+        return ($stationId ?? '0').'|'.($bosShiftId ?? '0');
     }
 
     /**

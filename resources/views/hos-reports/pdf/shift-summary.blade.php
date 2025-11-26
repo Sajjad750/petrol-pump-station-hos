@@ -5,7 +5,7 @@
     <title>Shift Summary Report</title>
     <style>
         body { font-family: 'Inter', Arial, sans-serif; font-size: 11px; color: #1b1f3b; margin: 0; padding: 24px; }
-        h1, h2, h3, h4 { font-family: 'DM Sans', Arial, sans-serif; margin: 0 0 10px; color: #1f2a72; }
+        h1, h2, h3, h4 { font-family: 'DM Sans', Arial, sans-serif; margin: 0 0 10px; color:rgb(0, 0, 0); }
         h1 { font-size: 24px; }
         h2 { font-size: 18px; margin-top: 25px; }
         h3 { font-size: 16px; margin-top: 20px; }
@@ -13,7 +13,7 @@
         .header { border-bottom: 3px solidrgb(0, 0, 0); padding-bottom: 10px; margin-bottom: 20px; }
         .meta { margin-bottom: 6px; color: #4b5563; }
         .filters, .shift-card { border: 1px solid #d1d5db; border-radius: 8px; padding: 15px; margin-bottom: 18px; }
-        .filters { background-color:rgb(0, 0, 0); }
+        .filters { background-color: #f8fafc; }
         .filter-item { display: inline-block; margin-right: 18px; margin-bottom: 6px; }
         .filter-label { font-weight: 600; color: #111827; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10px; }
