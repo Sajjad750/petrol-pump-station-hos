@@ -2198,7 +2198,7 @@ class SyncController extends Controller
                     // Use updateOrCreate to handle duplicates based on pts_id
                     $syncedStation = Station::updateOrCreate(
                         [
-                            'pts_id' => $stationData['pts_id'] ?? $ptsId,
+                            'pts_id' => $ptsId,
                         ],
                         $hosStationData
                     );
