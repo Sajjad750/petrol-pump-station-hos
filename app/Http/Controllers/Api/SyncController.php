@@ -1814,6 +1814,158 @@ class SyncController extends Controller
     }
 
     /**
+     * Sync PTS2 device metadata onto stations
+     */
+    public function syncPts2Devices(Request $request): JsonResponse
+    {
+        $request->validate([
+            'pts_id' => 'required|string|max:255',
+            'data' => 'required|array|min:1',
+            'data.*.id' => 'required|integer',
+            'data.*.uuid' => 'required|string|max:64',
+            'data.*.pts_id' => 'nullable|string|max:255',
+            'data.*.battery_voltage' => 'nullable|integer',
+            'data.*.cpu_temperature' => 'nullable|integer',
+            'data.*.unique_identifier' => 'nullable|string|max:255',
+            'data.*.firmware_information' => 'nullable|array',
+            'data.*.network_settings' => 'nullable|array',
+            'data.*.remote_server_configuration' => 'nullable|array',
+            'data.*.utc_offset' => 'nullable|integer',
+        ]);
+
+        $authorizedStation = $request->get('station');
+        $defaultPtsId = $request->input('pts_id');
+        $devices = $request->input('data', []);
+
+        $updated = 0;
+        $failed = 0;
+        $errors = [];
+
+        DB::beginTransaction();
+
+        try {
+            foreach ($devices as $deviceData) {
+                $targetPtsId = $deviceData['pts_id'] ?? $defaultPtsId;
+
+                if (!$targetPtsId) {
+                    $failed++;
+                    $errors[] = [
+                        'pts_id' => null,
+                        'error' => 'PTS ID is required for each device payload',
+                    ];
+
+                    continue;
+                }
+
+                if ($authorizedStation && $authorizedStation->pts_id !== $targetPtsId) {
+                    $failed++;
+                    $errors[] = [
+                        'pts_id' => $targetPtsId,
+                        'error' => 'PTS ID does not match the authenticated station',
+                    ];
+
+                    continue;
+                }
+
+                $station = Station::where('pts_id', $targetPtsId)->first();
+
+                if (!$station) {
+                    $failed++;
+                    $errors[] = [
+                        'pts_id' => $targetPtsId,
+                        'error' => 'Station not found for supplied PTS ID',
+                    ];
+
+                    continue;
+                }
+
+                $syncLog = SyncLog::createLog(
+                    $station->id,
+                    'stations',
+                    'update',
+                    $deviceData,
+                    'pending'
+                );
+
+                try {
+                    $station->fill([
+                        'bos_pts2_device_id' => $deviceData['id'],
+                        'bos_pts2_device_uuid' => $deviceData['uuid'],
+                        'battery_voltage' => $deviceData['battery_voltage'] ?? null,
+                        'cpu_temperature' => $deviceData['cpu_temperature'] ?? null,
+                        'unique_identifier' => $deviceData['unique_identifier'] ?? null,
+                        'firmware_information' => $deviceData['firmware_information'] ?? null,
+                        'network_settings' => $deviceData['network_settings'] ?? null,
+                        'remote_server_configuration' => $deviceData['remote_server_configuration'] ?? null,
+                        'utc_offset' => $deviceData['utc_offset'] ?? null,
+                    ]);
+
+                    $station->save();
+
+                    $station->updateLastSync();
+
+                    $syncLog->markAsSuccessful([
+                        'station_id' => $station->id,
+                        'action' => 'updated',
+                    ]);
+
+                    $updated++;
+                } catch (\Exception $deviceException) {
+                    $failed++;
+                    $errors[] = [
+                        'pts_id' => $targetPtsId,
+                        'device_id' => $deviceData['id'],
+                        'error' => $deviceException->getMessage(),
+                    ];
+
+                    $syncLog->markAsFailed($deviceException->getMessage());
+
+                    Log::error('Failed to sync PTS2 device data', [
+                        'station_id' => $station->id,
+                        'pts_id' => $targetPtsId,
+                        'device_id' => $deviceData['id'],
+                        'error' => $deviceException->getMessage(),
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            $totalItems = $updated + $failed;
+            $allFailed = $totalItems > 0 && $updated === 0;
+
+            return response()->json([
+                'success' => !$allFailed,
+                'message' => $allFailed
+                    ? 'All PTS2 device records failed to sync'
+                    : "Updated {$updated} stations with PTS2 data, {$failed} failed",
+                'data' => [
+                    'updated' => $updated,
+                    'failed' => $failed,
+                    'errors' => $errors,
+                ],
+            ], $allFailed ? 422 : 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('PTS2 device sync failed', [
+                'pts_id' => $defaultPtsId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'PTS2 device sync failed: ' . $e->getMessage(),
+                'data' => [
+                    'updated' => $updated,
+                    'failed' => $failed,
+                    'errors' => $errors,
+                ],
+            ], 500);
+        }
+    }
+
+    /**
      * Prepare PTS user data for HOS storage
      */
     private function preparePtsUserData(array $bosData, int $stationId): array
