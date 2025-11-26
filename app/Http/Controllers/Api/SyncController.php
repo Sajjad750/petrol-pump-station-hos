@@ -33,12 +33,9 @@ class SyncController extends Controller
      */
     public function syncPumpTransactions(Request $request): JsonResponse
     {
-        Log::debug("syncPumpTransactions: ", (array)$request->all());
-
         $station = $request->get('station');
         $ptsId = $request->input('pts_id');
         $transactions = $request->input('data', []);
-        Log::debug("transactions: ", (array)$transactions);
 
         $created = 0;
         $updated = 0;
@@ -375,12 +372,9 @@ class SyncController extends Controller
      */
     public function syncTankMeasurements(Request $request): JsonResponse
     {
-        Log::debug("syncTankMeasurements: ", (array)$request->all());
-
         $station = $request->get('station');
         $ptsId = $request->input('pts_id');
         $tankMeasurements = $request->input('data', []);
-        Log::debug("tank_measurements: ", (array)$tankMeasurements);
 
         $created = 0;
         $updated = 0;
@@ -528,12 +522,9 @@ class SyncController extends Controller
      */
     public function syncTankDeliveries(Request $request): JsonResponse
     {
-        Log::debug("syncTankDeliveries: ", (array)$request->all());
-
         $station = $request->get('station');
         $ptsId = $request->input('pts_id');
         $tankDeliveries = $request->input('data', []);
-        Log::debug("tank_deliveries: ", (array)$tankDeliveries);
 
         $created = 0;
         $updated = 0;
@@ -695,12 +686,9 @@ class SyncController extends Controller
      */
     public function syncFuelGrades(Request $request): JsonResponse
     {
-        Log::debug("syncFuelGrades: ", (array)$request->all());
-
         $station = $request->get('station');
         $ptsId = $request->input('pts_id');
         $fuelGrades = $request->input('data', []);
-        Log::debug("fuel_grades: ", (array)$fuelGrades);
 
         $created = 0;
         $updated = 0;
@@ -839,12 +827,9 @@ class SyncController extends Controller
      */
     public function syncShifts(Request $request): JsonResponse
     {
-        Log::debug("syncShifts: ", (array)$request->all());
-
         $station = $request->get('station');
         $ptsId = $request->input('pts_id');
         $shifts = $request->input('data', []);
-        Log::debug("shifts: ", (array)$shifts);
 
         $created = 0;
         $updated = 0;
@@ -983,12 +968,9 @@ class SyncController extends Controller
      */
     public function syncProductWiseSummaries(Request $request): JsonResponse
     {
-        Log::debug("syncProductWiseSummaries: ", (array)$request->all());
-
         $station = $request->get('station');
         $ptsId = $request->input('pts_id');
         $productWiseSummaries = $request->input('data', []);
-        Log::debug("product_wise_summaries: ", (array)$productWiseSummaries);
 
         $created = 0;
         $updated = 0;
@@ -1121,12 +1103,9 @@ class SyncController extends Controller
      */
     public function syncPaymentModeWiseSummaries(Request $request): JsonResponse
     {
-        Log::debug("syncPaymentModeWiseSummaries: ", (array)$request->all());
-
         $station = $request->get('station');
         $ptsId = $request->input('pts_id');
         $paymentModeWiseSummaries = $request->input('data', []);
-        Log::debug("payment_mode_wise_summaries: ", (array)$paymentModeWiseSummaries);
 
         $created = 0;
         $updated = 0;
@@ -1259,12 +1238,9 @@ class SyncController extends Controller
      */
     public function syncShiftPumpTotals(Request $request): JsonResponse
     {
-        Log::debug("syncShiftPumpTotals: ", (array)$request->all());
-
         $station = $request->get('station');
         $ptsId = $request->input('pts_id');
         $shiftPumpTotals = $request->input('data', []);
-        Log::debug("shift_pump_totals: ", (array)$shiftPumpTotals);
 
         $created = 0;
         $updated = 0;
@@ -1403,12 +1379,9 @@ class SyncController extends Controller
      */
     public function syncTankInventories(Request $request): JsonResponse
     {
-        Log::debug("syncTankInventories: ", (array)$request->all());
-
         $station = $request->get('station');
         $ptsId = $request->input('pts_id');
         $tankInventories = $request->input('data', []);
-        Log::debug("tank_inventories: ", (array)$tankInventories);
 
         $created = 0;
         $updated = 0;
@@ -1556,8 +1529,6 @@ class SyncController extends Controller
      */
     public function syncAlerts(Request $request): JsonResponse
     {
-        Log::debug("syncAlerts: ", (array) $request->all());
-
         $station = $request->get('station');
         $ptsId = $request->input('pts_id');
         $alerts = $request->input('data', []);
@@ -1700,12 +1671,9 @@ class SyncController extends Controller
      */
     public function syncPtsUsers(Request $request): JsonResponse
     {
-        Log::debug("syncPtsUsers: ", (array)$request->all());
-
         $station = $request->get('station');
         $ptsId = $request->input('pts_id');
         $ptsUsers = $request->input('data', []);
-        Log::debug("pts_users: ", (array)$ptsUsers);
 
         $created = 0;
         $updated = 0;
@@ -2059,12 +2027,9 @@ class SyncController extends Controller
      */
     public function syncFuelGradePriceHistory(Request $request): JsonResponse
     {
-        Log::debug("syncFuelGradePriceHistory: ", (array)$request->all());
-
         $station = $request->get('station');
         $ptsId = $request->input('pts_id');
         $priceHistories = $request->input('data', []);
-        Log::debug("fuel_grade_price_histories: ", (array)$priceHistories);
 
         $created = 0;
         $updated = 0;
