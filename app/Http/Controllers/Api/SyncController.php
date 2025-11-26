@@ -1787,7 +1787,7 @@ class SyncController extends Controller
      */
     public function syncPts2Devices(Request $request): JsonResponse
     {
-        Log::debug("syncPts2Devices: ",(array)$request->all());
+        Log::debug("syncPts2Devices: ", (array)$request->all());
         $request->validate([
             'pts_id' => 'required|string|max:255',
             'data' => 'required|array|min:1',
@@ -1803,7 +1803,7 @@ class SyncController extends Controller
             'data.*.utc_offset' => 'nullable|integer',
         ]);
 
-//        $authorizedStation = $request->get('station');
+        //        $authorizedStation = $request->get('station');
         $defaultPtsId = $request->input('pts_id');
         $devices = $request->input('data', []);
 
@@ -1827,15 +1827,15 @@ class SyncController extends Controller
                     continue;
                 }
 
-//                if ($authorizedStation && $authorizedStation->pts_id !== $targetPtsId) {
-//                    $failed++;
-//                    $errors[] = [
-//                        'pts_id' => $targetPtsId,
-//                        'error' => 'PTS ID does not match the authenticated station',
-//                    ];
-//
-//                    continue;
-//                }
+                //                if ($authorizedStation && $authorizedStation->pts_id !== $targetPtsId) {
+                //                    $failed++;
+                //                    $errors[] = [
+                //                        'pts_id' => $targetPtsId,
+                //                        'error' => 'PTS ID does not match the authenticated station',
+                //                    ];
+                //
+                //                    continue;
+                //                }
 
                 $station = Station::where('pts_id', $targetPtsId)->first();
 
@@ -2161,6 +2161,148 @@ class SyncController extends Controller
             'bos_uuid' => $bosData['uuid'],
             'created_at_bos' => $bosData['created_at'] ?? null,
             'updated_at_bos' => $bosData['updated_at'] ?? null,
+        ];
+    }
+
+    /**
+     * Sync stations from BOS
+     */
+    public function syncStations(Request $request): JsonResponse
+    {
+        $station = $request->get('station');
+        $ptsId = $request->input('pts_id');
+        $stations = $request->input('data', []);
+
+        $created = 0;
+        $updated = 0;
+        $failed = 0;
+        $errors = [];
+
+        DB::beginTransaction();
+
+        try {
+            foreach ($stations as $stationData) {
+                try {
+                    // Create sync log entry
+                    $syncLog = SyncLog::createLog(
+                        $station->id,
+                        'stations',
+                        'create',
+                        $stationData,
+                        'pending'
+                    );
+
+                    // Prepare station data for HOS
+                    $hosStationData = $this->prepareStationData($stationData);
+
+                    // Use updateOrCreate to handle duplicates based on pts_id
+                    $syncedStation = Station::updateOrCreate(
+                        [
+                            'pts_id' => $stationData['pts_id'] ?? $ptsId,
+                        ],
+                        $hosStationData
+                    );
+
+                    // Mark sync log as successful
+                    $syncLog->markAsSuccessful([
+                        'station_id' => $syncedStation->id,
+                        'action' => $syncedStation->wasRecentlyCreated ? 'created' : 'updated',
+                    ]);
+
+                    if ($syncedStation->wasRecentlyCreated) {
+                        $created++;
+                    } else {
+                        $updated++;
+                    }
+                } catch (\Exception $e) {
+                    $failed++;
+                    $errors[] = [
+                        'station_id' => $stationData['id'] ?? 'unknown',
+                        'error' => $e->getMessage(),
+                    ];
+
+                    // Mark sync log as failed
+                    if (isset($syncLog)) {
+                        $syncLog->markAsFailed($e->getMessage());
+                    }
+
+                    Log::error('Failed to sync station', [
+                        'station_id' => $station->id,
+                        'pts_id' => $ptsId,
+                        'station_data' => $stationData,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            // Update station's last sync time
+            $station->updateLastSync();
+
+            DB::commit();
+
+            $totalItems = $created + $updated + $failed;
+            $allFailed = $totalItems > 0 && $failed === $totalItems;
+
+            return response()->json([
+                'success' => !$allFailed,
+                'message' => $allFailed
+                    ? "All {$failed} stations failed to sync"
+                    : "Synced {$created} created, {$updated} updated, {$failed} failed stations",
+                'data' => [
+                    'created' => $created,
+                    'updated' => $updated,
+                    'failed' => $failed,
+                    'errors' => $errors,
+                ],
+            ], $allFailed ? 422 : 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Sync stations failed', [
+                'station_id' => $station->id,
+                'pts_id' => $ptsId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Sync operation failed: ' . $e->getMessage(),
+                'data' => [
+                    'created' => $created,
+                    'updated' => $updated,
+                    'failed' => $failed,
+                    'errors' => $errors,
+                ],
+            ], 500);
+        }
+    }
+
+    /**
+     * Prepare station data for HOS storage
+     */
+    private function prepareStationData(array $bosData): array
+    {
+        return [
+            'site_id' => $bosData['site_id'] ?? null,
+            'site_name' => $bosData['site_name'],
+            'type' => $bosData['type'] ?? null,
+            'dealer' => $bosData['dealer'] ?? null,
+            'mobile' => $bosData['mobile'] ?? null,
+            'eod' => $bosData['eod'] ?? null,
+            'country' => $bosData['country'] ?? null,
+            'region' => $bosData['region'] ?? null,
+            'city' => $bosData['city'] ?? null,
+            'district' => $bosData['district'] ?? null,
+            'street' => $bosData['street'] ?? null,
+            'building_number' => $bosData['building_number'] ?? null,
+            'postal_code' => $bosData['postal_code'] ?? null,
+            'address' => $bosData['address'] ?? null,
+            'phone' => $bosData['phone'] ?? null,
+            'email' => $bosData['email'] ?? null,
+            'notes' => $bosData['notes'] ?? null,
+            'is_active' => $bosData['is_active'] ?? true,
+            'last_updated' => $bosData['last_updated'] ?? null,
+            'pts_id' => $bosData['pts_id'],
         ];
     }
 }
