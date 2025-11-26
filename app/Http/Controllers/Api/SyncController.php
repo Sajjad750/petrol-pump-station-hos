@@ -1787,6 +1787,7 @@ class SyncController extends Controller
      */
     public function syncPts2Devices(Request $request): JsonResponse
     {
+        Log::debug("syncPts2Devices: ",(array)$request->all());
         $request->validate([
             'pts_id' => 'required|string|max:255',
             'data' => 'required|array|min:1',
