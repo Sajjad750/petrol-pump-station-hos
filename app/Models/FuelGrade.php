@@ -6,10 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class FuelGrade extends Model
 {
     use HasFactory;
+    use SoftDeletes;
 
     protected $guarded = [];
 
@@ -21,6 +23,7 @@ class FuelGrade extends Model
         'synced_at' => 'datetime',
         'created_at_bos' => 'datetime',
         'updated_at_bos' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     /**

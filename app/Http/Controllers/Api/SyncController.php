@@ -825,6 +825,7 @@ class SyncController extends Controller
             'blend_tank1_id' => $bosData['blend_tank1_id'] ?? null,
             'blend_tank1_percentage' => $bosData['blend_tank1_percentage'] ?? null,
             'blend_tank2_id' => $bosData['blend_tank2_id'] ?? null,
+            'deleted_at' => $bosData['deleted_at'] ?? null,
             'station_id' => $stationId,
             'bos_fuel_grade_id' => $bosData['id'],
             'bos_uuid' => $bosData['uuid'],
