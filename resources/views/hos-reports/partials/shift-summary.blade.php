@@ -632,11 +632,7 @@
                 window.open(baseUrl + '?' + queryString + 'tab=shift-summary', '_blank');
             });
 
-            // Auto-filter on dropdown change
-            $('#shift_summary_station_id').on('change', function() {
-                loadShiftSummary();
-            });
-
+            // View mode change - only update UI visibility, don't trigger AJAX
             $('#shift_summary_view_mode').on('change', function() {
                 var selectedMode = $(this).val();
                 if (selectedMode === 'summary') {
@@ -645,7 +641,6 @@
                     $('#combined-summary-section').hide();
                     clearCombinedSummaryTables();
                 }
-                loadShiftSummary();
             });
 
             function resetTimeDropdowns() {
@@ -729,11 +724,6 @@
                         }
 
                         updateShiftIdFields();
-
-                        // When both dates are selected and auto times chosen, ensure filters can run without manual change
-                        if (startTimes.length > 0 && endTimes.length > 0 && $('#shift_summary_view_mode').val() === 'summary') {
-                            loadShiftSummary();
-                        }
                     }
                 });
             }
@@ -750,15 +740,9 @@
                 updateShiftIdFields();
             })();
 
-            // Trigger data load only when both times selected (or both empty = all day)
+            // Update shift ID fields when times change (no AJAX call)
             $('#shift_summary_from_time, #shift_summary_to_time').on('change', function() {
-                var fromT = $('#shift_summary_from_time').val();
-                var toT = $('#shift_summary_to_time').val();
                 updateShiftIdFields();
-                // If either is empty, wait for user to complete selection
-                if (fromT === '' || toT === '') { return; }
-                try { console.log('[Shift Summary] Time changed: ' + JSON.stringify({ from_time: fromT, to_time: toT })); } catch (e) {}
-                loadShiftSummary();
             });
 
             function updateShiftIdFields() {
