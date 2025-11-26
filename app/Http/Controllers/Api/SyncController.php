@@ -713,7 +713,7 @@ class SyncController extends Controller
                     $hosFuelGradeData = $this->prepareFuelGradeData($fuelGradeData, $station->id);
 
                     // Use updateOrCreate to handle duplicates
-                    $fuelGrade = FuelGrade::updateOrCreate(
+                    $fuelGrade = FuelGrade::withTrashed()->updateOrCreate(
                         [
                             'station_id' => $station->id,
                             'bos_fuel_grade_id' => $fuelGradeData['id'],
