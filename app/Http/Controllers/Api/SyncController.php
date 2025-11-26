@@ -2301,8 +2301,7 @@ class SyncController extends Controller
             'email' => $bosData['email'] ?? null,
             'notes' => $bosData['notes'] ?? null,
             'is_active' => $bosData['is_active'] ?? true,
-            'last_updated' => $bosData['last_updated'] ?? null,
-            'pts_id' => $bosData['pts_id'],
+            'last_updated' => $bosData['last_updated'] ?? null
         ];
     }
 }
