@@ -127,6 +127,51 @@ it('can handle duplicate fuel grades by updating existing record', function () {
     expect($existingFuelGrade->blend_tank1_percentage)->toBe(75);
 });
 
+it('syncs deleted_at from BOS when fuel grade is deleted', function () {
+    $deletedAt = '2024-02-01 12:00:00';
+
+    $fuelGradeData = [
+        'id' => 999,
+        'uuid' => '550e8400-e29b-41d4-a716-446655440099',
+        'pts_fuel_grade_id' => 'FG-DEL',
+        'name' => 'Deleted Grade',
+        'price' => 3.10,
+        'scheduled_price' => null,
+        'scheduled_at' => null,
+        'expansion_coefficient' => null,
+        'blend_tank1_id' => null,
+        'blend_tank1_percentage' => null,
+        'blend_tank2_id' => null,
+        'deleted_at' => $deletedAt,
+        'created_at' => '2024-01-01 10:00:00',
+        'updated_at' => '2024-01-31 10:00:00',
+    ];
+
+    $response = $this->postJson('/api/sync/fuel-grades', [
+        'pts_id' => 'TEST001',
+        'data' => [$fuelGradeData],
+    ], [
+        'Authorization' => 'Bearer test-api-key-123',
+    ]);
+
+    $response->assertSuccessful();
+
+    // Record should exist in DB with matching deleted_at (soft-deleted locally)
+    $this->assertDatabaseHas('fuel_grades', [
+        'station_id' => $this->station->id,
+        'bos_fuel_grade_id' => 999,
+        'name' => 'Deleted Grade',
+    ]);
+
+    $fuelGrade = FuelGrade::withTrashed()
+        ->where('station_id', $this->station->id)
+        ->where('bos_fuel_grade_id', 999)
+        ->first();
+
+    expect($fuelGrade)->not->toBeNull();
+    expect($fuelGrade->deleted_at?->format('Y-m-d H:i:s'))->toBe($deletedAt);
+});
+
 it('can handle blended fuel grades', function () {
     $blendedFuelGradeData = [
         'id' => 12345,

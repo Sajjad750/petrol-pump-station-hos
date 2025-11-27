@@ -14,12 +14,12 @@ class GenerateApiKeyForTestSiteSeeder extends Seeder
     public function run(): void
     {
         Artisan::call('hos:generate-api-key', [
-            'pts_id' => '003300413033511437393538',
+            'pts_id' => '0030003E3033511437393538',
             '--site-name' => 'Test Site',
             '--show-key' => true,
         ]);
 
-        $station = Station::wherePtsId('003300413033511437393538')->first();
+        $station = Station::wherePtsId('0030003E3033511437393538')->first();
         $this->command->line("API Key: {$station->api_key}");
     }
 }
