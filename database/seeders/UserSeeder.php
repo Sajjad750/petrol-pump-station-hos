@@ -19,7 +19,16 @@ class UserSeeder extends Seeder
             ['email' => 'user@hos.com'],
             [
                 'name' => 'Test User',
-                'password' => Hash::make('user'),
+                'password' => Hash::make('Crover$20004026'),
+                'role_id' => $role->id ?? null,
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'admin@autostation.com.sa'],
+            [
+                'name' => 'Admin HOS',
+                'password' => Hash::make('Crover$20004026'),
                 'role_id' => $role->id ?? null,
             ]
         );
