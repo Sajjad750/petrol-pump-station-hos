@@ -25,9 +25,62 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
+use Illuminate\Database\QueryException;
 
 class SyncController extends Controller
 {
+    /**
+     * Maximum retry attempts for deadlock errors
+     */
+    protected const MAX_DEADLOCK_RETRIES = 3;
+
+    /**
+     * Retry delay in microseconds (100ms = 100000 microseconds)
+     */
+    protected const DEADLOCK_RETRY_DELAY = 100000;
+
+    /**
+     * Execute a database operation with deadlock retry logic
+     */
+    protected function executeWithDeadlockRetry(callable $callback, int $maxRetries = self::MAX_DEADLOCK_RETRIES)
+    {
+        $attempts = 0;
+
+        while ($attempts < $maxRetries) {
+            try {
+                return DB::transaction($callback);
+            } catch (QueryException $e) {
+                // Check if it's a deadlock error (MySQL error code 1213)
+                if ($e->getCode() === '40001' || str_contains($e->getMessage(), 'Deadlock') || str_contains($e->getMessage(), '1213')) {
+                    $attempts++;
+
+                    if ($attempts >= $maxRetries) {
+                        Log::warning('Deadlock retry limit reached', [
+                            'attempts' => $attempts,
+                            'error' => $e->getMessage(),
+                        ]);
+
+                        throw $e;
+                    }
+
+                    // Exponential backoff: wait longer on each retry
+                    $delay = self::DEADLOCK_RETRY_DELAY * $attempts;
+                    usleep($delay);
+
+                    Log::info('Retrying after deadlock', [
+                        'attempt' => $attempts,
+                        'delay_microseconds' => $delay,
+                    ]);
+
+                    continue;
+                }
+
+                // Not a deadlock, rethrow
+                throw $e;
+            }
+        }
+    }
+
     /**
      * Sync pump transactions from BOS
      */
@@ -42,45 +95,46 @@ class SyncController extends Controller
         $failed = 0;
         $errors = [];
 
-        DB::beginTransaction();
-
         try {
+            // Process each transaction in its own transaction to reduce lock contention
             foreach ($transactions as $transactionData) {
                 try {
-                    // Create sync log entry
-                    $syncLog = SyncLog::createLog(
-                        $station->id,
-                        'pump_transactions',
-                        'create',
-                        $transactionData,
-                        'pending'
-                    );
+                    $this->executeWithDeadlockRetry(function () use ($transactionData, $station, $ptsId, &$created, &$updated, &$failed, &$errors) {
+                        // Create sync log entry
+                        $syncLog = SyncLog::createLog(
+                            $station->id,
+                            'pump_transactions',
+                            'create',
+                            $transactionData,
+                            'pending'
+                        );
 
-                    // Prepare transaction data for HOS
-                    $hosTransactionData = $this->prepareTransactionData($transactionData, $station->id);
+                        // Prepare transaction data for HOS
+                        $hosTransactionData = $this->prepareTransactionData($transactionData, $station->id);
 
-                    // Use updateOrCreate to handle duplicates
-                    $transaction = PumpTransaction::updateOrCreate(
-                        [
-                            'station_id' => $station->id,
-                            'bos_transaction_id' => $transactionData['id'],
-                        ],
-                        array_merge($hosTransactionData, [
-                            'synced_at' => now(),
-                        ])
-                    );
+                        // Use updateOrCreate to handle duplicates
+                        $transaction = PumpTransaction::updateOrCreate(
+                            [
+                                'station_id' => $station->id,
+                                'bos_transaction_id' => $transactionData['id'],
+                            ],
+                            array_merge($hosTransactionData, [
+                                'synced_at' => now(),
+                            ])
+                        );
 
-                    // Mark sync log as successful
-                    $syncLog->markAsSuccessful([
-                        'transaction_id' => $transaction->id,
-                        'action' => $transaction->wasRecentlyCreated ? 'created' : 'updated',
-                    ]);
+                        // Mark sync log as successful
+                        $syncLog->markAsSuccessful([
+                            'transaction_id' => $transaction->id,
+                            'action' => $transaction->wasRecentlyCreated ? 'created' : 'updated',
+                        ]);
 
-                    if ($transaction->wasRecentlyCreated) {
-                        $created++;
-                    } else {
-                        $updated++;
-                    }
+                        if ($transaction->wasRecentlyCreated) {
+                            $created++;
+                        } else {
+                            $updated++;
+                        }
+                    });
                 } catch (\Exception $e) {
                     $failed++;
                     $errors[] = [
@@ -88,9 +142,21 @@ class SyncController extends Controller
                         'error' => $e->getMessage(),
                     ];
 
-                    // Mark sync log as failed
-                    if (isset($syncLog)) {
+                    // Mark sync log as failed (outside transaction to avoid deadlock)
+                    try {
+                        $syncLog = SyncLog::createLog(
+                            $station->id,
+                            'pump_transactions',
+                            'create',
+                            $transactionData,
+                            'pending'
+                        );
                         $syncLog->markAsFailed($e->getMessage());
+                    } catch (\Exception $logException) {
+                        // Ignore log errors to prevent cascading failures
+                        Log::warning('Failed to create sync log', [
+                            'error' => $logException->getMessage(),
+                        ]);
                     }
 
                     Log::error('Failed to sync pump transaction', [
@@ -102,10 +168,15 @@ class SyncController extends Controller
                 }
             }
 
-            // Update station's last sync time
-            $station->updateLastSync();
-
-            DB::commit();
+            // Update station's last sync time (in separate transaction)
+            try {
+                $station->updateLastSync();
+            } catch (\Exception $e) {
+                Log::warning('Failed to update station last sync time', [
+                    'station_id' => $station->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
 
             $totalItems = $created + $updated + $failed;
             $allFailed = $totalItems > 0 && $failed === $totalItems;
@@ -123,8 +194,6 @@ class SyncController extends Controller
                 ],
             ], $allFailed ? 422 : 200);
         } catch (\Exception $e) {
-            DB::rollBack();
-
             Log::error('Sync pump transactions failed', [
                 'station_id' => $station->id,
                 'pts_id' => $ptsId,
@@ -2192,8 +2261,8 @@ class SyncController extends Controller
                         'pending'
                     );
 
-                    // Prepare station data for HOS
-                    $hosStationData = $this->prepareStationData($stationData);
+                    // Prepare station data for HOS (pass pts_id from request, not from data)
+                    $hosStationData = $this->prepareStationData($stationData, $ptsId);
 
                     // Use updateOrCreate to handle duplicates based on pts_id
                     $syncedStation = Station::updateOrCreate(
@@ -2280,7 +2349,7 @@ class SyncController extends Controller
     /**
      * Prepare station data for HOS storage
      */
-    private function prepareStationData(array $bosData): array
+    private function prepareStationData(array $bosData, string $ptsId): array
     {
         return [
             'site_id' => $bosData['site_id'] ?? null,
@@ -2301,7 +2370,8 @@ class SyncController extends Controller
             'email' => $bosData['email'] ?? null,
             'notes' => $bosData['notes'] ?? null,
             'is_active' => $bosData['is_active'] ?? true,
-            'last_updated' => $bosData['last_updated'] ?? null
+            'last_updated' => $bosData['last_updated'] ?? null,
+            'pts_id' => $ptsId,
         ];
     }
 }
