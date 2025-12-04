@@ -84,99 +84,100 @@
         <div class="card-header custom-card-header">
             <h6 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-table"></i> Payment Mode Wise Summary</h6>
         </div>
-    <div class="card-body" style="padding: 0;">
-        <div class="table-responsive">
-            <table id="payment-mode-summary-table" class="table">
-                <thead>
-                    <tr>
-                        <th>MOP</th>
-                        <th class="text-left">Volume (L)</th>
-                        <th class="text-left">Amount (SAR)</th>
-                    </tr>
-                </thead>
-                <tbody id="payment-mode-summary-tbody">
-                    <tr>
-                        <td colspan="3" class="text-center">No data available. Please apply filters.</td>
-                    </tr>
-                </tbody>
-                <tfoot id="payment-mode-summary-tfoot" style="display: none;">
-                    <tr style="background-color: #f5f5f5; font-weight: bold;">
-                        <td>Total</td>
-                        <td class="text-left" id="payment-mode-total-volume">0.00</td>
-                        <td class="text-left" id="payment-mode-total-amount">0.00</td>
-                    </tr>
-                </tfoot>
-            </table>
+        <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+                <table id="payment-mode-summary-table" class="table">
+                    <thead>
+                        <tr>
+                            <th>MOP</th>
+                            <th class="text-left">Volume (L)</th>
+                            <th class="text-left">Amount (SAR)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="payment-mode-summary-tbody">
+                        <tr>
+                            <td colspan="3" class="text-center">No data available. Please apply filters.</td>
+                        </tr>
+                    </tbody>
+                    <tfoot id="payment-mode-summary-tfoot" style="display: none;">
+                        <tr style="background-color: #f5f5f5; font-weight: bold;">
+                            <td>Total</td>
+                            <td class="text-left" id="payment-mode-total-volume">0.00</td>
+                            <td class="text-left" id="payment-mode-total-amount">0.00</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Product Wise Summary Table -->
-<div class="card custom-card mb-3">
-    <div class="card-header custom-card-header">
-        <h6 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-table"></i> Product Wise Summary</h6>
-    </div>
-    <div class="card-body" style="padding: 0;">
-        <div class="table-responsive">
-            <table id="product-summary-table" class="table">
-                <thead>
-                    <tr>
-                        <th>Product</th>
-                        <th class="text-left">TXN Volume</th>
-                        <th class="text-left">Amount (SAR)</th>
-                    </tr>
-                </thead>
-                <tbody id="product-summary-tbody">
-                    <tr>
-                        <td colspan="3" class="text-center">No data available. Please apply filters.</td>
-                    </tr>
-                </tbody>
-                <tfoot id="product-summary-tfoot" style="display: none;">
-                    <tr style="background-color: #f5f5f5; font-weight: bold;">
-                        <td>Total</td>
-                        <td class="text-left" id="product-total-volume">0.00</td>
-                        <td class="text-left" id="product-total-amount">0.00</td>
-                    </tr>
-                </tfoot>
-            </table>
+    <!-- Product Wise Summary Table -->
+    <div class="card custom-card mb-3">
+        <div class="card-header custom-card-header">
+            <h6 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-table"></i> Product Wise Summary</h6>
+        </div>
+        <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+                <table id="product-summary-table" class="table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th class="text-left">TXN Volume</th>
+                            <th class="text-left">Amount (SAR)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="product-summary-tbody">
+                        <tr>
+                            <td colspan="3" class="text-center">No data available. Please apply filters.</td>
+                        </tr>
+                    </tbody>
+                    <tfoot id="product-summary-tfoot" style="display: none;">
+                        <tr style="background-color: #f5f5f5; font-weight: bold;">
+                            <td>Total</td>
+                            <td class="text-left" id="product-total-volume">0.00</td>
+                            <td class="text-left" id="product-total-amount">0.00</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Pump Wise Summary Table -->
-<div class="card custom-card mb-3">
-    <div class="card-header custom-card-header">
-        <h6 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-table"></i> Pump Wise Summary</h6>
-    </div>
-    <div class="card-body" style="padding: 0;">
-        <div class="table-responsive">
-            <table id="pump-summary-table" class="table">
-                <thead>
-                    <tr>
-                        <th>Product</th>
-                        <th class="text-center">Pump No</th>
-                        <th class="text-center">Nozzle No</th>
-                        <th class="text-left">Start Totalizer</th>
-                        <th class="text-left">End Totalizer</th>
-                        <th class="text-left">Totalizer Volume</th>
-                        <th class="text-left">TXN Volume</th>
-                        <th class="text-left">Amount (SAR)</th>
-                    </tr>
-                </thead>
-                <tbody id="pump-summary-tbody">
-                    <tr>
-                        <td colspan="8" class="text-center">No data available. Please apply filters.</td>
-                    </tr>
-                </tbody>
-                <tfoot id="pump-summary-tfoot" style="display: none;">
-                    <tr style="background-color: #f5f5f5; font-weight: bold;">
-                        <td colspan="5" class="text-left">Total</td>
-                        <td class="text-left" id="pump-total-totalizer-volume">0.000</td>
-                        <td class="text-left" id="pump-total-txn-volume">0.00</td>
-                        <td class="text-left" id="pump-total-amount">0.00</td>
-                    </tr>
-                </tfoot>
-            </table>
+    <!-- Pump Wise Summary Table -->
+    <div class="card custom-card mb-3">
+        <div class="card-header custom-card-header">
+            <h6 class="mb-0" style="color: #D7D7D7;"><i class="fas fa-table"></i> Pump Wise Summary</h6>
+        </div>
+        <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+                <table id="pump-summary-table" class="table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th class="text-center">Pump No</th>
+                            <th class="text-center">Nozzle No</th>
+                            <th class="text-left">Start Totalizer</th>
+                            <th class="text-left">End Totalizer</th>
+                            <th class="text-left">Totalizer Volume</th>
+                            <th class="text-left">TXN Volume</th>
+                            <th class="text-left">Amount (SAR)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pump-summary-tbody">
+                        <tr>
+                            <td colspan="8" class="text-center">No data available. Please apply filters.</td>
+                        </tr>
+                    </tbody>
+                    <tfoot id="pump-summary-tfoot" style="display: none;">
+                        <tr style="background-color: #f5f5f5; font-weight: bold;">
+                            <td colspan="5" class="text-left">Total</td>
+                            <td class="text-left" id="pump-total-totalizer-volume">0.000</td>
+                            <td class="text-left" id="pump-total-txn-volume">0.00</td>
+                            <td class="text-left" id="pump-total-amount">0.00</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -632,22 +633,6 @@
                 window.open(baseUrl + '?' + queryString + 'tab=shift-summary', '_blank');
             });
 
-            // Auto-filter on dropdown change
-            $('#shift_summary_station_id').on('change', function() {
-                loadShiftSummary();
-            });
-
-            $('#shift_summary_view_mode').on('change', function() {
-                var selectedMode = $(this).val();
-                if (selectedMode === 'summary') {
-                    $('#combined-summary-section').show();
-                } else {
-                    $('#combined-summary-section').hide();
-                    clearCombinedSummaryTables();
-                }
-                loadShiftSummary();
-            });
-
             function resetTimeDropdowns() {
                 $('#shift_summary_from_time').html('<option value="">All Start Times</option>');
                 $('#shift_summary_to_time').html('<option value="">All End Times</option>');
@@ -729,11 +714,6 @@
                         }
 
                         updateShiftIdFields();
-
-                        // When both dates are selected and auto times chosen, ensure filters can run without manual change
-                        if (startTimes.length > 0 && endTimes.length > 0 && $('#shift_summary_view_mode').val() === 'summary') {
-                            loadShiftSummary();
-                        }
                     }
                 });
             }
@@ -750,15 +730,9 @@
                 updateShiftIdFields();
             })();
 
-            // Trigger data load only when both times selected (or both empty = all day)
+            // Update shift ID fields when times change (no AJAX call)
             $('#shift_summary_from_time, #shift_summary_to_time').on('change', function() {
-                var fromT = $('#shift_summary_from_time').val();
-                var toT = $('#shift_summary_to_time').val();
                 updateShiftIdFields();
-                // If either is empty, wait for user to complete selection
-                if (fromT === '' || toT === '') { return; }
-                try { console.log('[Shift Summary] Time changed: ' + JSON.stringify({ from_time: fromT, to_time: toT })); } catch (e) {}
-                loadShiftSummary();
             });
 
             function updateShiftIdFields() {
