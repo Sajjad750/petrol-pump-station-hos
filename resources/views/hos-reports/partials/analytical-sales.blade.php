@@ -55,6 +55,12 @@
                     <button type="button" id="analytical-sales-reset-btn" class="btn btn-dark">
                         <i class="fas fa-redo"></i> Reset
                     </button>
+                    <button type="button" id="analytical-sales-export-csv-btn" class="btn btn-dark">
+                        <i class="fas fa-file-csv"></i> Export CSV
+                    </button>
+                    <button type="button" id="analytical-sales-export-pdf-btn" class="btn btn-dark">
+                        <i class="fas fa-file-pdf"></i> Export PDF
+                    </button>
                 </div>
             </div>
         </form>
@@ -108,11 +114,15 @@ $(document).ready(function() {
         method: 'GET',
         success: function(response) {
             if (response.stations) {
+                var $select = $('#analytical_sales_station_id');
+                var firstOption = $select.find('option').first();
+                var optionsHtml = firstOption.length ? firstOption.prop('outerHTML') : '<option value="">All Stations</option>';
+
                 response.stations.forEach(function(station) {
-                    $('#analytical_sales_station_id').append(
-                        $('<option></option>').val(station.id).text(station.site_name)
-                    );
+                    optionsHtml += '<option value="' + station.id + '">' + station.site_name + '</option>';
                 });
+
+                $select.html(optionsHtml);
             }
         }
     });
@@ -123,11 +133,15 @@ $(document).ready(function() {
         method: 'GET',
         success: function(response) {
             if (response.fuel_grades) {
+                var $select = $('#analytical_sales_product_id');
+                var firstOption = $select.find('option').first();
+                var optionsHtml = firstOption.length ? firstOption.prop('outerHTML') : '<option value="">All Products</option>';
+
                 response.fuel_grades.forEach(function(fuelGrade) {
-                    $('#analytical_sales_product_id').append(
-                        $('<option></option>').val(fuelGrade.id).text(fuelGrade.name)
-                    );
+                    optionsHtml += '<option value="' + fuelGrade.id + '">' + fuelGrade.name + '</option>';
                 });
+
+                $select.html(optionsHtml);
             }
         }
     });
@@ -215,6 +229,34 @@ $(document).ready(function() {
     // Auto-filter on dropdown change
     $('#analytical_sales_station_id, #analytical_sales_product_id').on('change', function() {
         loadAnalyticalSales();
+    });
+
+    // Export to CSV
+    $('#analytical-sales-export-csv-btn').on('click', function() {
+        const filters = {
+            station_id: $('#analytical_sales_station_id').val(),
+            from_date: $('#analytical_sales_from_date').val(),
+            to_date: $('#analytical_sales_to_date').val(),
+            from_time: $('#analytical_sales_from_time').val(),
+            to_time: $('#analytical_sales_to_time').val(),
+            product_id: $('#analytical_sales_product_id').val()
+        };
+        const queryString = $.param(filters);
+        window.location.href = '{{ route('hos-reports.analytical-sales.export.csv') }}?' + queryString;
+    });
+
+    // Export to PDF
+    $('#analytical-sales-export-pdf-btn').on('click', function() {
+        const filters = {
+            station_id: $('#analytical_sales_station_id').val(),
+            from_date: $('#analytical_sales_from_date').val(),
+            to_date: $('#analytical_sales_to_date').val(),
+            from_time: $('#analytical_sales_from_time').val(),
+            to_time: $('#analytical_sales_to_time').val(),
+            product_id: $('#analytical_sales_product_id').val()
+        };
+        const queryString = $.param(filters);
+        window.location.href = '{{ route('hos-reports.analytical-sales.export.pdf') }}?' + queryString;
     });
 });
 </script>
