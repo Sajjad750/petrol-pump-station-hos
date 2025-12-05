@@ -8,6 +8,10 @@ Route::get('/', [\App\Http\Controllers\DashboardController::class, 'index'])->mi
 Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/dashboard/station/{id}', [\App\Http\Controllers\DashboardController::class, 'getStationDetails'])->middleware(['auth'])->name('dashboard.station.details');
+Route::get('/dashboard/live-activity', [\App\Http\Controllers\DashboardController::class, 'getLiveActivity'])->middleware(['auth'])->name('dashboard.live-activity');
+Route::get('/dashboard/product-sales', [\App\Http\Controllers\DashboardController::class, 'getProductSales'])->middleware(['auth'])->name('dashboard.product-sales');
+Route::get('/dashboard/top-sites', [\App\Http\Controllers\DashboardController::class, 'getTopSites'])->middleware(['auth'])->name('dashboard.top-sites');
+Route::get('/dashboard/sales-summary', [\App\Http\Controllers\DashboardController::class, 'getSalesSummary'])->middleware(['auth'])->name('dashboard.sales-summary');
 
 Route::get('/operations-monitor', [\App\Http\Controllers\OperationsMonitorController::class, 'index'])->name('operations-monitor');
 
@@ -108,6 +112,7 @@ Route::middleware('auth')->group(function () {
     Route::get('hos-reports/stations', [\App\Http\Controllers\HosReportsController::class, 'getStations'])->name('hos-reports.stations');
     Route::get('hos-reports/fuel-grades', [\App\Http\Controllers\HosReportsController::class, 'getFuelGrades'])->name('hos-reports.fuel-grades');
     Route::get('hos-reports/transactions/data', [\App\Http\Controllers\HosReportsController::class, 'getTransactionsData'])->name('hos-reports.transactions.data');
+    Route::get('hos-reports/transactions/summary', [\App\Http\Controllers\HosReportsController::class, 'getTransactionSummary'])->name('hos-reports.transactions.summary');
     Route::get('hos-reports/sales', [\App\Http\Controllers\HosReportsController::class, 'sales'])->name('hos-reports.sales');
     Route::get('hos-reports/sales/export-excel', [\App\Http\Controllers\HosReportsController::class, 'exportSalesExcel'])->name('hos-reports.sales.export.excel');
     Route::get('hos-reports/sales/export-pdf', [\App\Http\Controllers\HosReportsController::class, 'exportSalesPdf'])->name('hos-reports.sales.export.pdf');

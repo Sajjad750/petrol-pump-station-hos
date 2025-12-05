@@ -705,20 +705,21 @@ body.dark-mode .small-box .small-box-footer:hover {
 
 .modern-card-header {
     background: transparent !important;
-    border-bottom: 1px solid #f0f0f0 !important;
+    border-bottom: 1px solid #E1E4ED !important;
     padding: 20px 20px 0 20px !important;
 }
 
 .modern-card-title {
-    font-family: 'DM Sans', sans-serif !important;
-    font-size: 18px !important;
-    font-weight: 600 !important;
-    color: #1f2937 !important;
+    font-family: 'Cal Sans', sans-serif !important;
+    font-size: 24px !important;
+    font-weight: 500 !important;
+    color: #101828 !important;
     margin: 0 !important;
+    padding: 0 0 30px 0 !important;
 }
 
 .modern-card-title i {
-    color: #6b7280 !important;
+    color: #101828 !important;
     margin-right: 8px !important;
 }
 
@@ -766,7 +767,7 @@ body.dark-mode .small-box .small-box-footer:hover {
     border-radius: 8px;
     padding: 12px 16px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e5e7eb;
+    border: 1px solid #E1E4ED;
 }
 
 .summary-item {
@@ -847,7 +848,7 @@ body.dark-mode .small-box .small-box-footer:hover {
     padding: 16px;
     background: #f8f9fa;
     border-radius: 8px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #E1E4ED;
     transition: all 0.3s ease;
 }
 
