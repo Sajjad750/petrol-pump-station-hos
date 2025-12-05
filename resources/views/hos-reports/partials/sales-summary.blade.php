@@ -72,9 +72,9 @@
                 <thead>
                     <tr>
                         <th>Sales Type</th>
-                        <th class="text-right">Volume (L)</th>
-                        <th class="text-right">Total Amount (SAR)</th>
-                        <th class="text-right">Sales Count</th>
+                        <th class="text-left">Volume (L)</th>
+                        <th class="text-left">Total Amount (SAR)</th>
+                        <th class="text-left">Sales Count</th>
                     </tr>
                 </thead>
                 <tbody id="sales-type-summary-tbody">
@@ -85,9 +85,9 @@
                 <tfoot id="sales-type-summary-tfoot" style="display: none;">
                     <tr style="background-color: #f5f5f5; font-weight: bold;">
                         <td>Total</td>
-                        <td class="text-right" id="sales-type-total-volume">0.00</td>
-                        <td class="text-right" id="sales-type-total-amount">0.00</td>
-                        <td class="text-right" id="sales-type-total-count">0</td>
+                        <td class="text-left" id="sales-type-total-volume">0.00</td>
+                        <td class="text-left" id="sales-type-total-amount">0.00</td>
+                        <td class="text-left" id="sales-type-total-count">0</td>
                     </tr>
                 </tfoot>
             </table>
@@ -106,26 +106,24 @@
                 <thead>
                     <tr>
                         <th>Product Name</th>
-                        <th class="text-right">Avg per Unit (SAR/L)</th>
-                        <th class="text-right">Volume (L)</th>
-                        <th class="text-right">Total Amount (SAR)</th>
-                        <th class="text-right">No. of Sales</th>
-                        <th class="text-right">Avg Sales Amount (SAR)</th>
+                        <th class="text-left">Volume (L)</th>
+                        <th class="text-left">Total Amount (SAR)</th>
+                        <th class="text-left">No. of Sales</th>
+                        <th class="text-left">Avg Sales Amount (SAR)</th>
                     </tr>
                 </thead>
                 <tbody id="product-summary-tbody">
                     <tr>
-                        <td colspan="6" class="text-center">No data available. Please apply filters.</td>
+                        <td colspan="5" class="text-center">No data available. Please apply filters.</td>
                     </tr>
                 </tbody>
                 <tfoot id="product-summary-tfoot" style="display: none;">
                     <tr style="background-color: #f5f5f5; font-weight: bold;">
                         <td>Total</td>
-                        <td class="text-right" id="product-total-avg-per-unit">0.00</td>
-                        <td class="text-right" id="product-total-volume">0.00</td>
-                        <td class="text-right" id="product-total-amount">0.00</td>
-                        <td class="text-right" id="product-total-count">0</td>
-                        <td class="text-right" id="product-total-avg-sales-amount">0.00</td>
+                        <td class="text-left" id="product-total-volume">0.00</td>
+                        <td class="text-left" id="product-total-amount">0.00</td>
+                        <td class="text-left" id="product-total-count">0</td>
+                        <td class="text-left" id="product-total-avg-sales-amount">0.00</td>
                     </tr>
                 </tfoot>
             </table>
@@ -144,9 +142,9 @@
                 <thead>
                     <tr>
                         <th>Attendant Name</th>
-                        <th class="text-right">Volume (L)</th>
-                        <th class="text-right">Total Amount (SAR)</th>
-                        <th class="text-right">Total Transactions</th>
+                        <th class="text-left">Volume (L)</th>
+                        <th class="text-left">Total Amount (SAR)</th>
+                        <th class="text-left">Total Transactions</th>
                     </tr>
                 </thead>
                 <tbody id="attendant-summary-tbody">
@@ -157,9 +155,9 @@
                 <tfoot id="attendant-summary-tfoot" style="display: none;">
                     <tr style="background-color: #f5f5f5; font-weight: bold;">
                         <td>Total</td>
-                        <td class="text-right" id="attendant-total-volume">0.00</td>
-                        <td class="text-right" id="attendant-total-amount">0.00</td>
-                        <td class="text-right" id="attendant-total-transactions">0</td>
+                        <td class="text-left" id="attendant-total-volume">0.00</td>
+                        <td class="text-left" id="attendant-total-amount">0.00</td>
+                        <td class="text-left" id="attendant-total-transactions">0</td>
                     </tr>
                 </tfoot>
             </table>
@@ -195,11 +193,39 @@ $(document).ready(function() {
         method: 'GET',
         success: function(response) {
             if (response.fuel_grades) {
+                var $select = $('#sales_summary_product_id');
+                
+                // Remove duplicates by name and keep only unique fuel grades
+                var uniqueFuelGrades = [];
+                var seenNames = {};
+                
                 response.fuel_grades.forEach(function(fuelGrade) {
-                    $('#sales_summary_product_id').append(
-                        $('<option></option>').val(fuelGrade.id).text(fuelGrade.name)
-                    );
+                    if (!seenNames[fuelGrade.name]) {
+                        seenNames[fuelGrade.name] = true;
+                        uniqueFuelGrades.push(fuelGrade);
+                    }
                 });
+                
+                // Sort fuel grades in the correct order
+                uniqueFuelGrades.sort(function(a, b) {
+                    var order = {
+                        'Gasoline91': 1,
+                        'Gasoline95': 2,
+                        'Gasoline98': 3,
+                        'Diesel': 4
+                    };
+                    var aOrder = order[a.name] || 999;
+                    var bOrder = order[b.name] || 999;
+                    return aOrder - bOrder;
+                });
+                
+                // Build options HTML
+                var optionsHtml = '<option value="">All Products</option>';
+                uniqueFuelGrades.forEach(function(fuelGrade) {
+                    optionsHtml += '<option value="' + fuelGrade.id + '">' + fuelGrade.name + '</option>';
+                });
+
+                $select.html(optionsHtml);
             }
         }
     });
@@ -214,9 +240,9 @@ $(document).ready(function() {
             data.forEach(function(item) {
                 const row = $('<tr>');
                 row.append($('<td>').text(item.sales_type || 'N/A'));
-                row.append($('<td>').addClass('text-right').text(parseFloat(item.volume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
-                row.append($('<td>').addClass('text-right').text(parseFloat(item.total_amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
-                row.append($('<td>').addClass('text-right').text(parseInt(item.sales_count || 0).toLocaleString()));
+                row.append($('<td>').addClass('text-left').text(parseFloat(item.volume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
+                row.append($('<td>').addClass('text-left').text(parseFloat(item.total_amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
+                row.append($('<td>').addClass('text-left').text(parseInt(item.sales_count || 0).toLocaleString()));
                 tbody.append(row);
             });
             tfoot.show();
@@ -229,6 +255,29 @@ $(document).ready(function() {
         }
     }
 
+    // Function to sort products in correct order: Gasoline91, Gasoline95, Gasoline98, Diesel
+    function sortProductsByOrder(data) {
+        var productOrder = {
+            'Gasoline91': 1,
+            'Gasoline95': 2,
+            'Gasoline98': 3,
+            'Diesel': 4
+        };
+        
+        return data.sort(function(a, b) {
+            var aName = (a.product_name || '').trim();
+            var bName = (b.product_name || '').trim();
+            var aOrder = productOrder[aName] || 999;
+            var bOrder = productOrder[bName] || 999;
+            
+            if (aOrder !== bOrder) {
+                return aOrder - bOrder;
+            }
+            
+            return aName.localeCompare(bName);
+        });
+    }
+
     // Function to render Product Wise Summary
     function renderProductSummary(data, totalVolume, totalAmount, totalCount) {
         const tbody = $('#product-summary-tbody');
@@ -236,29 +285,29 @@ $(document).ready(function() {
         tbody.empty();
         
         if (data && data.length > 0) {
-            data.forEach(function(item) {
+            // Sort products in correct order
+            var sortedData = sortProductsByOrder(data);
+            
+            sortedData.forEach(function(item) {
                 const row = $('<tr>');
                 row.append($('<td>').text(item.product_name || 'N/A'));
-                row.append($('<td>').addClass('text-right').text(parseFloat(item.avg_per_unit || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
-                row.append($('<td>').addClass('text-right').text(parseFloat(item.volume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
-                row.append($('<td>').addClass('text-right').text(parseFloat(item.total_amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
-                row.append($('<td>').addClass('text-right').text(parseInt(item.sales_count || 0).toLocaleString()));
-                row.append($('<td>').addClass('text-right').text(parseFloat(item.avg_sales_amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
+                row.append($('<td>').addClass('text-left').text(parseFloat(item.volume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
+                row.append($('<td>').addClass('text-left').text(parseFloat(item.total_amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
+                row.append($('<td>').addClass('text-left').text(parseInt(item.sales_count || 0).toLocaleString()));
+                row.append($('<td>').addClass('text-left').text(parseFloat(item.avg_sales_amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
                 tbody.append(row);
             });
             tfoot.show();
             
-            // Calculate overall averages
-            const overallAvgPerUnit = totalVolume > 0 ? totalAmount / totalVolume : 0;
+            // Calculate overall average sales amount
             const overallAvgSalesAmount = totalCount > 0 ? totalAmount / totalCount : 0;
             
-            $('#product-total-avg-per-unit').text(parseFloat(overallAvgPerUnit).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
             $('#product-total-volume').text(parseFloat(totalVolume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
             $('#product-total-amount').text(parseFloat(totalAmount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
             $('#product-total-count').text(parseInt(totalCount || 0).toLocaleString());
             $('#product-total-avg-sales-amount').text(parseFloat(overallAvgSalesAmount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
         } else {
-            tbody.append($('<tr>').append($('<td>').attr('colspan', 6).addClass('text-center').text('No data available')));
+            tbody.append($('<tr>').append($('<td>').attr('colspan', 5).addClass('text-center').text('No data available')));
             tfoot.hide();
         }
     }
@@ -273,9 +322,9 @@ $(document).ready(function() {
             data.forEach(function(item) {
                 const row = $('<tr>');
                 row.append($('<td>').text(item.attendant_name || 'N/A'));
-                row.append($('<td>').addClass('text-right').text(parseFloat(item.volume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
-                row.append($('<td>').addClass('text-right').text(parseFloat(item.total_amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
-                row.append($('<td>').addClass('text-right').text(parseInt(item.transactions_count || 0).toLocaleString()));
+                row.append($('<td>').addClass('text-left').text(parseFloat(item.volume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
+                row.append($('<td>').addClass('text-left').text(parseFloat(item.total_amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
+                row.append($('<td>').addClass('text-left').text(parseInt(item.transactions_count || 0).toLocaleString()));
                 tbody.append(row);
             });
             tfoot.show();

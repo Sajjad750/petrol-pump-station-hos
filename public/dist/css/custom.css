@@ -105,6 +105,71 @@ textarea {
     background-color: rgba(80, 81, 249, 0.8) !important;
 }
 
+/* COMPLETELY DISABLE SIDEBAR HOVER EXPANSION */
+/* Force sidebar to stay collapsed at all times - no hover effect */
+.sidebar-mini.sidebar-collapse .main-sidebar,
+.sidebar-mini.sidebar-collapse .main-sidebar:hover,
+.sidebar-mini.sidebar-collapse:hover .main-sidebar,
+body.sidebar-mini.sidebar-collapse .main-sidebar,
+body.sidebar-mini.sidebar-collapse .main-sidebar:hover,
+html body.sidebar-mini.sidebar-collapse .main-sidebar:hover {
+    width: 4.6rem !important;
+    max-width: 4.6rem !important;
+    min-width: 4.6rem !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    transition: none !important;
+}
+
+/* Force inner sidebar container to stay collapsed */
+.sidebar-mini.sidebar-collapse .sidebar,
+.sidebar-mini.sidebar-collapse .main-sidebar:hover .sidebar,
+.sidebar-mini.sidebar-collapse .main-sidebar .sidebar:hover {
+    width: 4.6rem !important;
+    overflow: hidden !important;
+}
+
+/* Hide ALL text in collapsed sidebar */
+.sidebar-mini.sidebar-collapse .main-sidebar .brand-text,
+.sidebar-mini.sidebar-collapse .main-sidebar:hover .brand-text,
+.sidebar-mini.sidebar-collapse .main-sidebar .nav-sidebar .nav-link p,
+.sidebar-mini.sidebar-collapse .main-sidebar:hover .nav-sidebar .nav-link p,
+.sidebar-mini.sidebar-collapse .main-sidebar .user-panel .info,
+.sidebar-mini.sidebar-collapse .main-sidebar:hover .user-panel .info,
+.sidebar-mini.sidebar-collapse .main-sidebar .nav-header,
+.sidebar-mini.sidebar-collapse .main-sidebar:hover .nav-header {
+    display: none !important;
+    width: 0 !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+/* Force nav-sidebar to stay at collapsed width */
+.sidebar-mini.sidebar-collapse .nav-sidebar,
+.sidebar-mini.sidebar-collapse .main-sidebar:hover .nav-sidebar {
+    width: 4.6rem !important;
+    max-width: 4.6rem !important;
+}
+
+/* Lock content wrapper margin - prevent ANY movement */
+.sidebar-mini.sidebar-collapse .content-wrapper,
+.sidebar-mini.sidebar-collapse .main-footer,
+.sidebar-mini.sidebar-collapse .main-header,
+.sidebar-mini.sidebar-collapse:hover .content-wrapper,
+.sidebar-mini.sidebar-collapse:hover .main-footer,
+.sidebar-mini.sidebar-collapse:hover .main-header,
+body.sidebar-mini.sidebar-collapse .content-wrapper,
+body.sidebar-mini.sidebar-collapse .main-footer,
+body.sidebar-mini.sidebar-collapse .main-header {
+    margin-left: 4.6rem !important;
+    transition: none !important;
+}
+
+/* Ensure icons stay centered when sidebar is collapsed */
+.sidebar-mini.sidebar-collapse .nav-link .nav-icon {
+    margin-right: 0 !important;
+}
+
 /* ============================================
    Button Styles
    ============================================ */
@@ -1938,18 +2003,3 @@ body.dark-mode .pumps-progress {
     padding: 20px;
     background: white;
 }
-// C
-}
-})
-// COMPR
-}
-})
-// COMPR
-}
-})
-// C
-}
-})
-// COMPR
-}
-})

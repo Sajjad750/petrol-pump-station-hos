@@ -127,6 +127,7 @@ Route::middleware('auth')->group(function () {
     Route::get('hos-reports/tank-monitoring', [\App\Http\Controllers\HosReportsController::class, 'getTankMonitoring'])->name('hos-reports.tank-monitoring');
     Route::get('hos-reports/tanks-from-measurements', [\App\Http\Controllers\HosReportsController::class, 'getTanksFromMeasurements'])->name('hos-reports.tanks-from-measurements');
     Route::get('hos-reports/export-excel', [\App\Http\Controllers\HosReportsController::class, 'exportExcel'])->name('hos-reports.export.excel');
+    Route::get('hos-reports/export-csv', [\App\Http\Controllers\HosReportsController::class, 'exportCsv'])->name('hos-reports.export.csv');
     Route::get('hos-reports/export-pdf', [\App\Http\Controllers\HosReportsController::class, 'exportPdf'])->name('hos-reports.export.pdf');
 });
 
