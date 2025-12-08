@@ -24,11 +24,11 @@ class PumpTransactionExport implements FromQuery, WithHeadings, WithMapping, Wit
     {
         $query = PumpTransaction::query()
             ->leftJoin('stations', 'pump_transactions.station_id', '=', 'stations.id')
-            ->leftJoin('fuel_grades', function ($join) {
-                $join->on(DB::raw('CAST(pump_transactions.pts_fuel_grade_id AS CHAR)'), '=', DB::raw('CAST(fuel_grades.pts_fuel_grade_id AS CHAR)'))
-                    ->on('pump_transactions.station_id', '=', 'fuel_grades.station_id');
-            })
-            ->select('pump_transactions.*', 'stations.site_name', 'fuel_grades.name as fuel_grade_name');
+            ->select(
+                'pump_transactions.*',
+                'stations.site_name',
+                DB::raw('(SELECT name FROM fuel_grades WHERE CAST(fuel_grades.pts_fuel_grade_id AS CHAR) = CAST(pump_transactions.pts_fuel_grade_id AS CHAR) AND fuel_grades.station_id = pump_transactions.station_id LIMIT 1) as fuel_grade_name')
+            );
 
         $fromDate = $this->filters['from_date'] ?? null;
         $toDate = $this->filters['to_date'] ?? null;
