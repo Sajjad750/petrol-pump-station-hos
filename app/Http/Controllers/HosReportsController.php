@@ -227,13 +227,13 @@ class HosReportsController extends Controller
             //            }
 
             return [
-                'site' => $transaction->station ? $transaction->station->site_name : '',
-                'site_ref' => $transaction->station ? ($transaction->station->pts_id ?? '') : '',
+                'site' => $transaction->site_name ?? '',
+                'site_ref' => $transaction->pts_id ?? '',
                 'transaction_id' => $transaction->transaction_number ?? '',
                 'date_time' => $transaction->date_time_start ? $transaction->date_time_start->format('Y-m-d H:i:s') : '',
                 'pump' => $transaction->pts_pump_id ?? '',
                 'nozzle' => $transaction->pts_nozzle_id ?? '',
-                'product' => $transaction->fuelGrade ? $transaction->fuelGrade->name : '',
+                'product' => $transaction->fuel_grade_name ?? '',
                 'unit_price' => $transaction->price ?? 0,
                 'litres' => $transaction->volume ?? 0,
                 'amount' => $transaction->amount ?? 0,
@@ -427,15 +427,15 @@ class HosReportsController extends Controller
 
     protected function baseTransactionsQuery(bool $withJoins = true): Builder
     {
-        $query = PumpTransaction::query()->with(['station', 'fuelGrade']);
+        $query = PumpTransaction::query();
 
         if ($withJoins) {
             $query->leftJoin('stations', 'pump_transactions.station_id', '=', 'stations.id')
                 ->leftJoin('fuel_grades', function ($join) {
-                    $join->on('pump_transactions.pts_fuel_grade_id', '=', 'fuel_grades.id')
+                    $join->on(DB::raw('CAST(pump_transactions.pts_fuel_grade_id AS CHAR)'), '=', DB::raw('CAST(fuel_grades.pts_fuel_grade_id AS CHAR)'))
                         ->on('pump_transactions.station_id', '=', 'fuel_grades.station_id');
                 })
-                ->select('pump_transactions.*');
+                ->select('pump_transactions.*', 'stations.site_name', 'stations.pts_id', 'fuel_grades.name as fuel_grade_name');
         }
 
         return $query;
