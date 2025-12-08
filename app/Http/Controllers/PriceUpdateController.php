@@ -18,10 +18,17 @@ class PriceUpdateController extends Controller
      */
     public function index(Request $request): View
     {
-        // Get distinct fuel grade names grouped by name
+        // Get distinct fuel grade names grouped by name with custom ordering
         $fuel_grades = FuelGrade::query()
             ->select('name')
             ->distinct()
+            ->orderByRaw("CASE 
+                WHEN LOWER(name) LIKE '%gasoline 91%' OR LOWER(name) LIKE '%gasoline91%' THEN 1
+                WHEN LOWER(name) LIKE '%gasoline 95%' OR LOWER(name) LIKE '%gasoline95%' THEN 2
+                WHEN LOWER(name) LIKE '%gasoline 98%' OR LOWER(name) LIKE '%gasoline98%' THEN 3
+                WHEN LOWER(name) LIKE '%diesel%' THEN 4
+                ELSE 5
+            END")
             ->orderBy('name')
             ->pluck('name');
 
