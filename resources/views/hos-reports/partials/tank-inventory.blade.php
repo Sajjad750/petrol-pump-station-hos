@@ -454,11 +454,15 @@
                 method: 'GET',
                 success: function(response) {
                     if (response.fuel_grades) {
+                        var $select = $('#inventory_fuel_grade_id');
+                        var firstOption = $select.find('option').first();
+                        var optionsHtml = firstOption.length ? firstOption.prop('outerHTML') : '<option value="">All Products</option>';
+
                         response.fuel_grades.forEach(function(grade) {
-                            $('#inventory_fuel_grade_id').append(
-                                $('<option></option>').val(grade.id).text(grade.name)
-                            );
+                            optionsHtml += '<option value="' + grade.id + '">' + grade.name + '</option>';
                         });
+
+                        $select.html(optionsHtml);
                     }
                 }
             });

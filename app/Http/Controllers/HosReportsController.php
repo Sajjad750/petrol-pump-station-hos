@@ -68,8 +68,22 @@ class HosReportsController extends Controller
      */
     public function getFuelGrades()
     {
+        $fuelGrades = \App\Models\FuelGrade::whereNotNull('name')
+            ->where('name', '!=', '')
+            ->selectRaw('MIN(id) as id, name')
+            ->groupBy('name')
+            ->orderByRaw("CASE 
+                WHEN LOWER(name) LIKE '%gasoline 91%' OR LOWER(name) LIKE '%gasoline91%' THEN 1
+                WHEN LOWER(name) LIKE '%gasoline 95%' OR LOWER(name) LIKE '%gasoline95%' THEN 2
+                WHEN LOWER(name) LIKE '%gasoline 98%' OR LOWER(name) LIKE '%gasoline98%' THEN 3
+                WHEN LOWER(name) LIKE '%diesel%' THEN 4
+                ELSE 5
+            END")
+            ->orderBy('name')
+            ->get();
+
         return response()->json([
-            'fuel_grades' => \App\Models\FuelGrade::select('id', 'name')->orderBy('name')->get(),
+            'fuel_grades' => $fuelGrades,
         ]);
     }
 
