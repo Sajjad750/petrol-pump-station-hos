@@ -136,12 +136,17 @@ class DashboardController extends Controller
         $startDate = now()->subDays(6)->startOfDay();
         $endDate = now()->endOfDay();
 
-        // Get product distribution data grouped by fuel grade
-        $productData = PumpTransaction::whereBetween('pump_transactions.date_time_start', [$startDate, $endDate])
+        // Get product distribution data grouped by fuel grade using direct database query
+        $productData = DB::table('pump_transactions')
+            ->join('fuel_grades', function ($join) {
+                $join->on(DB::raw('CAST(pump_transactions.pts_fuel_grade_id AS CHAR)'), '=', DB::raw('CAST(fuel_grades.pts_fuel_grade_id AS CHAR)'))
+                     ->on('pump_transactions.station_id', '=', 'fuel_grades.station_id');
+            })
+            ->whereBetween('pump_transactions.date_time_start', [$startDate, $endDate])
             ->whereNotNull('pump_transactions.volume')
             ->whereNotNull('pump_transactions.amount')
             ->whereNotNull('pump_transactions.pts_fuel_grade_id')
-            ->join('fuel_grades', 'pump_transactions.pts_fuel_grade_id', '=', 'fuel_grades.id')
+            ->whereNotNull('fuel_grades.name')
             ->select(
                 'fuel_grades.name as fuel_grade_name',
                 DB::raw('SUM(pump_transactions.volume) as total_volume'),
@@ -149,6 +154,7 @@ class DashboardController extends Controller
                 DB::raw('COUNT(*) as transaction_count')
             )
             ->groupBy('fuel_grades.id', 'fuel_grades.name')
+            ->havingRaw('SUM(pump_transactions.volume) > 0')
             ->orderBy('total_volume', 'desc')
             ->get();
 

@@ -9,6 +9,7 @@ use App\Models\HosCommand;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PriceUpdateController extends Controller
 {
@@ -26,14 +27,17 @@ class PriceUpdateController extends Controller
 
         // Recent price change history from fuel_grade_price_history table
         $history = FuelGradePriceHistory::query()
-            ->with('fuelGrade')
-            ->latest()
+            ->select(
+                'fuel_grade_price_history.*',
+                DB::raw('(SELECT name FROM fuel_grades WHERE fuel_grades.bos_fuel_grade_id = fuel_grade_price_history.fuel_grade_id AND fuel_grades.station_id = fuel_grade_price_history.station_id LIMIT 1) as fuel_grade_name')
+            )
+            ->latest('fuel_grade_price_history.created_at')
             ->limit(20)
             ->get()
-            ->map(function (FuelGradePriceHistory $historyItem) {
+            ->map(function ($historyItem) {
                 return [
                     'id' => $historyItem->id,
-                    'product_name' => $historyItem->fuelGrade->name ?? '',
+                    'product_name' => $historyItem->fuel_grade_name ?? '',
                     'effective_at' => $historyItem->effective_at,
                     'created_at' => $historyItem->created_at,
                     'price_from' => $historyItem->old_price,

@@ -262,8 +262,8 @@ class HosReportsController extends Controller
             //            }
 
             return [
-                'site_id' => $transaction->site_ref ?? '',
-                'site_name' => $transaction->site_name ?? '',
+                'site' => $transaction->site_name ?? '',
+                'site_ref' => $transaction->pts_id ?? '',
                 'transaction_id' => $transaction->transaction_number ?? '',
                 'trans_date' => $transaction->date_time_end ? $transaction->date_time_end->setTimezone('Asia/Riyadh')->format('Y-m-d H:i:s') : '',
                 'pump' => $transaction->pts_pump_id ?? '',
@@ -728,20 +728,10 @@ class HosReportsController extends Controller
         if ($withJoins) {
             $query->leftJoin('stations', 'pump_transactions.station_id', '=', 'stations.id')
                 ->leftJoin('fuel_grades', function ($join) {
-                    $join->on('pump_transactions.pts_fuel_grade_id', '=', 'fuel_grades.pts_fuel_grade_id')
-                        ->whereColumn('pump_transactions.station_id', 'fuel_grades.station_id');
+                    $join->on(DB::raw('CAST(pump_transactions.pts_fuel_grade_id AS CHAR)'), '=', DB::raw('CAST(fuel_grades.pts_fuel_grade_id AS CHAR)'))
+                        ->on('pump_transactions.station_id', '=', 'fuel_grades.station_id');
                 })
-                ->leftJoin('pts_users', function ($join) {
-                    $join->on('pump_transactions.pts_user_id', '=', 'pts_users.pts_user_id')
-                        ->whereColumn('pump_transactions.station_id', 'pts_users.station_id');
-                })
-                ->select(
-                    'pump_transactions.*',
-                    'pts_users.login as attendant_login',
-                    'fuel_grades.name as fuel_grade_name',
-                    'stations.pts_id as site_ref',
-                    'stations.site_name as site_name'
-                );
+                ->select('pump_transactions.*', 'stations.site_name', 'stations.pts_id', 'fuel_grades.name as fuel_grade_name');
         }
 
         return $query;
