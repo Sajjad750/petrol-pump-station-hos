@@ -20,8 +20,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        LogViewer::auth(function ($request) {
-            return auth()->check();
-        });
+        if (config('app.env') === 'production') {
+            LogViewer::auth(function ($request) {
+                return auth()->check();
+            });
+        }
     }
 }
