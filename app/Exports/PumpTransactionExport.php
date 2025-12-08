@@ -9,6 +9,7 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class PumpTransactionExport implements FromQuery, WithHeadings, WithMapping, WithStyles
 {
@@ -21,7 +22,13 @@ class PumpTransactionExport implements FromQuery, WithHeadings, WithMapping, Wit
 
     public function query()
     {
-        $query = PumpTransaction::query()->with(['station', 'fuelGrade']);
+        $query = PumpTransaction::query()
+            ->leftJoin('stations', 'pump_transactions.station_id', '=', 'stations.id')
+            ->leftJoin('fuel_grades', function ($join) {
+                $join->on(DB::raw('CAST(pump_transactions.pts_fuel_grade_id AS CHAR)'), '=', DB::raw('CAST(fuel_grades.pts_fuel_grade_id AS CHAR)'))
+                    ->on('pump_transactions.station_id', '=', 'fuel_grades.station_id');
+            })
+            ->select('pump_transactions.*', 'stations.site_name', 'fuel_grades.name as fuel_grade_name');
 
         $fromDate = $this->filters['from_date'] ?? null;
         $toDate = $this->filters['to_date'] ?? null;
@@ -29,33 +36,33 @@ class PumpTransactionExport implements FromQuery, WithHeadings, WithMapping, Wit
         $toTime = $this->filters['to_time'] ?? '23:59:59';
 
         if ($fromDate && $toDate) {
-            $query->whereBetween('date_time_start', [
+            $query->whereBetween('pump_transactions.date_time_start', [
                 $fromDate . ' ' . $fromTime,
                 $toDate . ' ' . $toTime,
             ]);
         } elseif ($fromDate) {
-            $query->where('date_time_start', '>=', $fromDate . ' ' . $fromTime);
+            $query->where('pump_transactions.date_time_start', '>=', $fromDate . ' ' . $fromTime);
         } elseif ($toDate) {
-            $query->where('date_time_start', '<=', $toDate . ' ' . $toTime);
+            $query->where('pump_transactions.date_time_start', '<=', $toDate . ' ' . $toTime);
         }
 
         if (!empty($this->filters['station_id'])) {
-            $query->where('station_id', $this->filters['station_id']);
+            $query->where('pump_transactions.station_id', $this->filters['station_id']);
         }
 
         if (!empty($this->filters['pump_id'])) {
-            $query->where('pts_pump_id', 'like', '%' . $this->filters['pump_id'] . '%');
+            $query->where('pump_transactions.pts_pump_id', 'like', '%' . $this->filters['pump_id'] . '%');
         }
 
         if (!empty($this->filters['mode_of_payment'])) {
-            $query->where('mode_of_payment', $this->filters['mode_of_payment']);
+            $query->where('pump_transactions.mode_of_payment', $this->filters['mode_of_payment']);
         }
 
         if (!empty($this->filters['product_id'])) {
-            $query->where('pts_fuel_grade_id', $this->filters['product_id']);
+            $query->where('pump_transactions.pts_fuel_grade_id', $this->filters['product_id']);
         }
 
-        return $query->orderBy('date_time_start', 'desc');
+        return $query->orderBy('pump_transactions.date_time_start', 'desc');
     }
 
     public function headings(): array
@@ -81,12 +88,12 @@ class PumpTransactionExport implements FromQuery, WithHeadings, WithMapping, Wit
             : '';
 
         return [
-            $transaction->station->site_name ?? '',
+            $transaction->site_name ?? '',
             $transaction->transaction_number ?? '',
             $dateTime,
             $transaction->pts_pump_id ?? '',
             $transaction->pts_nozzle_id ?? '',
-            $transaction->fuelGrade->name ?? '',
+            $transaction->fuel_grade_name ?? '',
             $transaction->price !== null ? round((float) $transaction->price, 2) : 0,
             $transaction->volume !== null ? round((float) $transaction->volume, 2) : 0,
             $transaction->amount !== null ? round((float) $transaction->amount, 2) : 0,

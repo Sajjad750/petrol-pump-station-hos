@@ -8,6 +8,7 @@ use App\Models\TankInventory;
 use App\Models\Alert;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class OperationsMonitorController extends Controller
 {
@@ -146,9 +147,12 @@ class OperationsMonitorController extends Controller
 
         // Get pump transactions to extract product and nozzle information dynamically
         $pumpTransactions = \App\Models\PumpTransaction::query()
-            ->where('station_id', $station->id)
-            ->select('pts_pump_id', 'pts_nozzle_id', 'pts_fuel_grade_id')
-            ->with('fuelGrade:id,name')
+            ->where('pump_transactions.station_id', $station->id)
+            ->leftJoin('fuel_grades', function ($join) {
+                $join->on(DB::raw('CAST(pump_transactions.pts_fuel_grade_id AS CHAR)'), '=', DB::raw('CAST(fuel_grades.pts_fuel_grade_id AS CHAR)'))
+                    ->on('pump_transactions.station_id', '=', 'fuel_grades.station_id');
+            })
+            ->select('pump_transactions.pts_pump_id', 'pump_transactions.pts_nozzle_id', 'pump_transactions.pts_fuel_grade_id', 'fuel_grades.name as fuel_grade_name')
             ->get()
             ->groupBy('pts_pump_id');
 
@@ -159,7 +163,7 @@ class OperationsMonitorController extends Controller
             // Get product(s) from pump transactions for this pump
             $transactionsForPump = $pumpTransactions->get($pump->pts_pump_id, collect());
             $products = $transactionsForPump
-                ->pluck('fuelGrade.name')
+                ->pluck('fuel_grade_name')
                 ->filter()
                 ->unique()
                 ->values()
