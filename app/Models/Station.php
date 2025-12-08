@@ -104,6 +104,14 @@ class Station extends Model
     }
 
     /**
+     * Get all tank inventories for this station
+     */
+    public function tankInventories(): HasMany
+    {
+        return $this->hasMany(TankInventory::class);
+    }
+
+    /**
      * Get all alerts for this station
      */
     public function alerts(): HasMany

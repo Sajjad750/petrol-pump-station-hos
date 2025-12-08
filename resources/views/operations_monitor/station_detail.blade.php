@@ -108,7 +108,36 @@
                             <td>{{ isset($tank['current']) ? number_format($tank['current']) : '-' }}</td>
                             <td style="min-width:110px;">
                                 <div class="progress" style="height:8px;">
-                                    @php $barClass = ($tank['percentage'] ?? 0) >= 50 ? 'bg-success' : (($tank['percentage'] ?? 0) >= 15 ? 'bg-warning' : 'bg-danger'); @endphp
+                                    @php
+                                        $productName = strtolower(trim($tank['product'] ?? ''));
+                                        $barClass = 'bg-secondary'; // Default color
+                                        
+                                        // Check for Gasoline95 (Red)
+                                        if (strpos($productName, 'gasoline95') !== false || 
+                                            strpos($productName, 'gasoline 95') !== false || 
+                                            strpos($productName, 'gas 95') !== false ||
+                                            preg_match('/\b95\b/', $productName)) {
+                                            $barClass = 'bg-danger'; // Red for Gasoline95
+                                        }
+                                        // Check for Gasoline91 (Green)
+                                        elseif (strpos($productName, 'gasoline91') !== false || 
+                                                strpos($productName, 'gasoline 91') !== false || 
+                                                strpos($productName, 'gas 91') !== false ||
+                                                preg_match('/\b91\b/', $productName)) {
+                                            $barClass = 'bg-success'; // Green for Gasoline91
+                                        }
+                                        // Check for Gasoline98 (Blue)
+                                        elseif (strpos($productName, 'gasoline98') !== false || 
+                                                strpos($productName, 'gasoline 98') !== false || 
+                                                strpos($productName, 'gas 98') !== false ||
+                                                preg_match('/\b98\b/', $productName)) {
+                                            $barClass = 'bg-primary'; // Blue for Gasoline98
+                                        }
+                                        // Check for Diesel (Yellow)
+                                        elseif (strpos($productName, 'diesel') !== false) {
+                                            $barClass = 'bg-warning'; // Yellow for Diesel
+                                        }
+                                    @endphp
                                     <div class="progress-bar {{ $barClass }}" role="progressbar" style="width: {{ $tank['percentage'] ?? 0 }}%"></div>
                                 </div>
                                 <span class="small text-muted ms-1">{{ $tank['percentage'] ?? '-' }}%</span>

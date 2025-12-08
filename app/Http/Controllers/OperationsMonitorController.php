@@ -130,7 +130,7 @@ class OperationsMonitorController extends Controller
 
     public function show($stationId)
     {
-        $station = \App\Models\Station::with(['pumps', 'tankMeasurements'])->findOrFail($stationId);
+        $station = \App\Models\Station::with(['pumps', 'tankInventories', 'tankMeasurements'])->findOrFail($stationId);
         $address = $station->address ?? ($station->city ?? '-') . ', ' . ($station->region ?? '-');
 
         // Station status
@@ -144,37 +144,149 @@ class OperationsMonitorController extends Controller
             return in_array($pump->status, ['idle', 'filling', 'end_of_transaction']);
         })->count();
 
-        $pumps = $station->pumps->map(function ($pump) {
+        // Get pump transactions to extract product and nozzle information dynamically
+        $pumpTransactions = \App\Models\PumpTransaction::query()
+            ->where('station_id', $station->id)
+            ->select('pts_pump_id', 'pts_nozzle_id', 'pts_fuel_grade_id')
+            ->with('fuelGrade:id,name')
+            ->get()
+            ->groupBy('pts_pump_id');
+
+        $pumps = $station->pumps->map(function ($pump) use ($pumpTransactions) {
+            // Get pump number
+            $pumpNumber = $pump->name ?? $pump->pump_id ?? $pump->pts_pump_id ?? '-';
+
+            // Get product(s) from pump transactions for this pump
+            $transactionsForPump = $pumpTransactions->get($pump->pts_pump_id, collect());
+            $products = $transactionsForPump
+                ->pluck('fuelGrade.name')
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+            $productDisplay = !empty($products) ? implode(', ', $products) : '-';
+
+            // Get nozzles from pump transactions for this pump
+            $nozzles = $transactionsForPump
+                ->pluck('pts_nozzle_id')
+                ->filter()
+                ->unique()
+                ->sort()
+                ->values()
+                ->all();
+            $nozzleDisplay = !empty($nozzles) ? implode(', ', $nozzles) : ($pump->nozzles_count ? "Count: {$pump->nozzles_count}" : '-');
+
             return [
-                'number' => $pump->name ?? $pump->pump_id ?? '-',
-                'product' => $pump->product ?? '-',
-                'nozzles' => $pump->nozzles ?? '-',
+                'number' => $pumpNumber,
+                'product' => $productDisplay,
+                'nozzles' => $nozzleDisplay,
                 'status' => $pump->status ?? 'offline',
             ];
         });
 
-        // Tank measurements: group latest per tank
-        $latestMeasurements = $station->tankMeasurements->sortBy('tank')->groupBy('tank')->map(function ($tankGroup) {
-            return $tankGroup->sortByDesc('date_time')->first();
-        });
-        $tank_total = $latestMeasurements->count();
-        $tank_online = $tank_total; // Or use alarms/status in measurement if any
-        $tanks = $latestMeasurements->map(function ($m, $tankNum) {
-            $capacity = 10000; // You should use real if present
-            $current = $m->product_volume ?? 0;
-            $percentage = $capacity > 0 ? round($current / $capacity * 100) : 0;
-            // Status logic: use Eloquent methods if exist
-            $status = ($m->isCriticallyLow() ?? false) ? 'critical' : ($percentage < 25 ? 'low' : 'normal');
+        // Tank inventory: Use TankInventory model if available, otherwise fallback to TankMeasurement
+        $latestInventories = TankInventory::query()
+            ->where('station_id', $station->id)
+            ->latestForTanks()
+            ->get()
+            ->sortBy('tank')
+            ->groupBy('tank')
+            ->map(function ($tankGroup) {
+                return $tankGroup->sortByDesc('snapshot_datetime')->first();
+            });
 
-            return [
-                'number' => $tankNum,
-                'product' => $m->product ?? '-',
-                'capacity' => $capacity,
-                'current' => $current,
-                'percentage' => $percentage,
-                'status' => $status,
-            ];
-        });
+        // If no tank inventories, fallback to tank measurements
+        if ($latestInventories->isEmpty()) {
+            $latestMeasurements = $station->tankMeasurements->sortBy('tank')->groupBy('tank')->map(function ($tankGroup) {
+                return $tankGroup->sortByDesc('date_time')->first();
+            });
+
+            $tank_total = $latestMeasurements->count();
+            $tank_online = $latestMeasurements->filter(function ($m) {
+                return ($m->product_volume ?? 0) > 0;
+            })->count();
+
+            $tanks = $latestMeasurements->map(function ($m, $tankNum) {
+                $capacity = 33000;
+                $current = $m->product_volume ?? 0;
+
+                // Use tank_filling_percentage if available, otherwise calculate from volume and capacity
+                $percentage = $m->tank_filling_percentage ?? null;
+
+                if ($percentage === null) {
+                    // Calculate percentage based on current volume and fixed capacity
+                    $percentage = $capacity > 0 ? round(($current / $capacity) * 100, 2) : 0;
+                } else {
+                    $percentage = (float) $percentage;
+                }
+
+                // Status logic using model method if available
+                $status = 'normal';
+
+                if ($m->isCriticallyLow()) {
+                    $status = 'critical';
+                } elseif ($percentage < 25) {
+                    $status = 'low';
+                }
+
+                return [
+                    'number' => $tankNum,
+                    'product' => $m->fuel_grade_name ?? '-',
+                    'capacity' => 33000,
+                    'current' => $m->product_volume ?? 0,
+                    'percentage' => $percentage,
+                    'status' => $status,
+                ];
+            });
+        } else {
+            // Use TankInventory data (preferred)
+            $tank_total = $latestInventories->count();
+            $tank_online = $latestInventories->filter(function ($inv) {
+                return ($inv->absolute_product_volume ?? $inv->product_volume ?? 0) > 0;
+            })->count();
+
+            $tanks = $latestInventories->map(function ($inv, $tankNum) {
+                $capacity = 33000;
+                $current = $inv->absolute_product_volume ?? $inv->product_volume ?? 0;
+
+                // Use tank_filling_percentage if available, otherwise calculate from volume and capacity
+                $percentage = $inv->tank_filling_percentage ?? null;
+
+                if ($percentage === null) {
+                    // Calculate percentage based on current volume and fixed capacity
+                    $percentage = $capacity > 0 ? round(($current / $capacity) * 100, 2) : 0;
+                } else {
+                    $percentage = (float) $percentage;
+                }
+
+                // Use model method for status
+                $status = $inv->getInventoryStatus();
+
+                if ($status === 'low' || $status === 'incomplete') {
+                    $status = 'low';
+                } elseif ($status === 'high_water') {
+                    $status = 'critical';
+                } else {
+                    $status = 'normal';
+                }
+
+                // Override with percentage-based status if needed
+                if ($percentage < 15) {
+                    $status = 'critical';
+                } elseif ($percentage < 30) {
+                    $status = 'low';
+                }
+
+                return [
+                    'number' => $tankNum,
+                    'product' => $inv->fuel_grade_name ?? '-',
+                    'capacity' => 33000,
+                    'current' => $inv->absolute_product_volume ?? $inv->product_volume ?? 0,
+                    'percentage' => $percentage,
+                    'status' => $status,
+                ];
+            });
+        }
 
         $alerts = Alert::query()
             ->where('station_id', $station->id)
