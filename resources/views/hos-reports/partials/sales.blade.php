@@ -59,6 +59,102 @@
     </div>
 </div>
 
+@push('css')
+    <style>
+        #sales-table {
+            width: 100% !important;
+            table-layout: auto;
+        }
+
+        #sales-table thead th,
+        #sales-table tbody td {
+            padding: 8px 10px !important;
+            white-space: nowrap;
+            font-size: 13px;
+        }
+
+        /* Site ID */
+        #sales-table thead th:nth-child(1),
+        #sales-table tbody td:nth-child(1) {
+            width: 7%;
+        }
+
+        /* Site Name */
+        #sales-table thead th:nth-child(2),
+        #sales-table tbody td:nth-child(2) {
+            width: 10%;
+        }
+
+        /* Trans ID */
+        #sales-table thead th:nth-child(3),
+        #sales-table tbody td:nth-child(3) {
+            width: 8%;
+        }
+
+        /* Trans Date */
+        #sales-table thead th:nth-child(4),
+        #sales-table tbody td:nth-child(4) {
+            width: 10%;
+        }
+
+        /* Pump */
+        #sales-table thead th:nth-child(5),
+        #sales-table tbody td:nth-child(5) {
+            width: 6%;
+        }
+
+        /* Nozzle */
+        #sales-table thead th:nth-child(6),
+        #sales-table tbody td:nth-child(6) {
+            width: 6%;
+        }
+
+        /* Product */
+        #sales-table thead th:nth-child(7),
+        #sales-table tbody td:nth-child(7) {
+            width: 9%;
+        }
+
+        /* Unit Price */
+        #sales-table thead th:nth-child(8),
+        #sales-table tbody td:nth-child(8) {
+            width: 7%;
+        }
+
+        /* Volume */
+        #sales-table thead th:nth-child(9),
+        #sales-table tbody td:nth-child(9) {
+            width: 7%;
+        }
+
+        /* Amount */
+        #sales-table thead th:nth-child(10),
+        #sales-table tbody td:nth-child(10) {
+            width: 8%;
+        }
+
+        /* Payment Mode */
+        #sales-table thead th:nth-child(11),
+        #sales-table tbody td:nth-child(11) {
+            width: 8%;
+        }
+
+        /* HOS Received Date/Time */
+        #sales-table thead th:nth-child(12),
+        #sales-table tbody td:nth-child(12) {
+            width: 10%;
+        }
+
+        /* Sort indicator */
+        .sort-indicator {
+            display: inline-block;
+            margin-left: 5px;
+            color: #999;
+            font-size: 12px;
+        }
+    </style>
+@endpush
+
 <!-- Sales Table Card -->
 <div class="card custom-card">
     <div class="card-header custom-card-header">
@@ -69,13 +165,18 @@
             <table id="sales-table" class="table">
                 <thead>
                     <tr>
-                        <th>Site</th>
-                        <th>Transaction ID</th>
-                        <th>Date & Time <span class="sort-indicator"><i class="fas fa-sort"></i></span></th>
+                        <th>Site ID</th>
+                        <th>Site Name</th>
+                        <th>Trans ID</th>
+                        <th>Trans Date <span class="sort-indicator"><i class="fas fa-sort"></i></span></th>
+                        <th>Pump</th>
+                        <th>Nozzle</th>
                         <th>Product</th>
-                        <th class="text-right">Liters</th>
+                        <th class="text-right">Unit Price</th>
+                        <th class="text-right">Volume</th>
                         <th class="text-right">Amount</th>
-                        <th>HOS Received Time</th>
+                        <th>Payment Mode</th>
+                        <th>HOS Received Date/Time</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -98,7 +199,7 @@
                 'pageLength': 10,
                 'dom': '<"row"<"col-sm-6"l><"col-sm-6"f>>rt<"row"<"col-sm-6"i><"col-sm-6"p>>',
                 'order': [
-                    [2, 'desc']
+                    [3, 'desc']
                 ],
                 'bInfo': true,
                 'bFilter': true,
@@ -122,21 +223,19 @@
                     }
                 },
                 'columns': [{
-                        data: 'site',
-                        name: 'site',
+                        data: 'site_id',
+                        name: 'site_id',
                         orderable: true,
-                        render: function(data, type, row) {
-                            if (type === 'display') {
-                                var siteHtml = '<a href="#" class="sales-link">' + (data || '') + '</a>';
-                                if (row.site_ref) {
-                                    var ref = row.site_ref;
-                                    if (/^\d+$/.test(ref)) {
-                                        ref = String(ref).padStart(3, '0');
-                                    }
-                                    siteHtml += '<span class="secondary-text">Ref: ' + ref + '</span>';
-                                }
-                                return siteHtml;
-                            }
+                        render: function(data) {
+                            return data || '';
+                        },
+                        className: 'text-left'
+                    },
+                    {
+                        data: 'site_name',
+                        name: 'site_name',
+                        orderable: true,
+                        render: function(data) {
                             return data || '';
                         },
                         className: 'text-left'
@@ -146,13 +245,13 @@
                         name: 'transaction_id',
                         orderable: true,
                         render: function(data) {
-                            return '<a href="#" class="sales-link">' + (data || '') + '</a>';
+                            return data || '';
                         },
                         className: 'text-left'
                     },
                     {
-                        data: 'date_time',
-                        name: 'date_time',
+                        data: 'trans_date',
+                        name: 'trans_date',
                         orderable: true,
                         render: function(data, type) {
                             if (type !== 'display' || !data) return data || '';
@@ -172,21 +271,51 @@
                         className: 'text-left'
                     },
                     {
+                        data: 'pump',
+                        name: 'pump',
+                        orderable: true,
+                        render: function(data) {
+                            return data || '';
+                        },
+                        className: 'text-left'
+                    },
+                    {
+                        data: 'nozzle',
+                        name: 'nozzle',
+                        orderable: true,
+                        render: function(data) {
+                            return data || '';
+                        },
+                        className: 'text-left'
+                    },
+                    {
                         data: 'product',
                         name: 'product',
                         orderable: true,
                         render: function(data) {
                             if (!data) return '';
-                            // Check if it's Diesel to show in orange, otherwise blue
+                            // Check if it's Diesel to show in orange
                             var isDiesel = data.toLowerCase().includes('diesel');
-                            var colorClass = isDiesel ? 'style="color: #ff6600;"' : '';
-                            return '<a href="#" class="sales-link" ' + colorClass + '>' + data + '</a>';
+                            if (isDiesel) {
+                                return '<span style="color: #ff6600;">' + data + '</span>';
+                            }
+                            return data;
                         },
                         className: 'text-left'
                     },
                     {
-                        data: 'liters',
-                        name: 'liters',
+                        data: 'unit_price',
+                        name: 'unit_price',
+                        orderable: true,
+                        render: function(data, type) {
+                            if (type !== 'display' || data === null || data === undefined) return '';
+                            return parseFloat(data).toFixed(2);
+                        },
+                        className: 'text-right'
+                    },
+                    {
+                        data: 'volume',
+                        name: 'volume',
                         orderable: true,
                         render: function(data, type) {
                             if (type !== 'display' || data === null || data === undefined) return '';
@@ -203,6 +332,15 @@
                             return 'SAR ' + parseFloat(data).toFixed(2);
                         },
                         className: 'text-right'
+                    },
+                    {
+                        data: 'payment_mode',
+                        name: 'payment_mode',
+                        orderable: true,
+                        render: function(data) {
+                            return data || '';
+                        },
+                        className: 'text-left'
                     },
                     {
                         data: 'hos_received_time',

@@ -119,14 +119,15 @@
             background-color: #D7D7D7 !important;
             color: #333 !important;
             font-weight: bold !important;
-            padding: 12px 15px !important;
+            padding: 8px 10px !important;
             text-align: left !important;
             border: none !important;
             border-top: none !important;
             border-bottom: none !important;
             border-left: none !important;
             border-right: none !important;
-            font-size: 14px;
+            font-size: 13px;
+            white-space: nowrap;
         }
 
         #transactions-table thead th.text-right {
@@ -138,16 +139,112 @@
         }
 
         #transactions-table tbody td {
-            padding: 12px 15px !important;
+            padding: 8px 10px !important;
             border: none !important;
             border-top: none !important;
             border-left: none !important;
             border-right: none !important;
             border-bottom: 1px solid #e0e0e0 !important;
             color: #555 !important;
-            font-size: 14px;
+            font-size: 13px;
             vertical-align: top;
             background-color: white !important;
+        }
+
+        /* Specific column widths for 19 columns */
+        #transactions-table thead th:nth-child(1),
+        #transactions-table tbody td:nth-child(1) {
+            width: 5%; /* Site ID */
+        }
+
+        #transactions-table thead th:nth-child(2),
+        #transactions-table tbody td:nth-child(2) {
+            width: 7%; /* Site Name */
+        }
+
+        #transactions-table thead th:nth-child(3),
+        #transactions-table tbody td:nth-child(3) {
+            width: 6%; /* Trans ID */
+        }
+
+        #transactions-table thead th:nth-child(4),
+        #transactions-table tbody td:nth-child(4) {
+            width: 7%; /* Trans Date */
+        }
+
+        #transactions-table thead th:nth-child(5),
+        #transactions-table tbody td:nth-child(5) {
+            width: 4%; /* Pump */
+        }
+
+        #transactions-table thead th:nth-child(6),
+        #transactions-table tbody td:nth-child(6) {
+            width: 4%; /* Nozzle */
+        }
+
+        #transactions-table thead th:nth-child(7),
+        #transactions-table tbody td:nth-child(7) {
+            width: 6%; /* Product */
+        }
+
+        #transactions-table thead th:nth-child(8),
+        #transactions-table tbody td:nth-child(8) {
+            width: 5%; /* Unit Price */
+        }
+
+        #transactions-table thead th:nth-child(9),
+        #transactions-table tbody td:nth-child(9) {
+            width: 5%; /* Volume */
+        }
+
+        #transactions-table thead th:nth-child(10),
+        #transactions-table tbody td:nth-child(10) {
+            width: 6%; /* Amount */
+        }
+
+        #transactions-table thead th:nth-child(11),
+        #transactions-table tbody td:nth-child(11) {
+            width: 6%; /* Start Totalizer */
+        }
+
+        #transactions-table thead th:nth-child(12),
+        #transactions-table tbody td:nth-child(12) {
+            width: 6%; /* End Totalizer */
+        }
+
+        #transactions-table thead th:nth-child(13),
+        #transactions-table tbody td:nth-child(13) {
+            width: 5%; /* Payment Mode */
+        }
+
+        #transactions-table thead th:nth-child(14),
+        #transactions-table tbody td:nth-child(14) {
+            width: 5%; /* Attendant */
+        }
+
+        #transactions-table thead th:nth-child(15),
+        #transactions-table tbody td:nth-child(15) {
+            width: 7%; /* Start Time */
+        }
+
+        #transactions-table thead th:nth-child(16),
+        #transactions-table tbody td:nth-child(16) {
+            width: 7%; /* End Time */
+        }
+
+        #transactions-table thead th:nth-child(17),
+        #transactions-table tbody td:nth-child(17) {
+            width: 6%; /* Mobile No */
+        }
+
+        #transactions-table thead th:nth-child(18),
+        #transactions-table tbody td:nth-child(18) {
+            width: 5%; /* Vehicle No */
+        }
+
+        #transactions-table thead th:nth-child(19),
+        #transactions-table tbody td:nth-child(19) {
+            width: 7%; /* HOS Received Date/Time */
         }
 
         #transactions-table tbody tr {
@@ -241,18 +338,25 @@
             <table id="transactions-table" class="table">
                 <thead>
                     <tr>
-                        <th>Site</th>
-                        <th>Transaction ID</th>
-                        <th>Date & Time <span class="sort-indicator"><i class="fas fa-sort"></i></span></th>
+                        <th>Site ID</th>
+                        <th>Site Name</th>
+                        <th>Trans ID</th>
+                        <th>Trans Date <span class="sort-indicator"><i class="fas fa-sort"></i></span></th>
                         <th>Pump</th>
                         <th>Nozzle</th>
                         <th>Product</th>
                         <th class="text-right">Unit Price</th>
-                        <th class="text-right">Litres</th>
+                        <th class="text-right">Volume</th>
                         <th class="text-right">Amount</th>
-                        <th>MOP</th>
-                        <th>Mobile & Vehicle ID</th>
+                        <th class="text-right">Start Totalizer</th>
+                        <th class="text-right">End Totalizer</th>
+                        <th>Payment Mode</th>
                         <th>Attendant</th>
+                        <th>Start Time</th>
+                        <th>End Time</th>
+                        <th>Mobile No</th>
+                        <th>Vehicle No</th>
+                        <th>HOS Received Date/Time</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -275,7 +379,7 @@
                 'pageLength': 10,
                 'dom': '<"row"<"col-sm-6"l><"col-sm-6"f>>rt<"row"<"col-sm-6"i><"col-sm-6"p>>',
                 'order': [
-                    [2, 'desc']
+                    [3, 'desc']
                 ],
                 'bInfo': true,
                 'bFilter': true,
@@ -302,22 +406,19 @@
                     }
                 },
                 'columns': [{
-                        data: 'site',
-                        name: 'site',
+                        data: 'site_id',
+                        name: 'site_id',
                         orderable: true,
-                        render: function(data, type, row) {
-                            if (type === 'display') {
-                                var siteHtml = '<a href="#" class="transaction-link">' + (data || '') + '</a>';
-                                if (row.site_ref) {
-                                    // Format reference (if numeric, pad to 3 digits, otherwise show as-is)
-                                    var ref = row.site_ref;
-                                    if (/^\d+$/.test(ref)) {
-                                        ref = String(ref).padStart(3, '0');
-                                    }
-                                    siteHtml += '<span class="secondary-text">Ref: ' + ref + '</span>';
-                                }
-                                return siteHtml;
-                            }
+                        render: function(data) {
+                            return data || '';
+                        },
+                        className: 'text-left'
+                    },
+                    {
+                        data: 'site_name',
+                        name: 'site_name',
+                        orderable: true,
+                        render: function(data) {
                             return data || '';
                         },
                         className: 'text-left'
@@ -329,12 +430,11 @@
                         className: 'text-left'
                     },
                     {
-                        data: 'date_time',
-                        name: 'date_time',
+                        data: 'trans_date',
+                        name: 'trans_date',
                         orderable: true,
                         render: function(data, type) {
                             if (type !== 'display' || !data) return data || '';
-                            // Format date: convert from YYYY-MM-DD HH:mm:ss to MM/DD/YYYY HH:mm
                             try {
                                 var date = new Date(data.replace(' ', 'T'));
                                 if (isNaN(date.getTime())) return data;
@@ -355,8 +455,7 @@
                         name: 'pump',
                         orderable: true,
                         render: function(data) {
-                            if (!data) return '';
-                            return data;
+                            return data || '';
                         },
                         className: 'text-left'
                     },
@@ -365,8 +464,7 @@
                         name: 'nozzle',
                         orderable: true,
                         render: function(data) {
-                            if (!data) return '';
-                            return data;
+                            return data || '';
                         },
                         className: 'text-left'
                     },
@@ -375,8 +473,7 @@
                         name: 'product',
                         orderable: true,
                         render: function(data) {
-                            if (!data) return '';
-                            return data;
+                            return data || '';
                         },
                         className: 'text-left'
                     },
@@ -390,8 +487,8 @@
                         className: 'text-right'
                     },
                     {
-                        data: 'litres',
-                        name: 'litres',
+                        data: 'volume',
+                        name: 'volume',
                         orderable: true,
                         render: function(data) {
                             return data ? parseFloat(data).toFixed(2) : '0.00';
@@ -408,40 +505,116 @@
                         className: 'text-right'
                     },
                     {
-                        data: 'mode_of_payment',
-                        name: 'mode_of_payment',
+                        data: 'start_totalizer',
+                        name: 'start_totalizer',
+                        orderable: true,
+                        render: function(data) {
+                            return data ? parseFloat(data).toFixed(2) : '0.00';
+                        },
+                        className: 'text-right'
+                    },
+                    {
+                        data: 'end_totalizer',
+                        name: 'end_totalizer',
+                        orderable: true,
+                        render: function(data) {
+                            return data ? parseFloat(data).toFixed(2) : '0.00';
+                        },
+                        className: 'text-right'
+                    },
+                    {
+                        data: 'payment_mode',
+                        name: 'payment_mode',
                         orderable: true,
                         className: 'text-left'
                     },
                     {
-                        data: 'mobile_vehicle_id',
-                        name: 'mobile_vehicle_id',
-                        orderable: false,
-                        render: function(data, type, row) {
-                            if (type === 'display') {
-                                var html = data || '';
-                                if (row.vehicle_id) {
-                                    html += '<span class="secondary-text">Vehicle ID: ' + row.vehicle_id + '</span>';
-                                }
-                                return html;
-                            }
+                        data: 'attendant',
+                        name: 'attendant',
+                        orderable: true,
+                        render: function(data) {
                             return data || '';
                         },
                         className: 'text-left'
                     },
                     {
-                        data: 'atten',
-                        name: 'atten',
+                        data: 'start_time',
+                        name: 'start_time',
                         orderable: true,
-                        render: function(data, type, row) {
-                            if (type === 'display') {
-                                var html = data || '';
-                                if (row.atten_username) {
-                                    html += '<span class="secondary-text">@' + row.atten_username + '</span>';
-                                }
-                                return html;
+                        render: function(data, type) {
+                            if (type !== 'display' || !data) return data || '';
+                            try {
+                                var date = new Date(data.replace(' ', 'T'));
+                                if (isNaN(date.getTime())) return data;
+                                var month = String(date.getMonth() + 1).padStart(2, '0');
+                                var day = String(date.getDate()).padStart(2, '0');
+                                var year = date.getFullYear();
+                                var hours = String(date.getHours()).padStart(2, '0');
+                                var minutes = String(date.getMinutes()).padStart(2, '0');
+                                return month + '/' + day + '/' + year + ' ' + hours + ':' + minutes;
+                            } catch (e) {
+                                return data;
                             }
+                        },
+                        className: 'text-left'
+                    },
+                    {
+                        data: 'end_time',
+                        name: 'end_time',
+                        orderable: true,
+                        render: function(data, type) {
+                            if (type !== 'display' || !data) return data || '';
+                            try {
+                                var date = new Date(data.replace(' ', 'T'));
+                                if (isNaN(date.getTime())) return data;
+                                var month = String(date.getMonth() + 1).padStart(2, '0');
+                                var day = String(date.getDate()).padStart(2, '0');
+                                var year = date.getFullYear();
+                                var hours = String(date.getHours()).padStart(2, '0');
+                                var minutes = String(date.getMinutes()).padStart(2, '0');
+                                return month + '/' + day + '/' + year + ' ' + hours + ':' + minutes;
+                            } catch (e) {
+                                return data;
+                            }
+                        },
+                        className: 'text-left'
+                    },
+                    {
+                        data: 'mobile_no',
+                        name: 'mobile_no',
+                        orderable: false,
+                        render: function(data) {
                             return data || '';
+                        },
+                        className: 'text-left'
+                    },
+                    {
+                        data: 'vehicle_no',
+                        name: 'vehicle_no',
+                        orderable: false,
+                        render: function(data) {
+                            return data || '';
+                        },
+                        className: 'text-left'
+                    },
+                    {
+                        data: 'hos_received_time',
+                        name: 'hos_received_time',
+                        orderable: true,
+                        render: function(data, type) {
+                            if (type !== 'display' || !data) return data || '';
+                            try {
+                                var date = new Date(data.replace(' ', 'T'));
+                                if (isNaN(date.getTime())) return data;
+                                var month = String(date.getMonth() + 1).padStart(2, '0');
+                                var day = String(date.getDate()).padStart(2, '0');
+                                var year = date.getFullYear();
+                                var hours = String(date.getHours()).padStart(2, '0');
+                                var minutes = String(date.getMinutes()).padStart(2, '0');
+                                return month + '/' + day + '/' + year + ' ' + hours + ':' + minutes;
+                            } catch (e) {
+                                return data;
+                            }
                         },
                         className: 'text-left'
                     }
@@ -522,11 +695,15 @@
                 method: 'GET',
                 success: function(response) {
                     if (response.fuel_grades) {
+                        var $select = $('#transaction_product_id');
+                        var firstOption = $select.find('option').first();
+                        var optionsHtml = firstOption.length ? firstOption.prop('outerHTML') : '<option value="">All Products</option>';
+
                         response.fuel_grades.forEach(function(grade) {
-                            $('#transaction_product_id').append(
-                                $('<option></option>').val(grade.id).text(grade.name)
-                            );
+                            optionsHtml += '<option value="' + grade.id + '">' + grade.name + '</option>';
                         });
+
+                        $select.html(optionsHtml);
                     }
                 }
             });

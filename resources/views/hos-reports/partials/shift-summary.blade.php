@@ -64,6 +64,9 @@
                     <button type="button" id="shift-summary-reset-btn" class="btn btn-dark">
                         <i class="fas fa-redo"></i> Reset
                     </button>
+                    <button type="button" id="shift-summary-export-csv-btn" class="btn btn-success">
+                        <i class="fas fa-file-csv"></i> Export CSV
+                    </button>
                     <button type="button" id="shift-summary-export-pdf-btn" class="btn btn-danger">
                         <i class="fas fa-file-pdf"></i> Export PDF
                     </button>
@@ -280,7 +283,10 @@
                 shiftHtml += '<thead><tr><th>Product</th><th class="text-right">TXN Volume</th><th class="text-right">Amount (SAR)</th></tr></thead>';
                 shiftHtml += '<tbody>';
                 if (shiftData.product_summary && shiftData.product_summary.length > 0) {
-                    shiftData.product_summary.forEach(function(item) {
+                    // Sort products in specified order
+                    var sortedProducts = sortProductsByOrder(shiftData.product_summary);
+                    
+                    sortedProducts.forEach(function(item) {
                         var productName = item.product_name || item.product || 'N/A';
                         var productLabel = productName;
                         if (item.product_name && item.product && item.product_name !== item.product) {
@@ -313,8 +319,11 @@
                 shiftHtml += '<thead><tr><th>Product</th><th class="text-center">Pump No</th><th class="text-center">Nozzle No</th><th class="text-right">Start Totalizer</th><th class="text-right">End Totalizer</th><th class="text-right">Totalizer Volume</th><th class="text-right">TXN Volume</th><th class="text-right">Amount (SAR)</th></tr></thead>';
                 shiftHtml += '<tbody>';
                 if (shiftData.pump_summary && shiftData.pump_summary.length > 0) {
+                    // Sort pump summary by product order
+                    var sortedPumpData = sortProductsByOrder(shiftData.pump_summary);
+                    
                     var totalTotalizerVolume = 0;
-                    shiftData.pump_summary.forEach(function(item) {
+                    sortedPumpData.forEach(function(item) {
                         var pumpProductName = item.product_name || item.product || 'N/A';
                         var pumpProductLabel = pumpProductName;
                         if (item.product_name && item.product && item.product_name !== item.product) {
@@ -326,16 +335,16 @@
                         shiftHtml += '<td>' + pumpProductLabel + '</td>';
                         shiftHtml += '<td class="text-center">' + (item.pump_no || 'N/A') + '</td>';
                         shiftHtml += '<td class="text-center">' + (item.nozzle_no || 'N/A') + '</td>';
-                        shiftHtml += '<td class="text-left">' + parseFloat(item.start_totalizer || 0).toLocaleString('en-US', {minimumFractionDigits: 3, maximumFractionDigits: 3}) + '</td>';
-                        shiftHtml += '<td class="text-left">' + parseFloat(item.end_totalizer || 0).toLocaleString('en-US', {minimumFractionDigits: 3, maximumFractionDigits: 3}) + '</td>';
-                        shiftHtml += '<td class="text-left">' + totalizerVolume.toLocaleString('en-US', {minimumFractionDigits: 3, maximumFractionDigits: 3}) + '</td>';
+                        shiftHtml += '<td class="text-left">' + parseFloat(item.start_totalizer || 0).toFixed(2) + '</td>';
+                        shiftHtml += '<td class="text-left">' + parseFloat(item.end_totalizer || 0).toFixed(2) + '</td>';
+                        shiftHtml += '<td class="text-left">' + totalizerVolume.toFixed(2) + '</td>';
                         shiftHtml += '<td class="text-left">' + parseFloat(item.txn_volume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
                         shiftHtml += '<td class="text-left">' + parseFloat(item.amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
                         shiftHtml += '</tr>';
                     });
                     shiftHtml += '<tfoot style="background-color: #f5f5f5; font-weight: bold;"><tr>';
                     shiftHtml += '<td colspan="5" class="text-right">Total</td>';
-                    shiftHtml += '<td class="text-left">' + totalTotalizerVolume.toLocaleString('en-US', {minimumFractionDigits: 3, maximumFractionDigits: 3}) + '</td>';
+                    shiftHtml += '<td class="text-left">' + totalTotalizerVolume.toFixed(2) + '</td>';
                     shiftHtml += '<td class="text-left">' + parseFloat(shiftData.total_pump_txn_volume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
                     shiftHtml += '<td class="text-left">' + parseFloat(shiftData.total_pump_amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
                     shiftHtml += '</tr></tfoot>';
@@ -390,6 +399,76 @@
                 }
             }
 
+            // Function to sort products in specific order: Gasoline91, Gasoline95, Gasoline98, Diesel
+            // Also sorts by pump number and nozzle number if available (for Pump Wise Summary)
+            function sortProductsByOrder(data) {
+                var productOrder = {
+                    'gasoline91': 1,
+                    'gasoline95': 2,
+                    'gasoline98': 3,
+                    'diesel': 4
+                };
+                
+                return data.sort(function(a, b) {
+                    var aName = (a.product_name || a.product || '').toLowerCase().trim();
+                    var bName = (b.product_name || b.product || '').toLowerCase().trim();
+                    
+                    var aOrder = 999; // Default high value for unknown products
+                    var bOrder = 999;
+                    
+                    // Check exact match or contains for each product
+                    if (aName === 'gasoline91' || aName.includes('gasoline91') || (aName.includes('gasoline') && aName.includes('91')) || (aName.includes('premium') && aName.includes('91'))) {
+                        aOrder = productOrder['gasoline91'];
+                    } else if (aName === 'gasoline95' || aName.includes('gasoline95') || (aName.includes('gasoline') && aName.includes('95')) || (aName.includes('premium') && aName.includes('95'))) {
+                        aOrder = productOrder['gasoline95'];
+                    } else if (aName === 'gasoline98' || aName.includes('gasoline98') || (aName.includes('gasoline') && aName.includes('98')) || (aName.includes('super') && aName.includes('98')) || (aName.includes('premium') && aName.includes('98'))) {
+                        aOrder = productOrder['gasoline98'];
+                    } else if (aName === 'diesel' || aName.includes('diesel')) {
+                        aOrder = productOrder['diesel'];
+                    }
+                    
+                    if (bName === 'gasoline91' || bName.includes('gasoline91') || (bName.includes('gasoline') && bName.includes('91')) || (bName.includes('premium') && bName.includes('91'))) {
+                        bOrder = productOrder['gasoline91'];
+                    } else if (bName === 'gasoline95' || bName.includes('gasoline95') || (bName.includes('gasoline') && bName.includes('95')) || (bName.includes('premium') && bName.includes('95'))) {
+                        bOrder = productOrder['gasoline95'];
+                    } else if (bName === 'gasoline98' || bName.includes('gasoline98') || (bName.includes('gasoline') && bName.includes('98')) || (bName.includes('super') && bName.includes('98')) || (bName.includes('premium') && bName.includes('98'))) {
+                        bOrder = productOrder['gasoline98'];
+                    } else if (bName === 'diesel' || bName.includes('diesel')) {
+                        bOrder = productOrder['diesel'];
+                    }
+                    
+                    // Primary sort: by product order
+                    if (aOrder !== bOrder) {
+                        // If one has order and the other doesn't
+                        if (aOrder !== 999 && bOrder === 999) return -1;
+                        if (aOrder === 999 && bOrder !== 999) return 1;
+                        // Both have order, sort by order
+                        if (aOrder !== 999 && bOrder !== 999) return aOrder - bOrder;
+                        // Neither has order, continue to secondary sort
+                    }
+                    
+                    // Secondary sort: by pump number (if available)
+                    if (a.pump_no !== undefined && b.pump_no !== undefined) {
+                        var aPump = parseInt(a.pump_no) || 0;
+                        var bPump = parseInt(b.pump_no) || 0;
+                        
+                        if (aPump !== bPump) {
+                            return aPump - bPump;
+                        }
+                        
+                        // Tertiary sort: by nozzle number (if pumps are the same)
+                        if (a.nozzle_no !== undefined && b.nozzle_no !== undefined) {
+                            var aNozzle = parseInt(a.nozzle_no) || 0;
+                            var bNozzle = parseInt(b.nozzle_no) || 0;
+                            return aNozzle - bNozzle;
+                        }
+                    }
+                    
+                    // If no pump/nozzle data, sort alphabetically by product name
+                    return aName.localeCompare(bName);
+                });
+            }
+
             // Function to render combined Product Wise Summary
             function renderCombinedProductSummary(data, totalVolume, totalAmount) {
                 var tbody = $('#product-summary-tbody');
@@ -397,7 +476,10 @@
                 tbody.empty();
                 
                 if (data && data.length > 0) {
-                    data.forEach(function(item) {
+                    // Sort products in specified order
+                    var sortedData = sortProductsByOrder(data);
+                    
+                    sortedData.forEach(function(item) {
                         var productName = item.product_name || item.product || 'N/A';
                         var productLabel = productName;
                         if (item.product_name && item.product && item.product_name !== item.product) {
@@ -425,7 +507,10 @@
                 tbody.empty();
                 
                 if (data && data.length > 0) {
-                    data.forEach(function(item) {
+                    // Sort pump summary by product order
+                    var sortedData = sortProductsByOrder(data);
+                    
+                    sortedData.forEach(function(item) {
                         var pumpProductName = item.product_name || item.product || 'N/A';
                         var pumpProductLabel = pumpProductName;
                         if (item.product_name && item.product && item.product_name !== item.product) {
@@ -435,15 +520,15 @@
                         row.append($('<td>').text(pumpProductLabel));
                         row.append($('<td>').addClass('text-center').text(item.pump_no || 'N/A'));
                         row.append($('<td>').addClass('text-center').text(item.nozzle_no || 'N/A'));
-                        row.append($('<td>').addClass('text-left').text(parseFloat(item.start_totalizer || 0).toLocaleString('en-US', {minimumFractionDigits: 3, maximumFractionDigits: 3})));
-                        row.append($('<td>').addClass('text-left').text(parseFloat(item.end_totalizer || 0).toLocaleString('en-US', {minimumFractionDigits: 3, maximumFractionDigits: 3})));
-                        row.append($('<td>').addClass('text-left').text(parseFloat(item.totalizer_volume || 0).toLocaleString('en-US', {minimumFractionDigits: 3, maximumFractionDigits: 3})));
+                        row.append($('<td>').addClass('text-left').text(parseFloat(item.start_totalizer || 0).toFixed(2)));
+                        row.append($('<td>').addClass('text-left').text(parseFloat(item.end_totalizer || 0).toFixed(2)));
+                        row.append($('<td>').addClass('text-left').text(parseFloat(item.totalizer_volume || 0).toFixed(2)));
                         row.append($('<td>').addClass('text-left').text(parseFloat(item.txn_volume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
                         row.append($('<td>').addClass('text-left').text(parseFloat(item.amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})));
                         tbody.append(row);
                     });
                     tfoot.show();
-                    $('#pump-total-totalizer-volume').text(parseFloat(totalTotalizerVolume || 0).toLocaleString('en-US', {minimumFractionDigits: 3, maximumFractionDigits: 3}));
+                    $('#pump-total-totalizer-volume').text(parseFloat(totalTotalizerVolume || 0).toFixed(2));
                     $('#pump-total-txn-volume').text(parseFloat(totalTxnVolume || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
                     $('#pump-total-amount').text(parseFloat(totalAmount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
                 } else {
@@ -625,6 +710,14 @@
                 loadShiftSummary();
             });
 
+            // Export to CSV button
+            $('#shift-summary-export-csv-btn').on('click', function() {
+                var query = $('#shift-summary-filter-form').serialize();
+                var baseUrl = '{{ route('hos-reports.export.csv') }}';
+                var queryString = query ? (query + '&') : '';
+                window.open(baseUrl + '?' + queryString + 'tab=shift-summary', '_blank');
+            });
+
             // Export to PDF button
             $('#shift-summary-export-pdf-btn').on('click', function() {
                 var query = $('#shift-summary-filter-form').serialize();
@@ -689,7 +782,7 @@
                         endTimes.forEach(function(item) {
                             var label = item.time;
                             if (item.bos_shift_id) {
-                                label += ' (BOS #' + item.bos_shift_id + ')';
+                                label += ' (ID #' + item.bos_shift_id + ')';
                             } else if (item.shift_id) {
                                 label += ' (Shift #' + item.shift_id + ')';
                             }
