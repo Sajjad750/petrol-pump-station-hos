@@ -39,9 +39,9 @@
                         <div class="inner">
                             <p>Total Sites</p>
                             <h3>{{ $totalStations }}</h3>
-                            <p class="subtitle text-success">
-                                <i class="fas fa-arrow-up"></i> +2 this month
-                            </p>
+                                <!-- <p class="subtitle text-success">
+                                    <i class="fas fa-arrow-up"></i> +2 this month
+                                </p> -->
                         </div>
                         <div class="icon">
                             <i class="fas fa-map-marker-alt"></i>
@@ -56,9 +56,9 @@
                             
                             <p>Connected Sites</p>
                             <h3>{{ $onlineStations }}</h3>
-                            <p class="subtitle text-success">
+                            <!-- <p class="subtitle text-success">
                                 <i class="fas fa-check-circle"></i> 93.3% uptime
-                            </p>
+                            </p> -->
                         </div>
                         <div class="icon">
                             <i class="fas fa-heartbeat"></i>
@@ -73,9 +73,9 @@
                             
                             <p>Warning Sites</p>
                             <h3>{{ $warningStations }}</h3>
-                            <p class="subtitle text-warning">
+                            <!-- <p class="subtitle text-warning">
                                 <i class="fas fa-exclamation-triangle"></i> 2.7% warning
-                            </p>
+                            </p> -->
                         </div>
                         <div class="icon">
                             <i class="fas fa-exclamation-triangle"></i>
@@ -90,9 +90,9 @@
                             
                             <p>Offline Sites</p>
                             <h3>{{ $offlineStations }}</h3>
-                            <p class="subtitle text-danger">
+                            <!-- <p class="subtitle text-danger">
                                 <i class="fas fa-arrow-down"></i> -1 from yesterday
-                            </p>
+                            </p> -->
                         </div>
                         <div class="icon">
                             <i class="fas fa-exclamation-triangle"></i>
@@ -101,6 +101,7 @@
                     </div>
                 </div>
             </div>
+
 
             <!-- Sales Summary Cards -->
             <!-- <div class="row">
@@ -231,52 +232,162 @@
                 </div>
             </div>
 
+                        <!-- Live Activity Section -->
+                        <div class="row" style="margin-top: 2rem;">
+                <!-- Live Site Activity Card -->
+                <div class="col-lg-8">
+                    <div class="card" style="border: none; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        <div class="card-body" style="padding: 24px;">
+                            <div class="d-flex justify-content-between align-items-center mb-3" style="border-bottom: 1px solid #E1E4ED;">
+                                <div style="padding-bottom: 30px;">
+                                    <h5 style="font-size: 16px; font-family:'DM sans', sans-serif; font-weight: 400; color: #6D758F; margin: 0;">Live Site Activity</h5>
+                                    <div style="margin-top: 8px;">
+                                        <span style="font-size: 20px; font-family:'DM sans', sans-serif; font-weight: 700; color: #19213D;">Live</span>
+                                        <i class="fas fa-chevron-down" style="color: #027a48; font-size: 12px; margin-left: 4px;"></i>
+                                    </div>
+                                </div>
+                                <div style="padding-bottom: 30px;">
+                                    <select id="activityPeriodSelector" class="form-control" style="border: 1px solid #d0d5dd; border-radius: 8px; padding: 8px 12px; font-size: 14px;">
+                                        <option value="daily">Daily</option>
+                                        <option value="weekly" selected>Weekly</option>
+                                        <option value="monthly">Monthly</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div style="height: 300px; position: relative;">
+                                <canvas id="liveActivityChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Cards Column -->
+                <div class="col-lg-4">
+                    <!-- Total Transactions Card -->
+                    <div class="card mb-3" style="border: none; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        <div class="card-body" style="padding: 24px;">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <p style="font-size: 14px; color: #667085; margin: 0 0 8px 0;">Total Transactions</p>
+                                    <h3 id="totalTransactionsValue" style="font-size: 36px; font-weight: 600; color: #101828; margin: 0;">{{ number_format($totalTransactions) }}</h3>
+                                    <p id="recentTransactionsChange" style="font-size: 14px; color: #667085; margin: 8px 0 0 0;">+{{ number_format($recentTransactions) }} in last hour</p>
+                                </div>
+                                <div>
+                                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" style="opacity: 0.5;">
+                                        <path d="M6 24L18 12L30 24L42 12" stroke="#3b82f6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M6 36L18 24L30 36L42 24" stroke="#3b82f6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Liters Sold Card -->
+                    <div class="card" style="border: none; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        <div class="card-body" style="padding: 24px;">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <p style="font-size: 14px; color: #667085; margin: 0 0 8px 0;">Liters Sold</p>
+                                    <h3 id="totalLitersSoldValue" style="font-size: 36px; font-weight: 600; color: #101828; margin: 0;">{{ number_format($totalLitersSold) }}</h3>
+                                    <p id="recentLitersChange" style="font-size: 14px; color: #667085; margin: 8px 0 0 0;">+{{ number_format($recentLiters, 0) }}L in last hour</p>
+                                </div>
+                                <div>
+                                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" style="opacity: 0.5;">
+                                        <path d="M6 24L18 12L30 24L42 12" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M6 36L18 24L30 36L42 24" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
             <!-- Analytics Charts Row 1 -->
             <div class="row" style=" margin-bottom:2rem; margin-top:1rem;">
                 <div class="col-lg-6">
-                    <div class="chart-card">
-                        <div class="chart-title">Inventory Forecast - Tank Dry Out Prediction</div>
-                        <div class="chart-container">
-                            <canvas id="inventoryForecastChart"></canvas>
+                    <div class="card" style="border: none; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        <div class="card-body" style="padding: 24px;">
+                            <div style="margin-bottom: 24px; border-bottom: 1px solid #E1E4ED;">
+                                <p style="font-size: 16px; font-family:'DM sans', sans-serif; font-weight: 400; margin-top: 10px; color: #6D758F; margin: 0 0 4px 0;">Activity</p>
+                                <h5 style="font-size: 20px; font-family:'DM sans', sans-serif; font-weight: 700; color: #19213D; margin: 0; padding-bottom:30px">Inventory forecast</h5>
+                            </div>
+                            <div id="inventoryForecastChart" style="display: flex; gap: 14px; align-items: flex-end; justify-content: space-between; min-height: 300px; padding: 10px 0 20px 0;">
+                                <!-- Columns will be generated by JavaScript -->
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="col-lg-6">
-                    <div class="chart-card">
-                        <div class="chart-title">Sales Summary - Last 7 Days</div>
-                        <div class="chart-container">
-                            <canvas id="salesSummaryChart"></canvas>
+                    <div class="card" style="border: none; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); height:518px;">
+                        <div class="card-body" style="padding: 24px;">
+                            <div class="d-flex justify-content-between align-items-center mb-3" style="border-bottom: 1px solid #E1E4ED;">
+                                <div style="padding-bottom: 30px;">
+                                    <p style="font-size: 16px; font-family:'DM sans', sans-serif; font-weight: 400; margin-top: 10px; color: #6D758F; margin: 0 0 4px 0;">Statistics</p>
+                                    <h5 style="font-size: 20px; font-family:'DM sans', sans-serif; font-weight: 700; color: #19213D; margin: 0;">Sales summary over time</h5>
+                                </div>
+                                <div style="padding-bottom: 30px;">
+                                    <select id="salesSummaryPeriodSelector" class="form-control" style="border: 1px solid #d0d5dd; border-radius: 8px; padding: 8px 12px; font-size: 14px;">
+                                        <option value="daily">Daily</option>
+                                        <option value="weekly" selected>Weekly</option>
+                                        <option value="monthly">Monthly</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div style="position: relative; height: 350px;">
+                                <canvas id="salesSummaryChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Analytics Charts Row 2 -->
-            <div class="row" style="margin-bottom:2rem;">
-                <div class="col-lg-4">
-                    <div class="chart-card">
-                        <div class="chart-title">Product Sales Distribution</div>
-                        <div class="chart-container">
-                            <canvas id="productSalesChart"></canvas>
+            <div class="row" style="margin-bottom:2rem; border-bottom: 1px solid #e5e7eb;">
+                <div class="col-lg-6">
+                    <div class="card" style="border: none; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        <div class="card-body" style="padding: 24px;">
+                            <div class="d-flex justify-content-between align-items-center mb-3" style="border-bottom: 1px solid #E1E4ED;">
+                                <div style="padding-bottom: 30px;">
+                                    <p style="font-size: 16px; font-family:'DM sans', sans-serif; font-weight: 400; margin-top: 10px; color: #6D758F; margin: 0 0 4px 0;">Statistics</p>
+                                    <h5 style="font-size: 20px; font-family:'DM sans', sans-serif; font-weight: 700; color: #19213D; margin: 0;">Product Sales</h5>
+                                </div>
+                                <div style="padding-bottom: 30px;">
+                                    <select id="productSalesPeriodSelector" class="form-control" style="border: 1px solid #d0d5dd; border-radius: 8px; padding: 8px 12px; font-size: 14px;">
+                                        <option value="daily">Daily</option>
+                                        <option value="weekly" selected>Weekly</option>
+                                        <option value="monthly">Monthly</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div style="position: relative; height: 300px;">
+                                <canvas id="productSalesChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-lg-4">
-                    <div class="chart-card">
-                        <div class="chart-title">Top Sites by Sales</div>
-                        <div class="chart-container">
-                            <canvas id="topSitesChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-4">
-                    <div class="chart-card">
-                        <div class="chart-title">Low Stock Alert Distribution</div>
-                        <div class="chart-container">
-                            <canvas id="lowStockChart"></canvas>
+                <div class="col-lg-6">
+                    <div class="card" style="border: none; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        <div class="card-body" style="padding: 24px;">
+                            <div class="d-flex justify-content-between align-items-center mb-3" style="border-bottom: 1px solid #E1E4ED;">
+                                <div style="padding-bottom: 30px;">
+                                    <p style="font-size: 16px; font-family:'DM sans', sans-serif; font-weight: 400; margin-top: 10px; color: #6D758F; margin: 0 0 4px 0;">Statistics</p>
+                                    <h5 style="font-size: 20px; font-family:'DM sans', sans-serif; font-weight: 700; color: #19213D; margin: 0;">Top Sites in Sales</h5>
+                                </div>
+                                <div style="padding-bottom: 30px;">
+                                    <select id="topSitesPeriodSelector" class="form-control" style="border: 1px solid #d0d5dd; border-radius: 8px; padding: 8px 12px; font-size: 14px;">
+                                        <option value="daily">Daily</option>
+                                        <option value="weekly">Weekly</option>
+                                        <option value="monthly" selected>Month</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div style="position: relative; height: 300px;">
+                                <canvas id="topSitesChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -427,6 +538,133 @@
                 ]
             });
 
+            // Live Activity Chart
+            let liveActivityChart = null;
+            
+            function initLiveActivityChart(data) {
+                const ctx = document.getElementById('liveActivityChart').getContext('2d');
+                
+                // Destroy existing chart if it exists
+                if (liveActivityChart) {
+                    liveActivityChart.destroy();
+                }
+                
+                liveActivityChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Volume (Liters)',
+                            data: data.volumes,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            pointBackgroundColor: '#3b82f6',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                backgroundColor: '#1e40af',
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
+                                padding: 12,
+                                cornerRadius: 8,
+                                displayColors: false,
+                                callbacks: {
+                                    title: function(context) {
+                                        return context[0].label;
+                                    },
+                                    label: function(context) {
+                                        return context.parsed.y.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' L';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: '#f3f4f6',
+                                    drawBorder: false
+                                },
+                                ticks: {
+                                    color: '#667085',
+                                    font: {
+                                        size: 12
+                                    },
+                                    callback: function(value) {
+                                        if (value >= 1000) {
+                                            return (value / 1000).toFixed(1) + 'k';
+                                        }
+                                        return value;
+                                    }
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false,
+                                    drawBorder: false
+                                },
+                                ticks: {
+                                    color: '#667085',
+                                    font: {
+                                        size: 12,
+                                        weight: '500'
+                                    }
+                                }
+                            }
+                        },
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        }
+                    }
+                });
+            }
+            
+            // Initialize with weekly data
+            initLiveActivityChart({
+                labels: @json($liveActivityData['labels']),
+                volumes: @json($liveActivityData['volumes']),
+                amounts: @json($liveActivityData['amounts'])
+            });
+            
+            // Handle period selector change
+            $('#activityPeriodSelector').on('change', function() {
+                const period = $(this).val();
+                
+                $.ajax({
+                    url: '{{ route('dashboard.live-activity') }}',
+                    method: 'GET',
+                    data: { period: period },
+                    success: function(response) {
+                        // Update chart
+                        initLiveActivityChart(response.chartData);
+                        
+                        // Update stats cards
+                        $('#totalTransactionsValue').text(response.totalTransactions.toLocaleString());
+                        $('#totalLitersSoldValue').text(response.totalLitersSold.toLocaleString());
+                        $('#recentTransactionsChange').text('+' + response.recentTransactions.toLocaleString() + ' in last hour');
+                        $('#recentLitersChange').text('+' + response.recentLiters.toLocaleString() + 'L in last hour');
+                    },
+                    error: function(xhr) {
+                        console.error('Error loading live activity data:', xhr);
+                    }
+                });
+            });
+
             // Initialize Map with dynamic center based on station locations
             @if($stations->filter(function($station) { return $station->hasCoordinates(); })->count() > 0)
                 @php
@@ -489,249 +727,522 @@
                 `);
             });
 
-            // Calculate dynamic low stock data based on tank measurements
-            var criticalLowTanks = {{ $stations->sum(function($station) { 
-                return $station->tankMeasurements->filter(function($measurement) { 
-                    return $measurement->tank_filling_percentage !== null && $measurement->tank_filling_percentage < 20; 
-                })->count(); 
-            }) }};
+            // Inventory Forecast Chart - Funnel Layout (Matching Image Exactly)
+            function renderInventoryForecastChart(data) {
+                const container = document.getElementById('inventoryForecastChart');
+                container.innerHTML = '';
+                
+                const categories = [
+                    { key: 'dry_out', label: 'DRY OUT', highlight: false },
+                    { key: 'days_1_2', label: '1-2 DAYS', highlight: false },
+                    { key: 'days_3_5', label: '3-5 DAYS', highlight: false },
+                    { key: 'days_6_8', label: '6-8 DAYS', highlight: true }, // Highlight this one
+                    { key: 'days_9_12', label: '9-12 DAYS', highlight: false },
+                ];
+                
+                const maxCount = Math.max(...Object.values(data.categories), 1);
+                const baseHeight = 312; // Base height for the funnel bars
+                
+                categories.forEach(function(category, index) {
+                    const count = data.categories[category.key] || 0;
+                    const fillPercentage = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                    const isHighlighted = category.highlight && count > 0;
+                    
+                    // Create column wrapper
+                    const column = document.createElement('div');
+                    column.style.cssText = 'flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; min-width: 0; max-width: 110px;';
+                    
+                    // Funnel bar container - rounded rectangle with light gray border
+                    const barContainer = document.createElement('div');
+                    barContainer.style.cssText = 'width: 60%; height: ' + baseHeight + 'px; position: relative; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 24px; overflow: hidden; display: flex; align-items: flex-end; box-shadow: 0 0 0 1px rgba(0,0,0,0.02);';
+                    
+                    // Fill bar - blue gradient fill (funnel effect)
+                    const fillBar = document.createElement('div');
+                    const fillHeight = Math.max(40, (fillPercentage / 100) * baseHeight); // Minimum 40px height for text visibility
+                    
+                    // Color scheme: use specified rgba colors with opacity
+                    const gradientStart = 'rgba(195, 221, 255, 1)'; // Light blue
+                    const gradientEnd = 'rgba(141, 193, 255, 1)';   // Darker blue
+                    
+                    fillBar.style.cssText = 'width: 100%; height: ' + fillHeight + 'px; background: linear-gradient(180deg, ' + gradientStart + ' 0%, ' + gradientEnd + ' 100%); border-radius: 0 0 11px 11px; transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1); position: relative; display: flex; align-items: flex-start; justify-content: center; padding-top: 8px; opacity: 0.8;';
+                    
+                    // Add subtle shine effect
+                    fillBar.style.boxShadow = 'inset 0 1px 2px rgba(255,255,255,0.2), inset 0 -1px 2px rgba(0,0,0,0.1)';
+                    
+                    // Tank count text - at the top of the funnel bar
+                    const tankCountText = document.createElement('div');
+                    tankCountText.textContent = count + ' TANKS';
+                    tankCountText.style.cssText = 'font-size: 12px; font-weight: 400; color: #000000; text-align: center; line-height: 1.2; white-space: nowrap; letter-spacing: -0.01em; text-shadow: 0 1px 2px rgba(0,0,0,0.2); width: 100%;';
+                    
+                    fillBar.appendChild(tankCountText);
+                    barContainer.appendChild(fillBar);
+                    
+                    // Bottom text - Time period label
+                    const bottomText = document.createElement('div');
+                    bottomText.textContent = category.label;
+                    bottomText.style.cssText = 'font-size: 11px; font-weight: 500; color: #667085; margin-top: 8px; text-align: center; line-height: 1.3; white-space: nowrap; letter-spacing: 0.01em;';
+                    
+                    // Assemble column
+                    column.appendChild(barContainer);
+                    column.appendChild(bottomText);
+                    
+                    container.appendChild(column);
+                });
+            }
             
-            var lowStockTanks = {{ $stations->sum(function($station) { 
-                return $station->tankMeasurements->filter(function($measurement) { 
-                    return $measurement->tank_filling_percentage !== null && $measurement->tank_filling_percentage >= 20 && $measurement->tank_filling_percentage < 50; 
-                })->count(); 
-            }) }};
-            
-            var normalStockTanks = {{ $stations->sum(function($station) { 
-                return $station->tankMeasurements->filter(function($measurement) { 
-                    return $measurement->tank_filling_percentage !== null && $measurement->tank_filling_percentage >= 50; 
-                })->count(); 
-            }) }};
-
-            // Inventory Forecast Chart (Horizontal Bar Chart) - Dynamic Data
-            var inventoryCtx = document.getElementById('inventoryForecastChart').getContext('2d');
-            console.log('Initializing inventory forecast chart...');
-            
-            // Use the same dynamic data as low stock chart
-            new Chart(inventoryCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Critical Low (<20%)', 'Low Stock (20-50%)', 'Normal Stock (50%+)'],
-                    datasets: [{
-                        label: 'Number of Tanks',
-                        data: [criticalLowTanks, lowStockTanks, normalStockTanks],
-                        backgroundColor: ['#dc3545', '#ffc107', '#28a745'],
-                        borderColor: ['#dc3545', '#ffc107', '#28a745'],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        x: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
+            // Initialize inventory forecast chart
+            const inventoryForecastData = @json($inventoryForecastData);
+            renderInventoryForecastChart(inventoryForecastData);
 
             // Sales Summary Chart (Line Chart) - Dynamic Data
-            var salesCtx = document.getElementById('salesSummaryChart').getContext('2d');
-            console.log('Initializing sales summary chart with dynamic data...');
+            let salesSummaryChart = null;
             
-            new Chart(salesCtx, {
-                type: 'line',
-                data: {
-                    labels: @json($salesData['labels']),
-                    datasets: [{
-                        label: 'Volume (Liters)',
-                        data: @json($salesData['volume']),
-                        borderColor: '#007bff',
-                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }, {
-                        label: 'Amount ($)',
-                        data: @json($salesData['amount']),
-                        borderColor: '#28a745',
-                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top'
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.dataset.label || '';
-                                    if (label) {
-                                        label += ': ';
-                                    }
-                                    if (context.dataset.label.includes('Volume')) {
-                                        label += context.parsed.y.toFixed(2) + ' L';
-                                    } else {
-                                        label += '$' + context.parsed.y.toFixed(2);
-                                    }
-                                    return label;
-                                }
-                            }
-                        }
+            function initSalesSummaryChart(data) {
+                const ctx = document.getElementById('salesSummaryChart').getContext('2d');
+                
+                // Destroy existing chart if it exists
+                if (salesSummaryChart) {
+                    salesSummaryChart.destroy();
+                }
+                
+                salesSummaryChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Sales Volume',
+                            data: data.volume,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            pointBackgroundColor: '#3b82f6',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2
+                        }]
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return value.toLocaleString();
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                backgroundColor: '#1e40af',
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
+                                padding: 12,
+                                cornerRadius: 8,
+                                displayColors: false,
+                                callbacks: {
+                                    title: function(context) {
+                                        return context[0].label;
+                                    },
+                                    label: function(context) {
+                                        const value = context.parsed.y || 0;
+                                        // Format as "2.8K" style
+                                        if (value >= 1000) {
+                                            return (value / 1000).toFixed(1) + 'K';
+                                        }
+                                        return value.toFixed(2);
+                                    }
                                 }
                             }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: '#f3f4f6',
+                                    drawBorder: false,
+                                    borderDash: [5, 5]
+                                },
+                                ticks: {
+                                    color: '#667085',
+                                    font: {
+                                        size: 12,
+                                        family: "'DM Sans', sans-serif"
+                                    },
+                                    callback: function(value) {
+                                        // Format Y-axis labels as "0.4K", "0.3K", etc.
+                                        if (value >= 1000) {
+                                            return (value / 1000).toFixed(1) + 'K';
+                                        } else if (value >= 100) {
+                                            return (value / 1000).toFixed(2) + 'K';
+                                        } else if (value >= 10) {
+                                            return (value / 1000).toFixed(3) + 'K';
+                                        } else {
+                                            return (value / 1000).toFixed(3) + 'K';
+                                        }
+                                    }
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false,
+                                    drawBorder: false
+                                },
+                                ticks: {
+                                    color: '#667085',
+                                    font: {
+                                        size: 12,
+                                        weight: '500',
+                                        family: "'DM Sans', sans-serif"
+                                    }
+                                }
+                            }
+                        },
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
                         }
                     }
-                }
+                });
+            }
+            
+            // Initialize with weekly data
+            initSalesSummaryChart({
+                labels: @json($salesData['labels']),
+                volume: @json($salesData['volume'])
+            });
+            
+            // Handle period selector change
+            $('#salesSummaryPeriodSelector').on('change', function() {
+                const period = $(this).val();
+                
+                $.ajax({
+                    url: '{{ route('dashboard.sales-summary') }}',
+                    method: 'GET',
+                    data: { period: period },
+                    success: function(response) {
+                        initSalesSummaryChart(response);
+                    },
+                    error: function(xhr) {
+                        console.error('Error loading sales summary data:', xhr);
+                    }
+                });
             });
 
-            // Product Sales Chart (Doughnut Chart) - Dynamic Data
-            var productCtx = document.getElementById('productSalesChart').getContext('2d');
-            console.log('Initializing product sales chart with dynamic data...');
+            // Product Sales Chart (Donut Chart) - Dynamic Data with Center Text
+            let productSalesChart = null;
+            let selectedProduct = null; // Store selected product info
             
-            new Chart(productCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: @json($productDistributionData['labels']),
-                    datasets: [{
-                        data: @json($productDistributionData['data']),
-                        backgroundColor: @json($productDistributionData['colors']),
-                        borderWidth: 2,
-                        borderColor: '#fff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                padding: 20,
-                                usePointStyle: true
+            function initProductSalesChart(data) {
+                const ctx = document.getElementById('productSalesChart').getContext('2d');
+                
+                // Destroy existing chart if it exists
+                if (productSalesChart) {
+                    productSalesChart.destroy();
+                }
+                
+                // Reset selected product when chart is reinitialized
+                selectedProduct = null;
+                
+                // Handle empty data
+                let chartLabels = data.labels || [];
+                let chartData = data.data || [];
+                let chartColors = data.colors || [];
+                
+                if (chartData.length === 0 || chartLabels.length === 0) {
+                    // Show empty state with default data
+                    chartLabels = [];
+                    chartData = [];
+                    chartColors = [];
+                }
+                
+                productSalesChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: chartLabels,
+                        datasets: [{
+                            data: chartData.length > 0 ? chartData : [1], // Show a single segment if empty
+                            backgroundColor: chartColors.length > 0 ? chartColors : ['#e5e7eb'], // Light gray if empty
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '70%',
+                        onClick: function(event, activeElements) {
+                            if (activeElements.length > 0) {
+                                const index = activeElements[0].index;
+                                const dataset = this.data.datasets[0];
+                                const label = this.data.labels[index];
+                                const value = dataset.data[index];
+                                
+                                // Store selected product
+                                selectedProduct = {
+                                    label: label,
+                                    value: value
+                                };
+                                
+                                // Update chart to show selected product in center
+                                this.update();
+                            } else {
+                                // Clicked outside - clear selection
+                                selectedProduct = null;
+                                this.update();
                             }
                         },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.label || '';
-                                    if (label) {
-                                        label += ': ';
+                        plugins: {
+                            legend: {
+                                display: chartLabels.length > 0, // Only show legend if there are labels
+                                position: 'bottom',
+                                labels: {
+                                    padding: 15,
+                                    usePointStyle: true,
+                                    pointStyle: 'circle',
+                                    font: {
+                                        family: "'DM Sans', sans-serif",
+                                        size: 12
+                                    },
+                                    color: '#19213D',
+                                    generateLabels: function(chart) {
+                                        const chartData = chart.data;
+                                        if (chartData.labels && chartData.labels.length && chartData.datasets.length) {
+                                            return chartData.labels.map((label, i) => {
+                                                const dataset = chartData.datasets[0];
+                                                const value = dataset.data[i];
+                                                return {
+                                                    text: label,
+                                                    fillStyle: dataset.backgroundColor[i],
+                                                    strokeStyle: dataset.borderColor,
+                                                    lineWidth: dataset.borderWidth,
+                                                    hidden: isNaN(value) || value === 0,
+                                                    index: i
+                                                };
+                                            });
+                                        }
+                                        return [];
                                     }
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
-                                    label += context.parsed.toFixed(2) + ' L (' + percentage + '%)';
-                                    return label;
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : 0;
+                                        label += context.parsed.toFixed(2) + ' L (' + percentage + '%)';
+                                        return label;
+                                    }
                                 }
                             }
+                        },
+                        onHover: (event, activeElements) => {
+                            event.native.target.style.cursor = activeElements.length > 0 ? 'pointer' : 'default';
                         }
+                    },
+                    plugins: [{
+                        id: 'centerText',
+                        beforeDraw: function(chart) {
+                            // Only show center text if a product is selected
+                            if (!selectedProduct) {
+                                return; // Don't show anything if nothing is selected
+                            }
+                            
+                            const ctx = chart.ctx;
+                            const centerX = chart.chartArea.left + (chart.chartArea.right - chart.chartArea.left) / 2;
+                            const centerY = chart.chartArea.top + (chart.chartArea.bottom - chart.chartArea.top) / 2;
+                            
+                            // Get selected product value
+                            const productValue = selectedProduct.value;
+                            
+                            // Format: if >= 1000, show as "XK", otherwise show exact value with 2 decimal places
+                            let displayVal;
+                            if (productValue >= 1000000) {
+                                displayVal = (productValue / 1000000).toFixed(1) + 'M';
+                            } else if (productValue >= 1000) {
+                                displayVal = (productValue / 1000).toFixed(1) + 'K';
+                            } else {
+                                displayVal = productValue.toFixed(2);
+                            }
+                            
+                            ctx.save();
+                            // Product name
+                            ctx.font = '400 14px "DM Sans", sans-serif';
+                            ctx.fillStyle = '#6D758F';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.fillText(selectedProduct.label, centerX, centerY - 25);
+                            
+                            // Product value
+                            ctx.font = 'bold 24px "DM Sans", sans-serif';
+                            ctx.fillStyle = '#19213D';
+                            ctx.fillText(displayVal, centerX, centerY - 5);
+                            
+                            // Unit label
+                            ctx.font = '400 12px "DM Sans", sans-serif';
+                            ctx.fillStyle = '#6D758F';
+                            ctx.fillText('Liters', centerX, centerY + 15);
+                            ctx.restore();
+                        }
+                    }]
+                });
+            }
+            
+            // Initialize with weekly data
+            initProductSalesChart({
+                labels: @json($productDistributionData['labels']),
+                data: @json($productDistributionData['data']),
+                colors: @json($productDistributionData['colors']),
+                total_volume: @json($productDistributionData['total_volume'] ?? 0),
+                total_transactions: @json($productDistributionData['total_transactions'] ?? 0)
+            });
+            
+            // Handle period selector change
+            $('#productSalesPeriodSelector').on('change', function() {
+                const period = $(this).val();
+                
+                $.ajax({
+                    url: '{{ route('dashboard.product-sales') }}',
+                    method: 'GET',
+                    data: { period: period },
+                    success: function(response) {
+                        initProductSalesChart(response);
+                    },
+                    error: function(xhr) {
+                        console.error('Error loading product sales data:', xhr);
                     }
-                }
+                });
             });
 
             // Top Sites Chart (Horizontal Bar Chart) - Dynamic Data
-            var topSitesCtx = document.getElementById('topSitesChart').getContext('2d');
-            var topLabels = @json($topSitesSales['labels'] ?? []);
-            var topVolumes = @json($topSitesSales['volume'] ?? []);
-            var topAmounts = @json($topSitesSales['amount'] ?? []);
-
-            new Chart(topSitesCtx, {
-                type: 'bar',
-                data: {
-                    labels: topLabels,
-                    datasets: [{
-                        label: 'Sales Volume (Liters)',
-                        data: topVolumes,
-                        backgroundColor: '#3b82f6',
-                        borderColor: '#3b82f6',
-                        borderWidth: 0,
-                        borderRadius: 4
-                    }, {
-                        label: 'Sales Amount',
-                        data: topAmounts,
-                        backgroundColor: '#e5e7eb',
-                        borderColor: '#e5e7eb',
-                        borderWidth: 0,
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    if (context.datasetIndex === 0) {
-                                        return (context.parsed.x || 0).toLocaleString() + ' L';
-                                    }
-                                    if (context.datasetIndex === 1) {
-                                        return (context.parsed.x || 0).toLocaleString();
-                                    }
-                                    return '';
-                                }
-                            }
-                        }
+            let topSitesChart = null;
+            
+            function initTopSitesChart(data) {
+                const ctx = document.getElementById('topSitesChart').getContext('2d');
+                
+                // Destroy existing chart if it exists
+                if (topSitesChart) {
+                    topSitesChart.destroy();
+                }
+                
+                const labels = data.labels || [];
+                const volumes = data.volume || [];
+                
+                // Calculate max value for x-axis scale (100K or max volume, whichever is higher)
+                const maxVolume = Math.max(...volumes, 0);
+                const maxValue = Math.max(100000, maxVolume);
+                
+                topSitesChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Sales Volume (Liters)',
+                            data: volumes,
+                            backgroundColor: '#3b82f6',
+                            borderColor: '#3b82f6',
+                            borderWidth: 0,
+                            borderRadius: 4,
+                            barThickness: 16
+                        }]
                     },
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            grid: { display: true, color: '#e5e7eb', lineWidth: 1 },
-                            ticks: {
-                                callback: function(value) {
-                                    return value >= 1000 ? (value/1000) + 'K' : value;
-                                }
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                enabled: true,
+                                callbacks: {
+                                    title: function() {
+                                        return ''; // Remove site ID from tooltip
+                                    },
+                                    label: function(context) {
+                                        const value = context.parsed.x || 0;
+                                        // Format as "50.000" style (3 decimal places, no thousand separator)
+                                        return value.toFixed(3);
+                                    }
+                                },
+                                backgroundColor: '#1e40af',
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
+                                padding: 12,
+                                cornerRadius: 8,
+                                displayColors: false
                             }
                         },
-                        y: { grid: { display: false } }
-                    }
-                }
-            });
-
-            // Low Stock Chart (Doughnut Chart) - Dynamic Data
-            var lowStockCtx = document.getElementById('lowStockChart').getContext('2d');
-            console.log('Initializing low stock chart...');
-            
-            new Chart(lowStockCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Critical Low (<20%)', 'Low Stock (20-50%)', 'Normal Stock (50%+)'],
-                    datasets: [{
-                        data: [criticalLowTanks, lowStockTanks, normalStockTanks],
-                        backgroundColor: ['#dc3545', '#ffc107', '#28a745'],
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                max: maxValue,
+                                grid: { 
+                                    display: true, 
+                                    color: '#e5e7eb', 
+                                    lineWidth: 1,
+                                    drawBorder: false
+                                },
+                                ticks: {
+                                    stepSize: maxValue / 4, // 0, 25K, 50K, 75K, 100K
+                                    callback: function(value) {
+                                        if (value >= 1000) {
+                                            return (value / 1000).toFixed(0) + 'K';
+                                        }
+                                        return value;
+                                    },
+                                    color: '#667085',
+                                    font: {
+                                        size: 12,
+                                        family: "'DM Sans', sans-serif"
+                                    }
+                                }
+                            },
+                            y: { 
+                                grid: { display: false, drawBorder: false },
+                                ticks: {
+                                    color: '#19213D',
+                                    font: {
+                                        size: 12,
+                                        family: "'DM Sans', sans-serif",
+                                        weight: '500'
+                                    }
+                                }
+                            }
                         }
                     }
-                }
+                });
+            }
+            
+            // Initialize with monthly data
+            initTopSitesChart({
+                labels: @json($topSitesSales['labels'] ?? []),
+                volume: @json($topSitesSales['volume'] ?? []),
+                amount: @json($topSitesSales['amount'] ?? [])
+            });
+            
+            // Handle period selector change
+            $('#topSitesPeriodSelector').on('change', function() {
+                const period = $(this).val();
+                
+                $.ajax({
+                    url: '{{ route('dashboard.top-sites') }}',
+                    method: 'GET',
+                    data: { period: period },
+                    success: function(response) {
+                        initTopSitesChart(response);
+                    },
+                    error: function(xhr) {
+                        console.error('Error loading top sites data:', xhr);
+                        // Fallback to default data
+                        initTopSitesChart({
+                            labels: @json($topSitesSales['labels'] ?? []),
+                            volume: @json($topSitesSales['volume'] ?? []),
+                            amount: @json($topSitesSales['amount'] ?? [])
+                        });
+                    }
+                });
             });
 
             // Auto-refresh data every 30 seconds
