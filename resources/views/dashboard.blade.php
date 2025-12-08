@@ -321,7 +321,7 @@
                 </div>
 
                 <div class="col-lg-6">
-                    <div class="card" style="border: none; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <div class="card" style="border: none; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); height:518px;">
                         <div class="card-body" style="padding: 24px;">
                             <div class="d-flex justify-content-between align-items-center mb-3" style="border-bottom: 1px solid #E1E4ED;">
                                 <div style="padding-bottom: 30px;">
@@ -336,7 +336,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div style="position: relative; height: 300px;">
+                            <div style="position: relative; height: 350px;">
                                 <canvas id="salesSummaryChart"></canvas>
                             </div>
                         </div>
@@ -1157,6 +1157,9 @@
                             tooltip: {
                                 enabled: true,
                                 callbacks: {
+                                    title: function() {
+                                        return ''; // Remove site ID from tooltip
+                                    },
                                     label: function(context) {
                                         const value = context.parsed.x || 0;
                                         // Format as "50.000" style (3 decimal places, no thousand separator)
