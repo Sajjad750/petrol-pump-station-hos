@@ -134,6 +134,9 @@ Route::middleware('auth')->group(function () {
     Route::get('hos-reports/export-excel', [\App\Http\Controllers\HosReportsController::class, 'exportExcel'])->name('hos-reports.export.excel');
     Route::get('hos-reports/export-csv', [\App\Http\Controllers\HosReportsController::class, 'exportCsv'])->name('hos-reports.export.csv');
     Route::get('hos-reports/export-pdf', [\App\Http\Controllers\HosReportsController::class, 'exportPdf'])->name('hos-reports.export.pdf');
+    Route::get('hos-reports/download/{filename}', [\App\Http\Controllers\HosReportsController::class, 'downloadExport'])->name('hos-reports.download');
+    Route::get('hos-reports/notifications', [\App\Http\Controllers\HosReportsController::class, 'getNotifications'])->name('hos-reports.notifications');
+    Route::post('hos-reports/notifications/{notificationId}/read', [\App\Http\Controllers\HosReportsController::class, 'markNotificationAsRead'])->name('hos-reports.notifications.read');
 });
 
 require __DIR__.'/auth.php';
