@@ -88,6 +88,33 @@ class HosReportsController extends Controller
     }
 
     /**
+     * Get pumps for dropdown.
+     */
+    public function getPumps(Request $request)
+    {
+        $query = Pump::query()
+            ->select('pts_pump_id')
+            ->distinct()
+            ->whereNotNull('pts_pump_id');
+
+        // Filter by station if provided
+        if ($request->filled('station_id')) {
+            $query->where('station_id', $request->input('station_id'));
+        }
+
+        $pumps = $query->orderBy('pts_pump_id')->get()->map(function ($pump) {
+            return [
+                'id' => $pump->pts_pump_id,
+                'name' => $pump->pts_pump_id,
+            ];
+        });
+
+        return response()->json([
+            'pumps' => $pumps,
+        ]);
+    }
+
+    /**
      * Get transactions data for DataTable.
      */
     public function getTransactionsData(Request $request)
@@ -760,7 +787,7 @@ class HosReportsController extends Controller
         }
 
         if (!empty($filters['pump_id'])) {
-            $query->where('pump_transactions.pts_pump_id', 'like', '%' . $filters['pump_id'] . '%');
+            $query->where('pump_transactions.pts_pump_id', $filters['pump_id']);
         }
 
         if (!empty($filters['mode_of_payment'])) {

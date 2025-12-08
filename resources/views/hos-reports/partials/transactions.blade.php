@@ -41,7 +41,9 @@
                 <div class="col-md-2">
                     <div class="form-group">
                         <label for="transaction_pump_id">Pump ID</label>
-                        <input type="text" class="form-control" id="transaction_pump_id" name="pump_id" placeholder="Pump ID">
+                        <select class="form-control" id="transaction_pump_id" name="pump_id">
+                            <option value="">All Pumps</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -708,8 +710,43 @@
                 }
             });
 
+            // Function to load pumps based on selected station
+            function loadPumps(stationId) {
+                var url = '{{ route('hos-reports.pumps') }}';
+                if (stationId) {
+                    url += '?station_id=' + stationId;
+                }
+
+                $.ajax({
+                    url: url,
+                    method: 'GET',
+                    success: function(response) {
+                        if (response.pumps) {
+                            var $select = $('#transaction_pump_id');
+                            var firstOption = $select.find('option').first();
+                            var optionsHtml = firstOption.length ? firstOption.prop('outerHTML') : '<option value="">All Pumps</option>';
+
+                            response.pumps.forEach(function(pump) {
+                                optionsHtml += '<option value="' + pump.id + '">' + pump.name + '</option>';
+                            });
+
+                            $select.html(optionsHtml);
+                        }
+                    }
+                });
+            }
+
+            // Load all pumps initially
+            loadPumps();
+
+            // Reload pumps when station changes
+            $('#transaction_station_id').on('change', function() {
+                var stationId = $(this).val();
+                loadPumps(stationId);
+            });
+
             // Auto-filter on dropdown change
-            $('#transaction_station_id, #transaction_mop, #transaction_product_id').on('change', function() {
+            $('#transaction_station_id, #transaction_mop, #transaction_product_id, #transaction_pump_id').on('change', function() {
                 transactionsTable.draw();
             });
         });
