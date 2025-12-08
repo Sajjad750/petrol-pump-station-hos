@@ -68,8 +68,22 @@ class HosReportsController extends Controller
      */
     public function getFuelGrades()
     {
+        $fuelGrades = \App\Models\FuelGrade::whereNotNull('name')
+            ->where('name', '!=', '')
+            ->selectRaw('MIN(id) as id, name')
+            ->groupBy('name')
+            ->orderByRaw("CASE 
+                WHEN LOWER(name) LIKE '%gasoline 91%' OR LOWER(name) LIKE '%gasoline91%' THEN 1
+                WHEN LOWER(name) LIKE '%gasoline 95%' OR LOWER(name) LIKE '%gasoline95%' THEN 2
+                WHEN LOWER(name) LIKE '%gasoline 98%' OR LOWER(name) LIKE '%gasoline98%' THEN 3
+                WHEN LOWER(name) LIKE '%diesel%' THEN 4
+                ELSE 5
+            END")
+            ->orderBy('name')
+            ->get();
+
         return response()->json([
-            'fuel_grades' => \App\Models\FuelGrade::select('id', 'name')->orderBy('name')->get(),
+            'fuel_grades' => $fuelGrades,
         ]);
     }
 
@@ -80,25 +94,32 @@ class HosReportsController extends Controller
     {
         // Define sortable columns mapping (column index => database column)
         $columns = [
-            0 => 'stations.site_name', // Site
-            1 => 'transaction_number', // Transaction ID
-            2 => 'date_time_start', // Date & Time
-            3 => 'pts_pump_id', // Pump
-            4 => 'pts_nozzle_id', // Nozzle
-            5 => 'fuel_grades.name', // Product
-            6 => 'price', // Unit Price
-            7 => 'volume', // Litres
-            8 => 'amount', // Amount
-            9 => 'mode_of_payment', // MOP
-            10 => 'tag', // Mobile & Vehicle ID (not sortable)
-            11 => 'pts_users.login', // Atten
+            0 => 'stations.pts_id', // Site ID
+            1 => 'stations.site_name', // Site Name
+            2 => 'transaction_number', // Trans ID
+            3 => 'date_time_end', // Trans Date (end time)
+            4 => 'pts_pump_id', // Pump
+            5 => 'pts_nozzle_id', // Nozzle
+            6 => 'fuel_grades.name', // Product
+            7 => 'price', // Unit Price
+            8 => 'volume', // Volume
+            9 => 'amount', // Amount
+            10 => 'starting_totalizer', // Start Totalizer
+            11 => 'total_volume', // End Totalizer
+            12 => 'mode_of_payment', // Payment Mode
+            13 => 'pts_users.login', // Attendant
+            14 => 'date_time_start', // Start Time
+            15 => 'date_time_end', // End Time
+            16 => 'tag', // Mobile No (not sortable)
+            17 => 'tag', // Vehicle No (not sortable)
+            18 => 'created_at', // HOS Received Date/Time
         ];
 
         $length = $request->input('length', 10);
         $start = $request->input('start', 0);
-        $orderColumnIndex = $request->input('order.0.column', 2);
+        $orderColumnIndex = $request->input('order.0.column', 3);
         $orderDir = $request->input('order.0.dir', 'desc');
-        $orderColumn = $columns[$orderColumnIndex] ?? 'date_time_start';
+        $orderColumn = $columns[$orderColumnIndex] ?? 'date_time_end';
 
         $filters = $request->only([
             'from_date',
@@ -115,22 +136,36 @@ class HosReportsController extends Controller
         $query = $this->baseTransactionsQuery(true);
         $this->applyTransactionFilters($query, $filters);
 
+        // Get total count without search (but with base filters)
+        $totalQuery = $this->baseTransactionsQuery(true);
+        $this->applyTransactionFilters($totalQuery, $filters);
+        $totalData = $totalQuery->count();
+
         // Global search for all columns
         if ($request->has('search') && $request->input('search.value') != '') {
             $search = $request->input('search.value');
             $query->where(function ($q) use ($search) {
-                $q->where('stations.site_name', 'like', "%{$search}%")
-                    ->orWhere('transaction_number', 'like', "%{$search}%")
-                    ->orWhere('pts_pump_id', 'like', "%{$search}%")
-                    ->orWhere('pts_nozzle_id', 'like', "%{$search}%")
+                $q->where('stations.pts_id', 'like', "%{$search}%")
+                    ->orWhere('stations.site_name', 'like', "%{$search}%")
+                    ->orWhere('pump_transactions.transaction_number', 'like', "%{$search}%")
+                    ->orWhere('pump_transactions.pts_pump_id', 'like', "%{$search}%")
+                    ->orWhere('pump_transactions.pts_nozzle_id', 'like', "%{$search}%")
                     ->orWhere('fuel_grades.name', 'like', "%{$search}%")
-                    ->orWhere('mode_of_payment', 'like', "%{$search}%")
-                    ->orWhere('tag', 'like', "%{$search}%")
-                    ->orWhere('pts_users.login', 'like', "%{$search}%");
+                    ->orWhere('pump_transactions.mode_of_payment', 'like', "%{$search}%")
+                    ->orWhere('pump_transactions.tag', 'like', "%{$search}%")
+                    ->orWhereRaw('pts_users.login like ?', ["%{$search}%"]);
+
+                // Also search numeric fields if search term is numeric
+                if (is_numeric($search)) {
+                    $q->orWhere('pump_transactions.price', '=', $search)
+                        ->orWhere('pump_transactions.volume', '=', $search)
+                        ->orWhere('pump_transactions.amount', '=', $search)
+                        ->orWhere('pump_transactions.starting_totalizer', '=', $search)
+                        ->orWhere('pump_transactions.total_volume', '=', $search)
+                        ->orWhere('pump_transactions.pts_user_id', '=', $search);
+                }
             });
         }
-
-        $totalData = PumpTransaction::count();
 
         // Get count before pagination but after filters
         $totalFiltered = $query->count();
@@ -227,21 +262,25 @@ class HosReportsController extends Controller
             //            }
 
             return [
-                'site' => $transaction->station ? $transaction->station->site_name : '',
-                'site_ref' => $transaction->station ? ($transaction->station->pts_id ?? '') : '',
+                'site' => $transaction->site_name ?? '',
+                'site_ref' => $transaction->pts_id ?? '',
                 'transaction_id' => $transaction->transaction_number ?? '',
-                'date_time' => $transaction->date_time_start ? $transaction->date_time_start->format('Y-m-d H:i:s') : '',
+                'trans_date' => $transaction->date_time_end ? $transaction->date_time_end->setTimezone('Asia/Riyadh')->format('Y-m-d H:i:s') : '',
                 'pump' => $transaction->pts_pump_id ?? '',
                 'nozzle' => $transaction->pts_nozzle_id ?? '',
-                'product' => $transaction->fuelGrade ? $transaction->fuelGrade->name : '',
+                'product' => $transaction->fuel_grade_name ?? '',
                 'unit_price' => $transaction->price ?? 0,
-                'litres' => $transaction->volume ?? 0,
+                'volume' => $transaction->volume ?? 0,
                 'amount' => $transaction->amount ?? 0,
-                'mode_of_payment' => ucfirst($transaction->mode_of_payment ?? ''),
-                'mobile_vehicle_id' => $mobile,
-                'vehicle_id' => $vehicleId,
-                'atten' => null,
-                'atten_username' => null,
+                'start_totalizer' => $transaction->starting_totalizer ?? 0,
+                'end_totalizer' => $transaction->total_volume ?? 0,
+                'payment_mode' => ucfirst($transaction->mode_of_payment ?? ''),
+                'attendant' => $transaction->attendant_login ?? '',
+                'start_time' => $transaction->date_time_start ? $transaction->date_time_start->setTimezone('Asia/Riyadh')->format('Y-m-d H:i:s') : '',
+                'end_time' => $transaction->date_time_end ? $transaction->date_time_end->setTimezone('Asia/Riyadh')->format('Y-m-d H:i:s') : '',
+                'mobile_no' => $mobile,
+                'vehicle_no' => $vehicleId,
+                'hos_received_time' => $transaction->created_at ? $transaction->created_at->setTimezone('Asia/Riyadh')->format('Y-m-d H:i:s') : '',
             ];
         });
 
@@ -263,8 +302,8 @@ class HosReportsController extends Controller
         $query = PumpTransaction::query()
             ->leftJoin('stations', 'pump_transactions.station_id', '=', 'stations.id')
             ->leftJoin('fuel_grades', function ($join) {
-                $join->on('pump_transactions.pts_fuel_grade_id', '=', 'fuel_grades.id')
-                     ->on('pump_transactions.station_id', '=', 'fuel_grades.station_id');
+                $join->on('pump_transactions.pts_fuel_grade_id', '=', 'fuel_grades.pts_fuel_grade_id')
+                     ->whereColumn('pump_transactions.station_id', 'fuel_grades.station_id');
             });
 
         // Date and Time Filters
@@ -300,8 +339,19 @@ class HosReportsController extends Controller
             $search = $request->input('search.value');
             $query->where(function ($q) use ($search) {
                 $q->where('stations.site_name', 'like', "%{$search}%")
-                    ->orWhere('transaction_number', 'like', "%{$search}%")
-                    ->orWhere('fuel_grades.name', 'like', "%{$search}%");
+                    ->orWhere('stations.pts_id', 'like', "%{$search}%")
+                    ->orWhere('pump_transactions.transaction_number', 'like', "%{$search}%")
+                    ->orWhere('pump_transactions.pts_pump_id', 'like', "%{$search}%")
+                    ->orWhere('pump_transactions.pts_nozzle_id', 'like', "%{$search}%")
+                    ->orWhere('fuel_grades.name', 'like', "%{$search}%")
+                    ->orWhere('pump_transactions.mode_of_payment', 'like', "%{$search}%");
+
+                // Also search numeric fields if search term is numeric
+                if (is_numeric($search)) {
+                    $q->orWhere('pump_transactions.price', '=', $search)
+                        ->orWhere('pump_transactions.volume', '=', $search)
+                        ->orWhere('pump_transactions.amount', '=', $search);
+                }
             });
         }
 
@@ -317,17 +367,30 @@ class HosReportsController extends Controller
         $length = $request->input('length', 10);
 
         // Ordering
-        $orderColumnIndex = $request->input('order.0.column', 2);
-        $orderColumns = ['site', 'transaction_id', 'date_time', 'product', 'liters', 'amount', 'hos_received_time'];
-        $orderColumn = $orderColumns[$orderColumnIndex] ?? 'date_time';
+        $orderColumnIndex = $request->input('order.0.column', 3);
+        $orderColumns = ['site_id', 'site_name', 'transaction_id', 'trans_date', 'pump', 'nozzle', 'product', 'unit_price', 'volume', 'amount', 'payment_mode', 'hos_received_time'];
+        $orderColumn = $orderColumns[$orderColumnIndex] ?? 'trans_date';
         $orderDir = $request->input('order.0.dir', 'desc');
 
-        if ($orderColumn === 'site') {
+        if ($orderColumn === 'site_id' || $orderColumn === 'site_name') {
             $query->orderBy('stations.site_name', $orderDir);
         } elseif ($orderColumn === 'product') {
             $query->orderBy('fuel_grades.name', $orderDir);
+        } elseif ($orderColumn === 'trans_date') {
+            $query->orderBy('pump_transactions.date_time_end', $orderDir);
+        } elseif (in_array($orderColumn, ['transaction_id', 'pump', 'nozzle', 'unit_price', 'volume', 'amount', 'payment_mode'])) {
+            $columnMap = [
+                'transaction_id' => 'transaction_number',
+                'pump' => 'pts_pump_id',
+                'nozzle' => 'pts_nozzle_id',
+                'unit_price' => 'price',
+                'volume' => 'volume',
+                'amount' => 'amount',
+                'payment_mode' => 'mode_of_payment',
+            ];
+            $query->orderBy('pump_transactions.'.$columnMap[$orderColumn], $orderDir);
         } else {
-            $query->orderBy('pump_transactions.date_time_start', $orderDir);
+            $query->orderBy('pump_transactions.created_at', $orderDir);
         }
 
         $data = $query->select([
@@ -342,24 +405,28 @@ class HosReportsController extends Controller
 
         // Map data to match DataTable column structure
         $data = $data->map(function ($transaction) {
-            // Format date_time_start
-            $dateTime = '';
+            // Format trans_date (end time)
+            $transDate = '';
 
-            if ($transaction->date_time_start) {
-                $dateTime = is_string($transaction->date_time_start)
-                    ? $transaction->date_time_start
-                    : $transaction->date_time_start->format('Y-m-d H:i:s');
+            if ($transaction->date_time_end) {
+                $transDate = is_string($transaction->date_time_end)
+                    ? $transaction->date_time_end
+                    : $transaction->date_time_end->setTimezone('Asia/Riyadh')->format('Y-m-d H:i:s');
             }
 
             return [
-                'site' => $transaction->site_name ?? '',
-                'site_ref' => $transaction->site_ref ?? '',
+                'site_id' => $transaction->site_ref ?? '',
+                'site_name' => $transaction->site_name ?? '',
                 'transaction_id' => $transaction->transaction_number ?? '',
-                'date_time' => $dateTime,
+                'trans_date' => $transDate,
+                'pump' => $transaction->pts_pump_id ?? '',
+                'nozzle' => $transaction->pts_nozzle_id ?? '',
                 'product' => $transaction->fuel_grade_name ?? '',
-                'liters' => $transaction->volume ?? 0,
+                'unit_price' => $transaction->price ?? 0,
+                'volume' => $transaction->volume ?? 0,
                 'amount' => $transaction->amount ?? 0,
-                'hos_received_time' => $transaction->created_at ? $transaction->created_at->format('Y-m-d H:i:s') : '',
+                'payment_mode' => ucfirst($transaction->mode_of_payment ?? ''),
+                'hos_received_time' => $transaction->created_at ? $transaction->created_at->setTimezone('Asia/Riyadh')->format('Y-m-d H:i:s') : '',
             ];
         });
 
@@ -383,6 +450,20 @@ class HosReportsController extends Controller
     }
 
     /**
+     * Export transactions to CSV.
+     */
+    public function exportCsv(Request $request)
+    {
+        $tab = $request->input('tab');
+
+        if ($tab === 'shift-summary') {
+            return $this->exportShiftSummaryCsv($request);
+        }
+
+        return response()->json(['message' => 'CSV export for this tab not implemented yet']);
+    }
+
+    /**
      * Export transactions to PDF.
      */
     public function exportPdf(Request $request)
@@ -394,6 +475,221 @@ class HosReportsController extends Controller
         }
 
         return $this->exportTransactionsPdf($request);
+    }
+
+    /**
+     * Export shift summary to CSV.
+     */
+    protected function exportShiftSummaryCsv(Request $request)
+    {
+        // Get shift summary data using the same logic as getShiftSummary
+        $viewMode = $request->input('view_mode', 'summary');
+
+        // Build shift query
+        $shiftQuery = Shift::query();
+
+        if ($request->filled('station_id')) {
+            $shiftQuery->where('station_id', $request->input('station_id'));
+        }
+
+        $fromBosShiftId = $request->input('from_bos_shift_id');
+        $toBosShiftId = $request->input('to_bos_shift_id');
+        $from_date = $request->input('from_date');
+        $to_date = $request->input('to_date');
+        $from_time = $request->input('from_time');
+        $to_time = $request->input('to_time');
+
+        if ($from_date && $from_time) {
+            $windowStart = Carbon::parse($from_date.' '.$from_time);
+            $shiftQuery->where('start_time', '>=', $windowStart);
+        }
+
+        if ($to_date && $to_time) {
+            $windowEnd = Carbon::parse($to_date.' '.$to_time);
+            $shiftQuery->where('start_time', '<=', $windowEnd);
+        }
+
+        if ($fromBosShiftId && $toBosShiftId) {
+            $shiftQuery->whereBetween('bos_shift_id', [min($fromBosShiftId, $toBosShiftId), max($fromBosShiftId, $toBosShiftId)]);
+        }
+
+        $shifts = $shiftQuery->with('station')->orderBy('start_time')->get();
+
+        if ($shifts->isEmpty()) {
+            return response()->json(['message' => 'No shifts found for the selected filters'], 404);
+        }
+
+        // Get station info
+        $station = Station::find($request->input('station_id'));
+        $stationName = $station ? $station->site_name : 'All Stations';
+
+        // Fetch transactions for these shifts
+        $transactions = PumpTransaction::query()
+            ->whereIn('station_id', $shifts->pluck('station_id')->unique())
+            ->when($request->filled('station_id'), function ($q) use ($request) {
+                $q->where('station_id', $request->input('station_id'));
+            })
+            ->when($from_date && $from_time, function ($q) use ($from_date, $from_time) {
+                $q->where('date_time_start', '>=', $from_date.' '.$from_time);
+            })
+            ->when($to_date && $to_time, function ($q) use ($to_date, $to_time) {
+                $q->where('date_time_end', '<=', $to_date.' '.$to_time);
+            })
+            ->with(['fuelGrade', 'ptsUser'])
+            ->get();
+
+        // Prepare CSV data
+        $csvData = [];
+
+        // Header row
+        $csvData[] = ['Shift Summary Report'];
+        $csvData[] = ['Station:', $stationName];
+        $csvData[] = ['Period:', ($from_date ?? 'N/A').' to '.($to_date ?? 'N/A')];
+        $csvData[] = ['Time Range:', ($from_time ?? '00:00:00').' to '.($to_time ?? '23:59:59')];
+        $csvData[] = [];
+
+        // Payment Mode Wise Summary
+        $csvData[] = ['Payment Mode Wise Summary'];
+        $csvData[] = ['MOP', 'Volume (L)', 'Amount (SAR)'];
+
+        $paymentModeSummary = $transactions->groupBy('mode_of_payment')->map(function ($group) {
+            return [
+                'volume' => $group->sum('volume'),
+                'amount' => $group->sum('amount'),
+            ];
+        });
+
+        $totalPaymentVolume = 0;
+        $totalPaymentAmount = 0;
+
+        foreach ($paymentModeSummary as $mop => $data) {
+            $csvData[] = [
+                ucfirst($mop ?: 'N/A'),
+                number_format($data['volume'], 2),
+                number_format($data['amount'], 2),
+            ];
+            $totalPaymentVolume += $data['volume'];
+            $totalPaymentAmount += $data['amount'];
+        }
+
+        $csvData[] = ['Total', number_format($totalPaymentVolume, 2), number_format($totalPaymentAmount, 2)];
+        $csvData[] = [];
+
+        // Product Wise Summary
+        $csvData[] = ['Product Wise Summary'];
+        $csvData[] = ['Product', 'TXN Volume', 'Amount (SAR)'];
+
+        $productSummary = $transactions->groupBy(function ($txn) {
+            return $txn->fuelGrade ? $txn->fuelGrade->name : 'Unknown';
+        })->map(function ($group) {
+            return [
+                'volume' => $group->sum('volume'),
+                'amount' => $group->sum('amount'),
+            ];
+        });
+
+        // Sort products in correct order
+        $productOrder = ['Gasoline91' => 1, 'Gasoline95' => 2, 'Gasoline98' => 3, 'Diesel' => 4];
+        $sortedProducts = $productSummary->sortBy(function ($data, $product) use ($productOrder) {
+            return $productOrder[$product] ?? 999;
+        });
+
+        $totalProductVolume = 0;
+        $totalProductAmount = 0;
+
+        foreach ($sortedProducts as $product => $data) {
+            $csvData[] = [
+                $product,
+                number_format($data['volume'], 2),
+                number_format($data['amount'], 2),
+            ];
+            $totalProductVolume += $data['volume'];
+            $totalProductAmount += $data['amount'];
+        }
+
+        $csvData[] = ['Total', number_format($totalProductVolume, 2), number_format($totalProductAmount, 2)];
+        $csvData[] = [];
+
+        // Pump Wise Summary
+        $csvData[] = ['Pump Wise Summary'];
+        $csvData[] = ['Product', 'Pump No', 'Nozzle No', 'Start Totalizer', 'End Totalizer', 'Totalizer Volume', 'TXN Volume', 'Amount (SAR)'];
+
+        $pumpSummary = $transactions->groupBy(function ($txn) {
+            $product = $txn->fuelGrade ? $txn->fuelGrade->name : 'Unknown';
+            $pump = $txn->pts_pump_id ?? 'N/A';
+            $nozzle = $txn->pts_nozzle_id ?? 'N/A';
+
+            return $product.'|'.$pump.'|'.$nozzle;
+        })->map(function ($group) {
+            return [
+                'product' => $group->first()->fuelGrade ? $group->first()->fuelGrade->name : 'Unknown',
+                'pump' => $group->first()->pts_pump_id ?? 'N/A',
+                'nozzle' => $group->first()->pts_nozzle_id ?? 'N/A',
+                'start_totalizer' => $group->min('starting_totalizer') ?? 0,
+                'end_totalizer' => $group->max('total_volume') ?? 0,
+                'totalizer_volume' => ($group->max('total_volume') ?? 0) - ($group->min('starting_totalizer') ?? 0),
+                'txn_volume' => $group->sum('volume'),
+                'amount' => $group->sum('amount'),
+            ];
+        });
+
+        // Sort by product, then pump, then nozzle
+        $sortedPumpSummary = $pumpSummary->sortBy(function ($item) use ($productOrder) {
+            $productOrderVal = $productOrder[$item['product']] ?? 999;
+            $pumpNum = is_numeric($item['pump']) ? (int) $item['pump'] : 9999;
+            $nozzleNum = is_numeric($item['nozzle']) ? (int) $item['nozzle'] : 9999;
+
+            return sprintf('%03d%04d%04d', $productOrderVal, $pumpNum, $nozzleNum);
+        });
+
+        $totalTotalizerVolume = 0;
+        $totalTxnVolume = 0;
+        $totalPumpAmount = 0;
+
+        foreach ($sortedPumpSummary as $item) {
+            $csvData[] = [
+                $item['product'],
+                $item['pump'],
+                $item['nozzle'],
+                number_format($item['start_totalizer'], 2),
+                number_format($item['end_totalizer'], 2),
+                number_format($item['totalizer_volume'], 2),
+                number_format($item['txn_volume'], 2),
+                number_format($item['amount'], 2),
+            ];
+            $totalTotalizerVolume += $item['totalizer_volume'];
+            $totalTxnVolume += $item['txn_volume'];
+            $totalPumpAmount += $item['amount'];
+        }
+
+        $csvData[] = [
+            'Total',
+            '',
+            '',
+            '',
+            '',
+            number_format($totalTotalizerVolume, 2),
+            number_format($totalTxnVolume, 2),
+            number_format($totalPumpAmount, 2),
+        ];
+
+        // Generate CSV file
+        $filename = 'shift_summary_'.$stationName.'_'.date('Y-m-d_His').'.csv';
+
+        $callback = function () use ($csvData) {
+            $file = fopen('php://output', 'w');
+
+            foreach ($csvData as $row) {
+                fputcsv($file, $row);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+        ]);
     }
 
     /**
@@ -427,15 +723,15 @@ class HosReportsController extends Controller
 
     protected function baseTransactionsQuery(bool $withJoins = true): Builder
     {
-        $query = PumpTransaction::query()->with(['station', 'fuelGrade']);
+        $query = PumpTransaction::query();
 
         if ($withJoins) {
             $query->leftJoin('stations', 'pump_transactions.station_id', '=', 'stations.id')
                 ->leftJoin('fuel_grades', function ($join) {
-                    $join->on('pump_transactions.pts_fuel_grade_id', '=', 'fuel_grades.id')
+                    $join->on(DB::raw('CAST(pump_transactions.pts_fuel_grade_id AS CHAR)'), '=', DB::raw('CAST(fuel_grades.pts_fuel_grade_id AS CHAR)'))
                         ->on('pump_transactions.station_id', '=', 'fuel_grades.station_id');
                 })
-                ->select('pump_transactions.*');
+                ->select('pump_transactions.*', 'stations.site_name', 'stations.pts_id', 'fuel_grades.name as fuel_grade_name');
         }
 
         return $query;
@@ -1295,8 +1591,8 @@ class HosReportsController extends Controller
                 'bos_shift_id' => $shift->bos_shift_id,
                 'station_id' => $shift->station_id,
                 'shift_number' => $shift->bos_shift_id ?? $shift->id,
-                'start_time' => $shift->start_time ? $shift->start_time->format('Y-m-d H:i:s') : null,
-                'end_time' => $shift->end_time ? $shift->end_time->format('Y-m-d H:i:s') : null,
+                'start_time' => $shift->start_time ? $shift->start_time->setTimezone('Asia/Riyadh')->format('Y-m-d H:i:s') : null,
+                'end_time' => $shift->end_time ? $shift->end_time->setTimezone('Asia/Riyadh')->format('Y-m-d H:i:s') : null,
             ];
         }
 
@@ -1711,9 +2007,12 @@ class HosReportsController extends Controller
                 ->get()
                 ->filter(fn ($shift) => !is_null($shift->start_time))
                 ->map(static function ($shift) {
-                    $time = $shift->start_time instanceof Carbon
-                        ? $shift->start_time->format('H:i:s')
-                        : Carbon::parse($shift->start_time)->format('H:i:s');
+                    // Convert to local timezone (Asia/Riyadh UTC+3)
+                    $carbonTime = $shift->start_time instanceof Carbon
+                        ? $shift->start_time
+                        : Carbon::parse($shift->start_time);
+
+                    $time = $carbonTime->setTimezone('Asia/Riyadh')->format('H:i:s');
 
                     return [
                         'time' => $time,
@@ -1737,9 +2036,12 @@ class HosReportsController extends Controller
                 ->get()
                 ->filter(fn ($shift) => !is_null($shift->end_time))
                 ->map(static function ($shift) {
-                    $time = $shift->end_time instanceof Carbon
-                        ? $shift->end_time->format('H:i:s')
-                        : Carbon::parse($shift->end_time)->format('H:i:s');
+                    // Convert to local timezone (Asia/Riyadh UTC+3)
+                    $carbonTime = $shift->end_time instanceof Carbon
+                        ? $shift->end_time
+                        : Carbon::parse($shift->end_time);
+
+                    $time = $carbonTime->setTimezone('Asia/Riyadh')->format('H:i:s');
 
                     return [
                         'time' => $time,

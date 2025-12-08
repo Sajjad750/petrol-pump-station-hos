@@ -194,11 +194,15 @@ $(document).ready(function() {
         method: 'GET',
         success: function(response) {
             if (response.fuel_grades) {
+                var $select = $('#tank_monitoring_product_id');
+                var firstOption = $select.find('option').first();
+                var optionsHtml = firstOption.length ? firstOption.prop('outerHTML') : '<option value="">All Products</option>';
+
                 response.fuel_grades.forEach(function(fuelGrade) {
-                    $('#tank_monitoring_product_id').append(
-                        $('<option></option>').val(fuelGrade.id).text(fuelGrade.name)
-                    );
+                    optionsHtml += '<option value="' + fuelGrade.id + '">' + fuelGrade.name + '</option>';
                 });
+
+                $select.html(optionsHtml);
             }
         }
     });

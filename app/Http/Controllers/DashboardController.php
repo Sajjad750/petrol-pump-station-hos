@@ -213,8 +213,7 @@ class DashboardController extends Controller
             $endDate = now()->endOfDay();
         }
 
-        // Get product distribution data grouped by fuel grade
-        // Use DB query builder - match on pts_fuel_grade_id field (BOS field) not id
+        // Get product distribution data grouped by fuel grade using direct database query
         $productData = DB::table('pump_transactions')
             ->join('fuel_grades', function ($join) {
                 $join->on(DB::raw('CAST(pump_transactions.pts_fuel_grade_id AS CHAR)'), '=', DB::raw('CAST(fuel_grades.pts_fuel_grade_id AS CHAR)'))

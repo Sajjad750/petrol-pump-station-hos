@@ -36,7 +36,7 @@ class PumpTransaction extends Model
      */
     public function fuelGrade(): BelongsTo
     {
-        return $this->belongsTo(FuelGrade::class, 'pts_fuel_grade_id', 'id');
+        return $this->belongsTo(FuelGrade::class, 'pts_fuel_grade_id', 'pts_fuel_grade_id');
     }
 
     /**
