@@ -6,7 +6,7 @@ return [
         // Automatically quote the binary to handle Windows paths with spaces.
         'binary' => sprintf(
             '"%s"',
-            trim(env('WKHTMLTOPDF_BINARY', 'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'), '"')
+            trim(env('WKHTMLTOPDF_BINARY', '/vendor/h4cc/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64'), '"')
         ),
         'timeout' => false,
         'options' => [
@@ -20,7 +20,7 @@ return [
         // Automatically quote the binary to handle Windows paths with spaces.
         'binary' => sprintf(
             '"%s"',
-            trim(env('WKHTMLTOIMAGE_BINARY', 'C:\Program Files\wkhtmltopdf\bin\wkhtmltoimage.exe'), '"')
+            trim(env('WKHTMLTOIMAGE_BINARY', '/vendor/h4cc/wkhtmltoimage-amd64/bin/wkhtmltoimage-amd64'), '"')
         ),
         'timeout' => false,
         'options' => [
