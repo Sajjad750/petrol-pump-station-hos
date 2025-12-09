@@ -45,7 +45,7 @@ class FuelGradeListController extends Controller
         if (!empty($filters['max_price'])) {
             $query->where('price', '<=', $filters['max_price']);
         }
-        $grades = $query->orderBy('created_at', 'desc')->get();
+        $grades = $query->orderBy('order_number')->orderBy('created_at', 'desc')->get();
         $pdf = Pdf::loadView('reports.generic_pdf', [
             'title' => 'Fuel Grades Report',
             'filters' => $filters,
@@ -118,7 +118,7 @@ class FuelGradeListController extends Controller
         $totalFiltered = $query->count();
 
         // Ordering and Pagination
-        $data = $query->orderBy($order, $orderDir)
+        $data = $query->orderBy('order_number')->orderBy($order, $orderDir)
             ->offset($start)
             ->limit($length)
             ->get();

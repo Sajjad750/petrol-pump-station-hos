@@ -111,6 +111,7 @@ Route::middleware('auth')->group(function () {
     Route::get('hos-reports/partial/{tab}', [\App\Http\Controllers\HosReportsController::class, 'loadPartial'])->name('hos-reports.partial');
     Route::get('hos-reports/stations', [\App\Http\Controllers\HosReportsController::class, 'getStations'])->name('hos-reports.stations');
     Route::get('hos-reports/fuel-grades', [\App\Http\Controllers\HosReportsController::class, 'getFuelGrades'])->name('hos-reports.fuel-grades');
+    Route::get('hos-reports/pumps', [\App\Http\Controllers\HosReportsController::class, 'getPumps'])->name('hos-reports.pumps');
     Route::get('hos-reports/transactions/data', [\App\Http\Controllers\HosReportsController::class, 'getTransactionsData'])->name('hos-reports.transactions.data');
     Route::get('hos-reports/transactions/summary', [\App\Http\Controllers\HosReportsController::class, 'getTransactionSummary'])->name('hos-reports.transactions.summary');
     Route::get('hos-reports/sales', [\App\Http\Controllers\HosReportsController::class, 'sales'])->name('hos-reports.sales');
