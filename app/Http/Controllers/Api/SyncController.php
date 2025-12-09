@@ -806,6 +806,7 @@ class SyncController extends Controller
             'uuid' => Str::uuid7(),
             'pts_fuel_grade_id' => $bosData['pts_fuel_grade_id'] ?? null,
             'name' => $bosData['name'],
+            'order_number' => $bosData['order_number'],
             'price' => $bosData['price'],
             'scheduled_price' => $bosData['scheduled_price'] ?? null,
             'scheduled_at' => $bosData['scheduled_at'] ?? null,
