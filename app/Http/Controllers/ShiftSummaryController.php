@@ -46,6 +46,7 @@ class ShiftSummaryController extends Controller
                 DB::raw('SUM(pump_transactions.amount) as amount')
             )
             ->groupBy('fuel_grades.name', 'pump_transactions.pts_pump_id', 'pump_transactions.pts_nozzle_id')
+            ->orderBy('fuel_grades.order_number')
             ->orderBy('pump_transactions.pts_pump_id')
             ->orderBy('pump_transactions.pts_nozzle_id')
             ->get();

@@ -233,6 +233,7 @@ class DashboardController extends Controller
             ->groupBy('fuel_grades.id', 'fuel_grades.name')
             ->havingRaw('SUM(pump_transactions.volume) > 0')
             ->orderBy('total_volume', 'desc')
+            ->orderBy('fuel_grades.order_number')
             ->get();
 
         // Prepare data for chart - ensure order: Gasoline91, Gasoline95, Gasoline98, Diesel

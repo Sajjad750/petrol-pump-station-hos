@@ -75,18 +75,39 @@ class HosReportsController extends Controller
             ->where('name', '!=', '')
             ->selectRaw('MIN(id) as id, name')
             ->groupBy('name')
-            ->orderByRaw("CASE 
-                WHEN LOWER(name) LIKE '%gasoline 91%' OR LOWER(name) LIKE '%gasoline91%' THEN 1
-                WHEN LOWER(name) LIKE '%gasoline 95%' OR LOWER(name) LIKE '%gasoline95%' THEN 2
-                WHEN LOWER(name) LIKE '%gasoline 98%' OR LOWER(name) LIKE '%gasoline98%' THEN 3
-                WHEN LOWER(name) LIKE '%diesel%' THEN 4
-                ELSE 5
-            END")
+            ->orderBy('order_number')
             ->orderBy('name')
             ->get();
 
         return response()->json([
             'fuel_grades' => $fuelGrades,
+        ]);
+    }
+
+    /**
+     * Get pumps for dropdown.
+     */
+    public function getPumps(Request $request)
+    {
+        $query = Pump::query()
+            ->select('pts_pump_id')
+            ->distinct()
+            ->whereNotNull('pts_pump_id');
+
+        // Filter by station if provided
+        if ($request->filled('station_id')) {
+            $query->where('station_id', $request->input('station_id'));
+        }
+
+        $pumps = $query->orderBy('pts_pump_id')->get()->map(function ($pump) {
+            return [
+                'id' => $pump->pts_pump_id,
+                'name' => $pump->pts_pump_id,
+            ];
+        });
+
+        return response()->json([
+            'pumps' => $pumps,
         ]);
     }
 
@@ -265,8 +286,8 @@ class HosReportsController extends Controller
             //            }
 
             return [
-                'site' => $transaction->site_name ?? '',
-                'site_ref' => $transaction->pts_id ?? '',
+                'site_id' => $transaction->site_id ?? '',
+                'site_name' => $transaction->site_name ?? '',
                 'transaction_id' => $transaction->transaction_number ?? '',
                 'trans_date' => $transaction->date_time_end ? $transaction->date_time_end->setTimezone('Asia/Riyadh')->format('Y-m-d H:i:s') : '',
                 'pump' => $transaction->pts_pump_id ?? '',
@@ -378,7 +399,7 @@ class HosReportsController extends Controller
         if ($orderColumn === 'site_id' || $orderColumn === 'site_name') {
             $query->orderBy('stations.site_name', $orderDir);
         } elseif ($orderColumn === 'product') {
-            $query->orderBy('fuel_grades.name', $orderDir);
+            $query->orderBy('fuel_grades.order_number')->orderBy('fuel_grades.name', $orderDir);
         } elseif ($orderColumn === 'trans_date') {
             $query->orderBy('pump_transactions.date_time_end', $orderDir);
         } elseif (in_array($orderColumn, ['transaction_id', 'pump', 'nozzle', 'unit_price', 'volume', 'amount', 'payment_mode'])) {
@@ -818,7 +839,17 @@ class HosReportsController extends Controller
                     $join->on(DB::raw('CAST(pump_transactions.pts_fuel_grade_id AS CHAR)'), '=', DB::raw('CAST(fuel_grades.pts_fuel_grade_id AS CHAR)'))
                         ->on('pump_transactions.station_id', '=', 'fuel_grades.station_id');
                 })
-                ->select('pump_transactions.*', 'stations.site_name', 'stations.pts_id', 'fuel_grades.name as fuel_grade_name');
+                ->leftJoin('pts_users', function ($join) {
+                    $join->on('pump_transactions.pts_user_id', '=', 'pts_users.pts_user_id')
+                         ->on('pump_transactions.station_id', '=', 'pts_users.station_id');
+                })
+                ->select(
+                    'pump_transactions.*',
+                    'stations.site_id as site_id',
+                    'stations.site_name',
+                    'fuel_grades.name as fuel_grade_name',
+                    'pts_users.login as attendant_login'
+                );
         }
 
         return $query;
@@ -847,7 +878,7 @@ class HosReportsController extends Controller
         }
 
         if (!empty($filters['pump_id'])) {
-            $query->where('pump_transactions.pts_pump_id', 'like', '%' . $filters['pump_id'] . '%');
+            $query->where('pump_transactions.pts_pump_id', $filters['pump_id']);
         }
 
         if (!empty($filters['mode_of_payment'])) {
@@ -942,7 +973,8 @@ class HosReportsController extends Controller
         } elseif ($orderColumn === 'tank') {
             $query->orderBy('tank_inventories.tank', $orderDir);
         } elseif ($orderColumn === 'product') {
-            $query->orderBy('fuel_grades.name', $orderDir)
+            $query->orderBy('fuel_grades.order_number')
+                  ->orderBy('fuel_grades.name', $orderDir)
                   ->orderBy('tank_inventories.fuel_grade_name', $orderDir);
         } elseif ($orderColumn === 'date_time') {
             $query->orderBy('tank_inventories.created_at_bos', $orderDir);
@@ -1122,7 +1154,8 @@ class HosReportsController extends Controller
         } elseif ($orderColumn === 'tank') {
             $query->orderBy('tank_deliveries.tank', $orderDir);
         } elseif ($orderColumn === 'product') {
-            $query->orderBy('fuel_grades.name', $orderDir)
+            $query->orderBy('fuel_grades.order_number')
+                  ->orderBy('fuel_grades.name', $orderDir)
                   ->orderBy('tank_deliveries.fuel_grade_name', $orderDir);
         } elseif ($orderColumn === 'date_time') {
             $query->orderBy('tank_deliveries.synced_at', $orderDir);
@@ -1392,6 +1425,7 @@ class HosReportsController extends Controller
             ->groupBy('date', 'stations.id', 'stations.site_name', 'stations.pts_id', 'fuel_grades.id', 'fuel_grades.name')
             ->orderBy('date', 'desc')
             ->orderBy('stations.site_name')
+            ->orderBy('fuel_grades.order_number')
             ->orderBy('fuel_grades.name')
             ->get();
 
