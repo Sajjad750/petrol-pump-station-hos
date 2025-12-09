@@ -655,6 +655,9 @@
 
             // Export to PDF
             $('#transaction-export-pdf-btn').on('click', function() {
+                const $btn = $(this);
+                const originalHtml = $btn.html();
+
                 const filters = {
                     from_date: $('#transaction_from_date').val(),
                     to_date: $('#transaction_to_date').val(),
@@ -666,8 +669,46 @@
                     product_id: $('#transaction_product_id').val(),
                     tab: 'transactions'
                 };
-                const queryString = $.param(filters);
-                window.location.href = '{{ route('hos-reports.export.pdf') }}?' + queryString;
+
+                // Start notification polling immediately
+                if (typeof window.startNotificationPolling === 'function') {
+                    window.startNotificationPolling();
+                }
+
+                // Disable button and call export via AJAX to avoid page refresh
+                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Exporting...');
+
+                // Fallback to re-enable button if request hangs for any reason
+                const resetButton = function() {
+                    $btn.prop('disabled', false).html(originalHtml);
+                };
+
+                $.ajax({
+                    url: '{{ route('hos-reports.export.pdf') }}',
+                    method: 'GET',
+                    data: filters,
+                    dataType: 'json',
+                    cache: false,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    },
+                    success: function(response) {
+                        if (response && response.success) {
+                            alert('Export started. You will get a notification when it is ready.');
+                        } else {
+                            alert(response && response.message ? response.message : 'Export could not be started.');
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Export error', xhr);
+                        alert('Error starting export. Please try again.');
+                    },
+                    complete: resetButton
+                });
+
+                // Safety timeout to ensure button is re-enabled even if AJAX never completes
+                setTimeout(resetButton, 15000);
             });
 
             // Load stations for dropdown
