@@ -289,8 +289,8 @@ class HosReportsController extends Controller
             //            }
 
             return [
-                'site' => $transaction->site_name ?? '',
-                'site_ref' => $transaction->pts_id ?? '',
+                'site_id' => $transaction->site_id ?? '',
+                'site_name' => $transaction->site_name ?? '',
                 'transaction_id' => $transaction->transaction_number ?? '',
                 'trans_date' => $transaction->date_time_end ? $transaction->date_time_end->setTimezone('Asia/Riyadh')->format('Y-m-d H:i:s') : '',
                 'pump' => $transaction->pts_pump_id ?? '',
@@ -758,7 +758,17 @@ class HosReportsController extends Controller
                     $join->on(DB::raw('CAST(pump_transactions.pts_fuel_grade_id AS CHAR)'), '=', DB::raw('CAST(fuel_grades.pts_fuel_grade_id AS CHAR)'))
                         ->on('pump_transactions.station_id', '=', 'fuel_grades.station_id');
                 })
-                ->select('pump_transactions.*', 'stations.site_name', 'stations.pts_id', 'fuel_grades.name as fuel_grade_name');
+                ->leftJoin('pts_users', function ($join) {
+                    $join->on('pump_transactions.pts_user_id', '=', 'pts_users.pts_user_id')
+                         ->on('pump_transactions.station_id', '=', 'pts_users.station_id');
+                })
+                ->select(
+                    'pump_transactions.*',
+                    'stations.site_id as site_id',
+                    'stations.site_name',
+                    'fuel_grades.name as fuel_grade_name',
+                    'pts_users.login as attendant_login'
+                );
         }
 
         return $query;
