@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
-use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Barryvdh\Snappy\Facades\SnappyPdf;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Builder;
 use Maatwebsite\Excel\Facades\Excel;
@@ -718,28 +721,112 @@ class HosReportsController extends Controller
      */
     protected function exportTransactionsPdf(Request $request)
     {
-        $filters = $request->only([
-            'from_date',
-            'to_date',
-            'from_time',
-            'to_time',
-            'station_id',
-            'pump_id',
-            'mode_of_payment',
-            'product_id',
-        ]);
+        try {
+            $filters = $request->only([
+                'from_date',
+                'to_date',
+                'from_time',
+                'to_time',
+                'station_id',
+                'pump_id',
+                'mode_of_payment',
+                'product_id',
+            ]);
 
-        $query = $this->baseTransactionsQuery(false);
-        $this->applyTransactionFilters($query, $filters);
+            $filename = 'pump_transactions_' . now()->format('Y-m-d_His') . '.pdf';
 
-        $transactions = $query->orderBy('pump_transactions.date_time_start', 'desc')->get();
+            // Dispatch the PDF generation job with user ID for notifications
+            $userId = Auth::id();
+            \App\Jobs\GeneratePumpTransactionsPdf::dispatch($filters, $filename, $userId);
 
-        $pdf = Pdf::loadView('reports.pump_transactions_pdf', [
-            'transactions' => $transactions,
-            'filters' => $filters,
-        ]);
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'PDF export started successfully. You will receive a notification when the file is ready for download.',
+                    'download_url' => route('hos-reports.download', ['filename' => $filename]),
+                ]);
+            }
 
-        return $pdf->download('pump_transactions_' . now()->format('Y-m-d_His') . '.pdf');
+            return back()->with('success', 'PDF export started successfully. You will receive a notification when the file is ready for download.');
+        } catch (\Exception $e) {
+            Log::error('Error dispatching PDF export job: ' . $e->getMessage(), [
+                'filters' => $request->all(),
+                'exception' => $e,
+            ]);
+
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error initiating PDF export. Please try again or contact support.',
+                ], 500);
+            }
+
+            return back()->with('error', 'Error initiating PDF export. Please try again or contact support.');
+        }
+    }
+
+    /**
+     * Download exported PDF file.
+     */
+    public function downloadExport(Request $request, string $filename)
+    {
+        $filePath = 'exports/' . $filename;
+
+        if (!Storage::disk('public')->exists($filePath)) {
+            abort(404, 'File not found');
+        }
+
+        return Storage::disk('public')->download($filePath, $filename);
+    }
+
+    /**
+     * Get PDF export completion notifications.
+     */
+    public function getNotifications(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['notifications' => []]);
+        }
+
+        // Get unread notifications related to PDF exports
+        $notifications = $user->unreadNotifications()
+            ->where('type', 'App\\Notifications\\PdfExportCompleted')
+            ->get()
+            ->map(function ($notification) {
+                return [
+                    'id' => $notification->id,
+                    'message' => $notification->data['message'],
+                    'filename' => $notification->data['filename'],
+                    'download_url' => $notification->data['download_url'],
+                    'created_at' => $notification->created_at->diffForHumans(),
+                ];
+            });
+
+        return response()->json(['notifications' => $notifications]);
+    }
+
+    /**
+     * Mark notification as read.
+     */
+    public function markNotificationAsRead(Request $request, string $notificationId)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $notification = $user->notifications()->find($notificationId);
+
+        if ($notification) {
+            $notification->markAsRead();
+
+            return response()->json(['success' => true, 'message' => 'Notification marked as read.']);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Notification not found.'], 404);
     }
 
     protected function baseTransactionsQuery(bool $withJoins = true): Builder
@@ -1958,7 +2045,7 @@ class HosReportsController extends Controller
         $viewModeLabel = $viewMode === 'summary' ? 'Show Summary' : 'Select All';
         $filters['View Mode'] = $viewModeLabel;
 
-        $pdf = Pdf::loadView('hos-reports.pdf.shift-summary', [
+        $pdf = SnappyPdf::loadView('hos-reports.pdf.shift-summary', [
             'filters' => $filters,
             'viewMode' => $viewMode,
             'viewModeLabel' => $viewModeLabel,
