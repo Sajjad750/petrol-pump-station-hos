@@ -72,13 +72,7 @@ class HosReportsController extends Controller
             ->where('name', '!=', '')
             ->selectRaw('MIN(id) as id, name')
             ->groupBy('name')
-            ->orderByRaw("CASE 
-                WHEN LOWER(name) LIKE '%gasoline 91%' OR LOWER(name) LIKE '%gasoline91%' THEN 1
-                WHEN LOWER(name) LIKE '%gasoline 95%' OR LOWER(name) LIKE '%gasoline95%' THEN 2
-                WHEN LOWER(name) LIKE '%gasoline 98%' OR LOWER(name) LIKE '%gasoline98%' THEN 3
-                WHEN LOWER(name) LIKE '%diesel%' THEN 4
-                ELSE 5
-            END")
+            ->orderBy('order_number')
             ->orderBy('name')
             ->get();
 
@@ -402,7 +396,7 @@ class HosReportsController extends Controller
         if ($orderColumn === 'site_id' || $orderColumn === 'site_name') {
             $query->orderBy('stations.site_name', $orderDir);
         } elseif ($orderColumn === 'product') {
-            $query->orderBy('fuel_grades.name', $orderDir);
+            $query->orderBy('fuel_grades.order_number')->orderBy('fuel_grades.name', $orderDir);
         } elseif ($orderColumn === 'trans_date') {
             $query->orderBy('pump_transactions.date_time_end', $orderDir);
         } elseif (in_array($orderColumn, ['transaction_id', 'pump', 'nozzle', 'unit_price', 'volume', 'amount', 'payment_mode'])) {
@@ -892,7 +886,8 @@ class HosReportsController extends Controller
         } elseif ($orderColumn === 'tank') {
             $query->orderBy('tank_inventories.tank', $orderDir);
         } elseif ($orderColumn === 'product') {
-            $query->orderBy('fuel_grades.name', $orderDir)
+            $query->orderBy('fuel_grades.order_number')
+                  ->orderBy('fuel_grades.name', $orderDir)
                   ->orderBy('tank_inventories.fuel_grade_name', $orderDir);
         } elseif ($orderColumn === 'date_time') {
             $query->orderBy('tank_inventories.created_at_bos', $orderDir);
@@ -1072,7 +1067,8 @@ class HosReportsController extends Controller
         } elseif ($orderColumn === 'tank') {
             $query->orderBy('tank_deliveries.tank', $orderDir);
         } elseif ($orderColumn === 'product') {
-            $query->orderBy('fuel_grades.name', $orderDir)
+            $query->orderBy('fuel_grades.order_number')
+                  ->orderBy('fuel_grades.name', $orderDir)
                   ->orderBy('tank_deliveries.fuel_grade_name', $orderDir);
         } elseif ($orderColumn === 'date_time') {
             $query->orderBy('tank_deliveries.synced_at', $orderDir);
@@ -1342,6 +1338,7 @@ class HosReportsController extends Controller
             ->groupBy('date', 'stations.id', 'stations.site_name', 'stations.pts_id', 'fuel_grades.id', 'fuel_grades.name')
             ->orderBy('date', 'desc')
             ->orderBy('stations.site_name')
+            ->orderBy('fuel_grades.order_number')
             ->orderBy('fuel_grades.name')
             ->get();
 

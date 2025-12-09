@@ -22,13 +22,7 @@ class PriceUpdateController extends Controller
         $fuel_grades = FuelGrade::query()
             ->select('name')
             ->distinct()
-            ->orderByRaw("CASE 
-                WHEN LOWER(name) LIKE '%gasoline 91%' OR LOWER(name) LIKE '%gasoline91%' THEN 1
-                WHEN LOWER(name) LIKE '%gasoline 95%' OR LOWER(name) LIKE '%gasoline95%' THEN 2
-                WHEN LOWER(name) LIKE '%gasoline 98%' OR LOWER(name) LIKE '%gasoline98%' THEN 3
-                WHEN LOWER(name) LIKE '%diesel%' THEN 4
-                ELSE 5
-            END")
+            ->orderBy('order_number')
             ->orderBy('name')
             ->pluck('name');
 
@@ -76,6 +70,7 @@ class PriceUpdateController extends Controller
 
         $products = FuelGrade::query()
             ->where('station_id', $station_id)
+            ->orderBy('order_number')
             ->orderBy('name')
             ->get(['id', 'name']);
 
@@ -132,13 +127,14 @@ class PriceUpdateController extends Controller
 
         // Handle ordering (skip checkbox and status columns as they're not orderable)
         if ($orderColumn === 'checkbox' || $orderColumn === 'status') {
-            $query->orderBy('id', $orderDir);
+            $query->orderBy('order_number')->orderBy('id', $orderDir);
         } elseif ($orderColumn === 'station.site_name') {
             $query->join('stations', 'fuel_grades.station_id', '=', 'stations.id')
+                ->orderBy('fuel_grades.order_number')
                 ->orderBy('stations.site_name', $orderDir)
                 ->select('fuel_grades.*');
         } else {
-            $query->orderBy($orderColumn, $orderDir);
+            $query->orderBy('order_number')->orderBy($orderColumn, $orderDir);
         }
 
         // Pagination
@@ -198,6 +194,7 @@ class PriceUpdateController extends Controller
         $fuel_grades = FuelGrade::query()
             ->where('name', $fuel_grade_name)
             ->whereIn('station_id', $station_ids)
+            ->orderBy('order_number')
             ->get();
 
         if ($fuel_grades->isEmpty()) {

@@ -36,7 +36,7 @@ class FuelGradeExport implements FromQuery, WithHeadings, WithMapping, WithStyle
             $query->where('price', '<=', $this->filters['max_price']);
         }
 
-        return $query->orderBy('created_at', 'desc');
+        return $query->orderBy('order_number')->orderBy('created_at', 'desc');
     }
 
     public function headings(): array
