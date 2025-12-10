@@ -254,9 +254,7 @@ $(document).ready(function() {
                 const row = $('<tr>');
                 
                 // Station
-                row.append($('<td>').html(
-                    item.station + (item.site_ref ? '<br><small style="color: #6c757d;">Ref: ' + item.site_ref + '</small>' : '')
-                ));
+                row.append($('<td>').text(item.station || 'N/A'));
                 
                 // Date and Time
                 row.append($('<td>').text(item.date_time || 'N/A'));

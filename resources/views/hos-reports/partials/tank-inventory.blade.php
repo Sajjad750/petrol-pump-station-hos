@@ -277,18 +277,7 @@
                         data: 'site',
                         name: 'site',
                         orderable: true,
-                        render: function(data, type, row) {
-                            if (type === 'display') {
-                                var siteHtml = '<a href="#" class="tank-inventory-link">' + (data || '') + '</a>';
-                                if (row.site_ref) {
-                                    var ref = row.site_ref;
-                                    if (/^\d+$/.test(ref)) {
-                                        ref = String(ref).padStart(3, '0');
-                                    }
-                                    siteHtml += '<span class="secondary-text">Ref: ' + ref + '</span>';
-                                }
-                                return siteHtml;
-                            }
+                        render: function(data, type) {
                             return data || '';
                         },
                         className: 'text-left'
@@ -298,7 +287,7 @@
                         name: 'tank',
                         orderable: true,
                         render: function(data) {
-                            return '<a href="#" class="tank-inventory-link">' + (data || '') + '</a>';
+                            return data || '';
                         },
                         className: 'text-left'
                     },
@@ -307,11 +296,7 @@
                         name: 'product',
                         orderable: true,
                         render: function(data) {
-                            if (!data) return '';
-                            // Check if it's Diesel to show in orange, otherwise blue
-                            var isDiesel = data.toLowerCase().includes('diesel');
-                            var colorClass = isDiesel ? 'style="color: #ff6600;"' : '';
-                            return '<a href="#" class="tank-inventory-link" ' + colorClass + '>' + data + '</a>';
+                            return data || '';
                         },
                         className: 'text-left'
                     },
