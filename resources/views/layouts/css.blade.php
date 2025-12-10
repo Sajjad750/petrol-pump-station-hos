@@ -601,4 +601,117 @@
     body.dark-mode * {
         transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
     }
+
+    /* Notification Dropdown Styles */
+    #notificationsDropdown {
+        position: relative;
+    }
+
+    #notificationBadge {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        font-size: 10px;
+        padding: 2px 5px;
+        min-width: 18px;
+        height: 18px;
+        border-radius: 9px;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.1);
+        }
+    }
+
+    #notificationsMenu {
+        width: 350px;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .notification-item {
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .notification-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    body.dark-mode .notification-item:hover {
+        background-color: var(--dark-bg-tertiary);
+    }
+
+    .notification-item .media-body {
+        min-width: 0;
+    }
+
+    .notification-item .dropdown-item-title {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    .notification-item .text-sm {
+        font-size: 13px;
+        color: #6c757d;
+        word-wrap: break-word;
+    }
+
+    body.dark-mode .notification-item .text-sm {
+        color: var(--dark-text-secondary);
+    }
+
+    .notification-item .text-xs {
+        font-size: 11px;
+    }
+
+    #notificationHeader {
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    #clearAllNotifications {
+        text-align: center;
+        font-weight: 500;
+        padding: 8px;
+    }
+
+    #clearAllNotifications:hover {
+        background-color: #f8f9fa;
+    }
+
+    body.dark-mode #clearAllNotifications:hover {
+        background-color: var(--dark-bg-tertiary);
+    }
+
+    /* Dark Mode Notification Dropdown */
+    body.dark-mode #notificationsMenu {
+        background-color: var(--dark-bg-secondary);
+        border: 1px solid var(--dark-border);
+    }
+
+    body.dark-mode #notificationsMenu .dropdown-header {
+        background-color: var(--dark-bg-tertiary);
+        color: var(--dark-text-primary);
+        border-bottom: 1px solid var(--dark-border);
+    }
+
+    body.dark-mode #notificationsMenu .dropdown-item {
+        color: var(--dark-text-primary);
+        border-bottom: 1px solid var(--dark-border);
+    }
+
+    body.dark-mode #notificationsMenu .dropdown-divider {
+        border-top-color: var(--dark-border);
+    }
+
+    body.dark-mode .notification-item .dropdown-item-title {
+        color: var(--dark-text-primary);
+    }
 </style>

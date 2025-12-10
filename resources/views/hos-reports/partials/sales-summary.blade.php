@@ -55,6 +55,9 @@
                     <button type="button" id="sales-summary-reset-btn" class="btn btn-dark">
                         <i class="fas fa-redo"></i> Reset
                     </button>
+                    <button type="button" id="sales-summary-export-pdf-btn" class="btn btn-dark">
+                        <i class="fas fa-file-pdf"></i> Export PDF
+                    </button>
                 </div>
             </div>
         </form>
@@ -390,6 +393,71 @@ $(document).ready(function() {
     // Apply filters button
     $('#sales-summary-filter-btn').on('click', function() {
         loadSalesSummary();
+    });
+
+    // Export to PDF (guard against duplicate clicks/bindings)
+    $('#sales-summary-export-pdf-btn').off('click').on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const $btn = $(this);
+
+        // Prevent multiple dispatches if already processing
+        if ($btn.prop('disabled') || $btn.data('processing')) {
+            return false;
+        }
+
+        $btn.data('processing', true);
+        const originalHtml = $btn.html();
+
+        const filters = {
+            station_id: $('#sales_summary_station_id').val(),
+            from_date: $('#sales_summary_from_date').val(),
+            to_date: $('#sales_summary_to_date').val(),
+            from_time: $('#sales_summary_from_time').val(),
+            to_time: $('#sales_summary_to_time').val(),
+            product_id: $('#sales_summary_product_id').val()
+        };
+
+        // Start notification polling immediately (matches other pages)
+        if (typeof window.startNotificationPolling === 'function') {
+            window.startNotificationPolling();
+        }
+
+        // Disable button and call export via AJAX to avoid page refresh
+        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Exporting...');
+
+        // Fallback to re-enable button if request hangs for any reason
+        const resetButton = function() {
+            $btn.prop('disabled', false).html(originalHtml).data('processing', false);
+        };
+
+        $.ajax({
+            url: '{{ route('hos-reports.sales-summary.export.pdf') }}',
+            method: 'GET',
+            data: filters,
+            dataType: 'json',
+            cache: false,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            success: function(response) {
+                if (response && response.success) {
+                    alert('Export started. You will get a notification when it is ready.');
+                } else {
+                    alert(response && response.message ? response.message : 'Export could not be started.');
+                }
+            },
+            error: function(xhr) {
+                console.error('Export error', xhr);
+                alert('Error starting export. Please try again.');
+            },
+            complete: resetButton
+        });
+
+        // Safety timeout to ensure button is re-enabled even if AJAX never completes
+        setTimeout(resetButton, 15000);
     });
 
     // Reset filters button

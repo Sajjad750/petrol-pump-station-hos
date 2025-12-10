@@ -655,8 +655,21 @@
                 }
             });
 
-            // Export to PDF
-            $('#transaction-export-pdf-btn').on('click', function() {
+            // Export to PDF (guard against duplicate clicks/bindings)
+            $('#transaction-export-pdf-btn').off('click').on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const $btn = $(this);
+
+                // Prevent multiple dispatches if already processing
+                if ($btn.prop('disabled') || $btn.data('processing')) {
+                    return false;
+                }
+
+                $btn.data('processing', true);
+                const originalHtml = $btn.html();
+
                 const filters = {
                     from_date: $('#transaction_from_date').val(),
                     to_date: $('#transaction_to_date').val(),
@@ -668,8 +681,42 @@
                     product_id: $('#transaction_product_id').val(),
                     tab: 'transactions'
                 };
-                const queryString = $.param(filters);
-                window.location.href = '{{ route('hos-reports.export.pdf') }}?' + queryString;
+
+                if (typeof window.startNotificationPolling === 'function') {
+                    window.startNotificationPolling();
+                }
+
+                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Exporting...');
+
+                const resetButton = function() {
+                    $btn.prop('disabled', false).html(originalHtml).data('processing', false);
+                };
+
+                $.ajax({
+                    url: '{{ route('hos-reports.export.pdf') }}',
+                    method: 'GET',
+                    data: filters,
+                    dataType: 'json',
+                    cache: false,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    },
+                    success: function(response) {
+                        if (response && response.success) {
+                            alert('Export started. You will get a notification when it is ready.');
+                        } else {
+                            alert(response && response.message ? response.message : 'Export could not be started.');
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Export error', xhr);
+                        alert('Error starting export. Please try again.');
+                    },
+                    complete: resetButton
+                });
+
+                setTimeout(resetButton, 15000);
             });
 
             // Load stations for dropdown

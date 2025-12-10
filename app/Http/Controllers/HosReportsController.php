@@ -8,6 +8,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Barryvdh\Snappy\Facades\SnappyPdf;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Builder;
@@ -750,6 +751,284 @@ class HosReportsController extends Controller
             return back()->with('success', 'PDF export started successfully. You will receive a notification when the file is ready for download.');
         } catch (\Exception $e) {
             Log::error('Error dispatching PDF export job: ' . $e->getMessage(), [
+                'filters' => $request->all(),
+                'exception' => $e,
+            ]);
+
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error initiating PDF export. Please try again or contact support.',
+                ], 500);
+            }
+
+            return back()->with('error', 'Error initiating PDF export. Please try again or contact support.');
+        }
+    }
+
+    /**
+     * Export sales to PDF using Snappy.
+     */
+    public function exportSalesPdf(Request $request): \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+    {
+        $filters = $request->only([
+            'from_date',
+            'to_date',
+            'from_time',
+            'to_time',
+            'station_id',
+        ]);
+
+        $filename = 'sales_' . now()->format('Y-m-d_His') . '.pdf';
+
+        // Dispatch the same queued pattern as transactions for stability and large data
+        $userId = Auth::id();
+        \App\Jobs\GeneratePumpTransactionsPdf::dispatch($filters, $filename, $userId);
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'PDF export started successfully. You will receive a notification when the file is ready for download.',
+                'download_url' => route('hos-reports.download', ['filename' => $filename]),
+            ]);
+        }
+
+        return back()->with('success', 'PDF export started successfully. You will receive a notification when the file is ready for download.');
+    }
+
+    /**
+     * Export sales summary to PDF using Snappy.
+     */
+    public function exportSalesSummaryPdf(Request $request): \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+    {
+        try {
+            $filters = $request->only([
+                'station_id',
+                'from_date',
+                'to_date',
+                'from_time',
+                'to_time',
+                'product_id',
+            ]);
+
+            $filename = 'sales_summary_' . now()->format('Y-m-d_His') . '.pdf';
+
+            $userId = Auth::id();
+            \App\Jobs\GenerateSalesSummaryPdf::dispatch($filters, $filename, $userId);
+
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'PDF export started successfully. You will receive a notification when the file is ready for download.',
+                    'download_url' => route('hos-reports.download', ['filename' => $filename]),
+                ]);
+            }
+
+            return back()->with('success', 'PDF export started successfully. You will receive a notification when the file is ready for download.');
+        } catch (\Exception $e) {
+            Log::error('Error dispatching Sales Summary PDF export job: ' . $e->getMessage(), [
+                'filters' => $request->all(),
+                'exception' => $e,
+            ]);
+
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error initiating PDF export. Please try again or contact support.',
+                ], 500);
+            }
+
+            return back()->with('error', 'Error initiating PDF export. Please try again or contact support.');
+        }
+    }
+
+    /**
+     * Export analytical sales to PDF using Snappy.
+     */
+    public function exportAnalyticalSalesPdf(Request $request): \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+    {
+        try {
+            $filters = $request->only([
+                'from_date',
+                'to_date',
+                'from_time',
+                'to_time',
+                'station_id',
+                'product_id',
+            ]);
+
+            $filename = 'analytical_sales_' . now()->format('Y-m-d_His') . '.pdf';
+
+            $userId = Auth::id();
+            \App\Jobs\GenerateAnalyticalSalesPdf::dispatch($filters, $filename, $userId);
+
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'PDF export started successfully. You will receive a notification when the file is ready for download.',
+                    'download_url' => route('hos-reports.download', ['filename' => $filename]),
+                ]);
+            }
+
+            return back()->with('success', 'PDF export started successfully. You will receive a notification when the file is ready for download.');
+        } catch (\Exception $e) {
+            Log::error('Error dispatching Analytical Sales PDF export job: ' . $e->getMessage(), [
+                'filters' => $request->all(),
+                'exception' => $e,
+            ]);
+
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error initiating PDF export. Please try again or contact support.',
+                ], 500);
+            }
+
+            return back()->with('error', 'Error initiating PDF export. Please try again or contact support.');
+        }
+    }
+
+    /**
+     * Export tank inventory to PDF using Snappy.
+     */
+    public function exportTankInventoryPdf(Request $request)
+    {
+        $query = TankInventory::query()
+            ->leftJoin('stations', 'tank_inventories.station_id', '=', 'stations.id')
+            ->leftJoin('fuel_grades', function ($join) {
+                $join->on('tank_inventories.fuel_grade_id', '=', 'fuel_grades.id')
+                    ->on('tank_inventories.station_id', '=', 'fuel_grades.station_id');
+            });
+
+        // Date/time filters on created_at_bos
+        if ($request->filled('from_date') || $request->filled('to_date') || $request->filled('from_time') || $request->filled('to_time')) {
+            $from_date = $request->input('from_date');
+            $to_date = $request->input('to_date');
+            $from_time = $request->input('from_time') ?: '00:00:00';
+            $to_time = $request->input('to_time') ?: '23:59:59';
+            $dateColumn = 'created_at_bos';
+
+            if ($from_date && $to_date) {
+                $from_datetime = $from_date . ' ' . $from_time;
+                $to_datetime = $to_date . ' ' . $to_time;
+                $query->whereBetween('tank_inventories.' . $dateColumn, [$from_datetime, $to_datetime]);
+            } elseif ($from_date) {
+                $from_datetime = $from_date . ' ' . $from_time;
+                $query->where('tank_inventories.' . $dateColumn, '>=', $from_datetime);
+            } elseif ($to_date) {
+                $to_datetime = $to_date . ' ' . $to_time;
+                $query->where('tank_inventories.' . $dateColumn, '<=', $to_datetime);
+            }
+        }
+
+        if ($request->filled('station_id')) {
+            $query->where('tank_inventories.station_id', $request->input('station_id'));
+        }
+
+        if ($request->filled('fuel_grade_id')) {
+            $query->where('tank_inventories.fuel_grade_id', $request->input('fuel_grade_id'));
+        }
+
+        if ($request->filled('tank')) {
+            $query->where('tank_inventories.tank', $request->input('tank'));
+        }
+
+        $rows = $query
+            ->orderBy('tank_inventories.created_at_bos', 'desc')
+            ->select([
+                'tank_inventories.*',
+                'stations.site_name',
+                'stations.pts_id as site_ref',
+                'fuel_grades.name as fuel_grade_name_from_table',
+            ])
+            ->get()
+            ->map(function ($inv) {
+                $dateTime = '';
+
+                if ($inv->created_at_bos) {
+                    $dateTime = is_string($inv->created_at_bos)
+                        ? $inv->created_at_bos
+                        : $inv->created_at_bos->format('Y-m-d H:i:s');
+                }
+
+                $tankFormatted = 'T-' . str_pad($inv->tank, 2, '0', STR_PAD_LEFT);
+                $productName = $inv->fuel_grade_name_from_table ?? $inv->fuel_grade_name ?? '';
+
+                return [
+                    'date_time' => $dateTime,
+                    'site' => $inv->site_name ?? '',
+                    'site_ref' => $inv->site_ref ?? '',
+                    'tank' => $tankFormatted,
+                    'product' => $productName,
+                    'volume' => $inv->product_volume ?? 0,
+                    'height' => $inv->product_height ?? 0,
+                    'water' => $inv->water_height ?? 0,
+                    'temperature' => $inv->temperature ?? 0,
+                    'ullage' => $inv->product_ullage ?? 0,
+                ];
+            });
+
+        $filters = [
+            'From Date' => $request->input('from_date'),
+            'To Date' => $request->input('to_date'),
+            'From Time' => $request->input('from_time'),
+            'To Time' => $request->input('to_time'),
+            'Station' => $request->filled('station_id') ? Station::query()->whereKey($request->input('station_id'))->value('site_name') : null,
+            'Product' => $request->input('fuel_grade_id'),
+            'Tank' => $request->input('tank'),
+        ];
+
+        $pdf = SnappyPdf::loadView('hos-reports.pdf.tank-inventory', [
+            'filters' => array_filter($filters),
+            'records' => $rows,
+            'generatedAt' => now(),
+        ])->setPaper('a4', 'landscape')->setTimeout(600);
+
+        $filename = 'tank_inventory_' . now()->format('Y-m-d_His') . '.pdf';
+
+        $tempPath = 'temp/' . Str::uuid() . '.pdf';
+        $fullTempPath = Storage::disk('local')->path($tempPath);
+
+        $pdf->save($fullTempPath);
+
+        return response()->download($fullTempPath, $filename, [
+            'Content-Type' => 'application/pdf',
+        ])->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Export tank deliveries to PDF using Snappy.
+     */
+    public function exportTankDeliveriesPdf(Request $request): \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+    {
+        try {
+            $filters = $request->only([
+                'from_date',
+                'to_date',
+                'from_time',
+                'to_time',
+                'fuel_grade_id',
+                'tank',
+                'volume_min',
+                'volume_max',
+            ]);
+
+            $filename = 'tank_deliveries_' . now()->format('Y-m-d_His') . '.pdf';
+            $userId = Auth::id();
+
+            \App\Jobs\GenerateTankDeliveriesPdf::dispatch($filters, $filename, $userId);
+
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'PDF export started successfully. You will receive a notification when the file is ready for download.',
+                    'download_url' => route('hos-reports.download', ['filename' => $filename]),
+                ]);
+            }
+
+            return back()->with('success', 'PDF export started successfully. You will receive a notification when the file is ready for download.');
+        } catch (\Exception $e) {
+            Log::error('Error dispatching Tank Deliveries PDF export job: ' . $e->getMessage(), [
                 'filters' => $request->all(),
                 'exception' => $e,
             ]);

@@ -195,5 +195,157 @@
         //         theme: 'bootstrap4'
         //     });
         // });
-    })
+
+        // Notification System
+        let notificationPollInterval;
+
+        function fetchNotifications() {
+            $.ajax({
+                url: '{{ route("hos-reports.notifications") }}',
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                success: function(response) {
+                    updateNotificationBadge(response.notifications);
+                    updateNotificationsDropdown(response.notifications);
+                },
+                error: function(xhr) {
+                    console.error('Error fetching notifications:', xhr);
+                }
+            });
+        }
+
+        function updateNotificationBadge(notifications) {
+            const count = notifications.length;
+            const badge = $('#notificationBadge');
+            
+            if (count > 0) {
+                badge.text(count).show();
+            } else {
+                badge.hide();
+            }
+        }
+
+        function updateNotificationsDropdown(notifications) {
+            const list = $('#notificationsList');
+            const header = $('#notificationHeader');
+            const clearAllBtn = $('#clearAllNotifications');
+            
+            if (notifications.length === 0) {
+                header.text('No New Notifications');
+                list.html('<div class="dropdown-item text-center text-muted py-3"><small>No notifications</small></div>');
+                clearAllBtn.hide();
+                return;
+            }
+
+            header.text(`${notifications.length} New Notification${notifications.length > 1 ? 's' : ''}`);
+            clearAllBtn.show();
+
+            let html = '';
+            notifications.forEach(function(notification) {
+                html += `
+                    <div class="dropdown-item notification-item" data-id="${notification.id}">
+                        <div class="media">
+                            <div class="media-body">
+                                <h6 class="dropdown-item-title mb-1">
+                                    <i class="fas fa-file-pdf text-danger mr-2"></i>
+                                    PDF Export Ready
+                                </h6>
+                                <p class="text-sm mb-1">${notification.message}</p>
+                                <p class="text-xs text-muted mb-0">
+                                    <i class="far fa-clock mr-1"></i>${notification.created_at}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                `;
+            });
+            
+            list.html(html);
+
+            // Add click handler to notification items
+            $('.notification-item').on('click', function(e) {
+                e.preventDefault();
+                const notificationId = $(this).data('id');
+                const notification = notifications.find(n => n.id === notificationId);
+                if (notification) {
+                    markNotificationAsRead(notificationId, function() {
+                        window.location.href = notification.download_url;
+                    });
+                }
+            });
+        }
+
+        function markNotificationAsRead(notificationId, callback) {
+            $.ajax({
+                url: '{{ route("hos-reports.notifications.read", ":id") }}'.replace(':id', notificationId),
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                success: function(response) {
+                    if (callback) callback();
+                    // Refresh notifications after marking as read
+                    fetchNotifications();
+                },
+                error: function(xhr) {
+                    console.error('Error marking notification as read:', xhr);
+                    if (callback) callback();
+                }
+            });
+        }
+
+        // Clear all notifications
+        $('#clearAllNotifications').on('click', function(e) {
+            e.preventDefault();
+            const notificationIds = [];
+            $('.notification-item').each(function() {
+                notificationIds.push($(this).data('id'));
+            });
+
+            // Mark all as read
+            let completed = 0;
+            notificationIds.forEach(function(id) {
+                markNotificationAsRead(id, function() {
+                    completed++;
+                    if (completed === notificationIds.length) {
+                        fetchNotifications();
+                    }
+                });
+            });
+        });
+
+        // Poll for notifications every 10 seconds (only when PDF export is active)
+        function startNotificationPolling() {
+            // Clear any existing interval
+            if (notificationPollInterval) {
+                clearInterval(notificationPollInterval);
+            }
+            
+            // Initial fetch
+            fetchNotifications();
+            
+            // Set up interval - poll more frequently during PDF generation (every 10 seconds)
+            notificationPollInterval = setInterval(fetchNotifications, 10000); // 10 seconds
+        }
+
+        // Stop notification polling
+        function stopNotificationPolling() {
+            if (notificationPollInterval) {
+                clearInterval(notificationPollInterval);
+                notificationPollInterval = null;
+            }
+        }
+
+        // Make functions globally available for PDF export buttons
+        window.startNotificationPolling = startNotificationPolling;
+        window.stopNotificationPolling = stopNotificationPolling;
+        window.fetchNotifications = fetchNotifications;
+
+        // Start polling on page load so notifications always appear in the header
+        startNotificationPolling();
+    });
 </script>

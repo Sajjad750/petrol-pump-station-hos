@@ -11,6 +11,24 @@
 
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto">
+        <!-- Notifications Dropdown -->
+        <li class="nav-item dropdown">
+            <a class="nav-link" data-toggle="dropdown" href="#" id="notificationsDropdown" role="button">
+                <i class="far fa-bell"></i>
+                <span class="badge badge-warning navbar-badge" id="notificationBadge" style="display: none;">0</span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right" id="notificationsMenu">
+                <span class="dropdown-item dropdown-header" id="notificationHeader">No New Notifications</span>
+                <div class="dropdown-divider"></div>
+                <div id="notificationsList">
+                    <div class="dropdown-item text-center text-muted py-3">
+                        <small>No notifications</small>
+                    </div>
+                </div>
+                <div class="dropdown-divider"></div>
+                <a href="#" class="dropdown-item dropdown-footer" id="clearAllNotifications" style="display: none;">Mark all as read</a>
+            </div>
+        </li>
         <!-- Dark Mode Toggle -->
         <li class="nav-item">
             <a class="nav-link" href="#" role="button" id="darkModeToggle" title="Toggle Dark Mode">
