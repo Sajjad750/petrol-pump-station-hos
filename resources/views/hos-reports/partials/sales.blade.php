@@ -408,17 +408,69 @@
                 window.location.href = '{{ route('hos-reports.sales.export.excel') }}?' + queryString;
             });
 
-            // Export to PDF
-            $('#sales-export-pdf-btn').on('click', function() {
+            // Export to PDF (guard against duplicate clicks/bindings)
+            $('#sales-export-pdf-btn').off('click').on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const $btn = $(this);
+
+                // Prevent multiple dispatches if already processing
+                if ($btn.prop('disabled') || $btn.data('processing')) {
+                    return false;
+                }
+
+                $btn.data('processing', true);
+                const originalHtml = $btn.html();
+
                 const filters = {
                     from_date: $('#sales_from_date').val(),
                     to_date: $('#sales_to_date').val(),
                     from_time: $('#sales_from_time').val(),
                     to_time: $('#sales_to_time').val(),
-                    station_id: $('#sales_station_id').val()
+                    station_id: $('#sales_station_id').val(),
+                    tab: 'sales'
                 };
-                const queryString = $.param(filters);
-                window.location.href = '{{ route('hos-reports.sales.export.pdf') }}?' + queryString;
+
+                // Start notification polling immediately (matches transactions pattern)
+                if (typeof window.startNotificationPolling === 'function') {
+                    window.startNotificationPolling();
+                }
+
+                // Disable button and call export via AJAX to avoid page refresh
+                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Exporting...');
+
+                // Fallback to re-enable button if request hangs for any reason
+                const resetButton = function() {
+                    $btn.prop('disabled', false).html(originalHtml).data('processing', false);
+                };
+
+                $.ajax({
+                    url: '{{ route('hos-reports.sales.export.pdf') }}',
+                    method: 'GET',
+                    data: filters,
+                    dataType: 'json',
+                    cache: false,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    },
+                    success: function(response) {
+                        if (response && response.success) {
+                            alert('Export started. You will get a notification when it is ready.');
+                        } else {
+                            alert(response && response.message ? response.message : 'Export could not be started.');
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Export error', xhr);
+                        alert('Error starting export. Please try again.');
+                    },
+                    complete: resetButton
+                });
+
+                // Safety timeout to ensure button is re-enabled even if AJAX never completes
+                setTimeout(resetButton, 15000);
             });
 
             // Load stations for dropdown

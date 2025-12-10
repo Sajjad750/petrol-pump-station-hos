@@ -653,9 +653,19 @@
                 }
             });
 
-            // Export to PDF
-            $('#transaction-export-pdf-btn').on('click', function() {
+            // Export to PDF (guard against duplicate clicks/bindings)
+            $('#transaction-export-pdf-btn').off('click').on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
                 const $btn = $(this);
+
+                // Prevent multiple dispatches if already processing
+                if ($btn.prop('disabled') || $btn.data('processing')) {
+                    return false;
+                }
+
+                $btn.data('processing', true);
                 const originalHtml = $btn.html();
 
                 const filters = {
@@ -670,17 +680,14 @@
                     tab: 'transactions'
                 };
 
-                // Start notification polling immediately
                 if (typeof window.startNotificationPolling === 'function') {
                     window.startNotificationPolling();
                 }
 
-                // Disable button and call export via AJAX to avoid page refresh
                 $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Exporting...');
 
-                // Fallback to re-enable button if request hangs for any reason
                 const resetButton = function() {
-                    $btn.prop('disabled', false).html(originalHtml);
+                    $btn.prop('disabled', false).html(originalHtml).data('processing', false);
                 };
 
                 $.ajax({
@@ -707,7 +714,6 @@
                     complete: resetButton
                 });
 
-                // Safety timeout to ensure button is re-enabled even if AJAX never completes
                 setTimeout(resetButton, 15000);
             });
 
