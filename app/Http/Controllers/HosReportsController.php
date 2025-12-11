@@ -290,6 +290,7 @@ class HosReportsController extends Controller
                 'site_id' => $transaction->site_id ?? '',
                 'site_name' => $transaction->site_name ?? '',
                 'transaction_id' => $transaction->transaction_number ?? '',
+                // Trans Date uses end time (date_time_end) not start time
                 'trans_date' => $transaction->date_time_end ? $transaction->date_time_end->setTimezone('Asia/Riyadh')->format('Y-m-d H:i:s') : '',
                 'pump' => $transaction->pts_pump_id ?? '',
                 'nozzle' => $transaction->pts_nozzle_id ?? '',
@@ -483,6 +484,10 @@ class HosReportsController extends Controller
 
         if ($tab === 'shift-summary') {
             return $this->exportShiftSummaryCsv($request);
+        }
+
+        if ($tab === 'transactions') {
+            return $this->exportTransactionsCsv($request);
         }
 
         return response()->json(['message' => 'CSV export for this tab not implemented yet']);
@@ -713,6 +718,181 @@ class HosReportsController extends Controller
 
         return response()->stream($callback, 200, [
             'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+        ]);
+    }
+
+    /**
+     * Export transactions to CSV.
+     */
+    protected function exportTransactionsCsv(Request $request)
+    {
+        $filters = $request->only([
+            'from_date',
+            'to_date',
+            'from_time',
+            'to_time',
+            'station_id',
+            'pump_id',
+            'mode_of_payment',
+            'product_id',
+        ]);
+
+        // Build query with same logic as getTransactionsData
+        $query = $this->baseTransactionsQuery(true);
+        $this->applyTransactionFilters($query, $filters);
+
+        // Order by transaction date descending
+        $query->orderBy('pump_transactions.date_time_end', 'desc');
+
+        // Get all transactions (no pagination for export)
+        $transactions = $query->get();
+
+        // Prepare CSV data
+        $csvData = [];
+
+        // Header row
+        $csvData[] = [
+            'Site ID',
+            'Site Name',
+            'Transaction ID',
+            'Trans Date',
+            'Pump',
+            'Nozzle',
+            'Product',
+            'Unit Price',
+            'Volume',
+            'Amount',
+            'Start Totalizer',
+            'End Totalizer',
+            'Payment Mode',
+            'Attendant',
+            'Start Time',
+            'End Time',
+            'Mobile No',
+            'Vehicle No',
+            'HOS Received Date/Time',
+        ];
+
+        // Data rows
+        foreach ($transactions as $transaction) {
+            // Parse tag field for mobile and vehicle ID
+            $tag = $transaction->tag ?? '';
+            $mobile = '';
+            $vehicleId = '';
+
+            if ($tag) {
+                // Try to decode as JSON first
+                $decodedTag = json_decode($tag, true);
+
+                if (is_array($decodedTag)) {
+                    $mobile = $decodedTag['mobile'] ?? $decodedTag['phone'] ?? '';
+                    $vehicleId = $decodedTag['vehicle_id'] ?? $decodedTag['vehicleId'] ?? '';
+                }
+
+                // If not JSON or fields are empty, parse as text
+                if (empty($mobile) || empty($vehicleId)) {
+                    $lines = explode("\n", $tag);
+
+                    foreach ($lines as $line) {
+                        $line = trim($line);
+
+                        if (preg_match('/^\+?\d{10,15}$/', $line)) {
+                            if (empty($mobile)) {
+                                $mobile = $line;
+                            }
+                        } elseif (preg_match('/vehicle[_\s]*id[_\s]*:?\s*([^\s\n]+)/i', $line, $matches)) {
+                            $vehicleId = trim($matches[1]);
+                        } elseif (empty($vehicleId) && preg_match('/^[a-z0-9]{6,15}$/i', $line) && ! preg_match('/^\+?\d+$/', $line)) {
+                            $vehicleId = $line;
+                        }
+                    }
+
+                    if (empty($mobile)) {
+                        $trimmedTag = trim($tag);
+
+                        if (preg_match('/^\+?\d{10,15}$/', $trimmedTag)) {
+                            $mobile = $trimmedTag;
+                        } else {
+                            $parts = preg_split('/[\s\n]+/', $trimmedTag);
+
+                            foreach ($parts as $part) {
+                                if (preg_match('/\+?\d{10,15}/', $part, $matches)) {
+                                    $mobile = $matches[0];
+
+                                    break;
+                                }
+                            }
+
+                            if (empty($mobile)) {
+                                $mobile = $trimmedTag;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Format dates
+            $transDate = $transaction->date_time_end
+                ? ($transaction->date_time_end instanceof Carbon
+                    ? $transaction->date_time_end->setTimezone('Asia/Riyadh')->format('Y-m-d H:i:s')
+                    : Carbon::parse($transaction->date_time_end)->setTimezone('Asia/Riyadh')->format('Y-m-d H:i:s'))
+                : '';
+
+            $startTime = $transaction->date_time_start
+                ? ($transaction->date_time_start instanceof Carbon
+                    ? $transaction->date_time_start->setTimezone('Asia/Riyadh')->format('Y-m-d H:i:s')
+                    : Carbon::parse($transaction->date_time_start)->setTimezone('Asia/Riyadh')->format('Y-m-d H:i:s'))
+                : '';
+
+            $endTime = $transaction->date_time_end
+                ? ($transaction->date_time_end instanceof Carbon
+                    ? $transaction->date_time_end->setTimezone('Asia/Riyadh')->format('Y-m-d H:i:s')
+                    : Carbon::parse($transaction->date_time_end)->setTimezone('Asia/Riyadh')->format('Y-m-d H:i:s'))
+                : '';
+
+            $hosReceivedTime = $transaction->created_at
+                ? $transaction->created_at->setTimezone('Asia/Riyadh')->format('Y-m-d H:i:s')
+                : '';
+
+            $csvData[] = [
+                $transaction->site_id ?? '',
+                $transaction->site_name ?? '',
+                $transaction->transaction_number ?? '',
+                $transDate,
+                $transaction->pts_pump_id ?? '',
+                $transaction->pts_nozzle_id ?? '',
+                $transaction->fuel_grade_name ?? '',
+                $transaction->price !== null ? number_format((float) $transaction->price, 2) : '0.00',
+                $transaction->volume !== null ? number_format((float) $transaction->volume, 2) : '0.00',
+                $transaction->amount !== null ? number_format((float) $transaction->amount, 2) : '0.00',
+                $transaction->starting_totalizer !== null ? number_format((float) $transaction->starting_totalizer, 2) : '0.00',
+                $transaction->total_volume !== null ? number_format((float) $transaction->total_volume, 2) : '0.00',
+                ucfirst($transaction->mode_of_payment ?? ''),
+                $transaction->attendant_login ?? '',
+                $startTime,
+                $endTime,
+                $mobile,
+                $vehicleId,
+                $hosReceivedTime,
+            ];
+        }
+
+        // Generate CSV file
+        $filename = 'transactions_'.date('Y-m-d_His').'.csv';
+
+        $callback = function () use ($csvData) {
+            $file = fopen('php://output', 'w');
+
+            foreach ($csvData as $row) {
+                fputcsv($file, $row);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ]);
     }

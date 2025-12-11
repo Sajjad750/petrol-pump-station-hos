@@ -76,6 +76,9 @@
                     <button type="button" id="transaction-reset-btn" class="btn btn-dark">
                         <i class="fas fa-redo"></i> Reset
                     </button>
+                    <button type="button" id="transaction-export-csv-btn" class="btn btn-dark">
+                        <i class="fas fa-file-csv"></i> Export CSV
+                    </button>
                     <button type="button" id="transaction-export-pdf-btn" class="btn btn-dark">
                         <i class="fas fa-file-pdf"></i> Export PDF
                     </button>
@@ -653,6 +656,23 @@
                     e.preventDefault();
                     transactionsTable.draw();
                 }
+            });
+
+            // Export to CSV
+            $('#transaction-export-csv-btn').on('click', function() {
+                const filters = {
+                    from_date: $('#transaction_from_date').val(),
+                    to_date: $('#transaction_to_date').val(),
+                    from_time: $('#transaction_from_time').val(),
+                    to_time: $('#transaction_to_time').val(),
+                    station_id: $('#transaction_station_id').val(),
+                    pump_id: $('#transaction_pump_id').val(),
+                    mode_of_payment: $('#transaction_mop').val(),
+                    product_id: $('#transaction_product_id').val(),
+                    tab: 'transactions'
+                };
+                const queryString = $.param(filters);
+                window.location.href = '{{ route('hos-reports.export.csv') }}?' + queryString;
             });
 
             // Export to PDF (guard against duplicate clicks/bindings)
