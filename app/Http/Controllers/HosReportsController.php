@@ -286,12 +286,23 @@ class HosReportsController extends Controller
             //                $attenName = (string) $transaction->pts_user_id;
             //            }
 
+            // Ensure trans_date uses end time (date_time_end) - never use start time
+            $transDate = '';
+
+            if ($transaction->date_time_end) {
+                if ($transaction->date_time_end instanceof Carbon) {
+                    $transDate = $transaction->date_time_end->setTimezone('Asia/Riyadh')->format('Y-m-d H:i:s');
+                } else {
+                    $transDate = Carbon::parse($transaction->date_time_end)->setTimezone('Asia/Riyadh')->format('Y-m-d H:i:s');
+                }
+            }
+
             return [
                 'site_id' => $transaction->site_id ?? '',
                 'site_name' => $transaction->site_name ?? '',
                 'transaction_id' => $transaction->transaction_number ?? '',
-                // Trans Date uses end time (date_time_end) not start time
-                'trans_date' => $transaction->date_time_end ? $transaction->date_time_end->setTimezone('Asia/Riyadh')->format('Y-m-d H:i:s') : '',
+                // Trans Date always uses end time (date_time_end) - never start time
+                'trans_date' => $transDate,
                 'pump' => $transaction->pts_pump_id ?? '',
                 'nozzle' => $transaction->pts_nozzle_id ?? '',
                 'product' => $transaction->fuel_grade_name ?? '',
