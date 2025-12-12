@@ -430,7 +430,10 @@
                                                          ['class' => 'status-offline', 'text' => 'Offline', 'icon' => 'fas fa-eye-slash']);
                                                 $lastSync = $station->last_sync_at ? $station->last_sync_at->diffForHumans() : 'Never';
                                                 $pumpCount = $station->pumps->count();
-                                                $activePumps = $station->pumps->where('is_active', true)->count();
+                                                // Operational pumps are: idle, filling, end_of_transaction (online pumps)
+                                                $activePumps = $station->pumps->filter(function ($pump) {
+                                                    return in_array($pump->status, ['idle', 'filling', 'end_of_transaction']);
+                                                })->count();
                                                 $pumpPercentage = $pumpCount > 0 ? round(($activePumps / $pumpCount) * 100) : 0;
                                                 $progressColor = $pumpPercentage >= 80 ? '#3b82f6' : ($pumpPercentage >= 50 ? '#f59e0b' : '#ef4444');
                                             @endphp
