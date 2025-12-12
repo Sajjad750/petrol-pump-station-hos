@@ -1948,7 +1948,7 @@ class HosReportsController extends Controller
             $query->where('pump_transactions.station_id', $request->input('station_id'));
         }
 
-        // Date and Time Filters
+        // Date and Time Filters - Use end time (date_time_end) for filtering
         if ($request->filled('from_date') || $request->filled('to_date') || $request->filled('from_time') || $request->filled('to_time')) {
             $from_date = $request->input('from_date');
             $to_date = $request->input('to_date');
@@ -1958,13 +1958,13 @@ class HosReportsController extends Controller
             if ($from_date && $to_date) {
                 $from_datetime = $from_date.' '.$from_time;
                 $to_datetime = $to_date.' '.$to_time;
-                $query->whereBetween('pump_transactions.date_time_start', [$from_datetime, $to_datetime]);
+                $query->whereBetween('pump_transactions.date_time_end', [$from_datetime, $to_datetime]);
             } elseif ($from_date) {
                 $from_datetime = $from_date.' '.$from_time;
-                $query->where('pump_transactions.date_time_start', '>=', $from_datetime);
+                $query->where('pump_transactions.date_time_end', '>=', $from_datetime);
             } elseif ($to_date) {
                 $to_datetime = $to_date.' '.$to_time;
-                $query->where('pump_transactions.date_time_start', '<=', $to_datetime);
+                $query->where('pump_transactions.date_time_end', '<=', $to_datetime);
             }
         }
 

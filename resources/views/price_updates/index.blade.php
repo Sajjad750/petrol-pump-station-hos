@@ -61,7 +61,7 @@
                                     <tr>
                                         <th class="checkbox-column" style="display: none;"></th>
                                         <th>ID</th>
-                                        <th>Site Name</th>
+                                        <th>Station Name</th>
                                         <th>BOS Fuel Grade ID</th>
                                         <th>Name</th>
                                         <th>Price</th>

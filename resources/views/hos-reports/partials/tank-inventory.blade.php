@@ -88,7 +88,7 @@
                 <thead>
                     <tr>
                         <th>Date & Time <span class="sort-indicator"><i class="fas fa-sort"></i></span></th>
-                        <th>Site</th>
+                        <th>Station</th>
                         <th>Tank</th>
                         <th>Product</th>
                         <th class="text-right">Volume (L)</th>

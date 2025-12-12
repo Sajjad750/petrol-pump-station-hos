@@ -63,12 +63,13 @@ class GenerateSalesSummaryPdf implements ShouldQueue
             $fromTime = $this->filters['from_time'] ?? '00:00:00';
             $toTime = $this->filters['to_time'] ?? '23:59:59';
 
+            // Use end time (date_time_end) for filtering
             if ($fromDate && $toDate) {
-                $query->whereBetween('pump_transactions.date_time_start', [$fromDate . ' ' . $fromTime, $toDate . ' ' . $toTime]);
+                $query->whereBetween('pump_transactions.date_time_end', [$fromDate . ' ' . $fromTime, $toDate . ' ' . $toTime]);
             } elseif ($fromDate) {
-                $query->where('pump_transactions.date_time_start', '>=', $fromDate . ' ' . $fromTime);
+                $query->where('pump_transactions.date_time_end', '>=', $fromDate . ' ' . $fromTime);
             } elseif ($toDate) {
-                $query->where('pump_transactions.date_time_start', '<=', $toDate . ' ' . $toTime);
+                $query->where('pump_transactions.date_time_end', '<=', $toDate . ' ' . $toTime);
             }
 
             if (!empty($this->filters['product_id'])) {

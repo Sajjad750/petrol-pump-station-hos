@@ -78,7 +78,7 @@
                 <thead>
                     <tr>
                         <th>Date</th>
-                        <th>Site</th>
+                        <th>Station</th>
                         <th>Product</th>
                         <th class="text-right">Liters Sold</th>
                         <th class="text-right">Amount (SAR)</th>
