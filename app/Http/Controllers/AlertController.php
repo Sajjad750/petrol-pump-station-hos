@@ -10,22 +10,43 @@ class AlertController extends Controller
 {
     public function index(Request $request)
     {
-        // Only Pump and Probe alerts
-        $baseQuery = Alert::with('station')->whereIn('device_type', ['Pump', 'Probe']);
+        $baseQuery = Alert::with('station');
         $tab = $request->get('tab', 'unread');
-        // Tabs support: unread, all, bos, hos, controller (future: use device_type, etc)
-        $alerts = match($tab) {
-            'all' => (clone $baseQuery)->latest('datetime')->get(),
-            default => (clone $baseQuery)->where('is_read', false)->latest('datetime')->get(),
+
+        // Filter by tab type
+        $filteredQuery = match($tab) {
+            'hos' => (clone $baseQuery)->whereNull('bos_alert_id')->whereNull('bos_uuid'), // HOS native alerts (no BOS identifiers)
+            'bos' => (clone $baseQuery)->where(function ($query) {
+                $query->whereNotNull('bos_alert_id')->orWhereNotNull('bos_uuid');
+            }), // BOS synced alerts (has either bos_alert_id or bos_uuid)
+            default => (clone $baseQuery), // All alerts for 'unread' and 'all' tabs
         };
-        // Counts
+
+        // Apply read status filter for unread tab
+        if ($tab === 'unread') {
+            $filteredQuery->where('is_read', false);
+        }
+
+        $alerts = $filteredQuery->latest('datetime')->get();
+
+        // Counts - use baseQuery for all alerts, filteredQuery for tab-specific counts
         $totalToday = (clone $baseQuery)->whereDate('datetime', Carbon::today())->count();
         $unread = (clone $baseQuery)->where('is_read', false)->count();
+
+        // Critical and warning counts based on tab
+        $countQuery = match($tab) {
+            'hos' => (clone $baseQuery)->whereNull('bos_alert_id')->whereNull('bos_uuid'),
+            'bos' => (clone $baseQuery)->where(function ($query) {
+                $query->whereNotNull('bos_alert_id')->orWhereNotNull('bos_uuid');
+            }),
+            default => (clone $baseQuery),
+        };
+
         // Very basic crit/warn logic, adjust as needed
         $criticalCodes = [3, 6, 8]; // Code 3,6,8 for Probe are 'critical' in API spec
-        $critical = (clone $baseQuery)->whereIn('code', $criticalCodes)->count();
+        $critical = (clone $countQuery)->whereIn('code', $criticalCodes)->count();
         $warningCodes = [1, 2, 5, 7];
-        $warning = (clone $baseQuery)->whereIn('code', $warningCodes)->count();
+        $warning = (clone $countQuery)->whereIn('code', $warningCodes)->count();
 
         return view('alerts.index', [
             'alerts' => $alerts,
