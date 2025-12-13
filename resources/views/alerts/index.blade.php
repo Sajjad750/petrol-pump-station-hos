@@ -50,10 +50,10 @@
             <a class="nav-link @if($tab==='all') active @endif" href="?tab=all">All Notifications</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link disabled">HOS</a>
+            <a class="nav-link @if($tab==='hos') active @endif" href="?tab=hos">HOS</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link disabled">BOS</a>
+            <a class="nav-link @if($tab==='bos') active @endif" href="?tab=bos">BOS</a>
         </li>
         <li class="nav-item">
             <a class="nav-link disabled">Controller</a>
@@ -61,18 +61,46 @@
     </ul>
 
     <div class="card p-4">
-        <div class="fw-bold mb-2">{{ $tab==='unread' ? 'Unread Notifications' : 'All Notifications' }}</div>
+        <div class="fw-bold mb-2">
+            @if($tab==='unread')
+                Unread Notifications
+            @elseif($tab==='all')
+                All Notifications
+            @elseif($tab==='hos')
+                HOS Alerts
+            @elseif($tab==='bos')
+                BOS Alerts
+            @else
+                All Notifications
+            @endif
+        </div>
         @forelse($alerts as $alert)
             @php
                 $isCritical = in_array($alert->code, [3,6,8]);
                 $isWarning = in_array($alert->code, [1,2,5,7]);
                 $isMedium = in_array($alert->code, [2,4,5]);
+                // Check if this is a BOS alert
+                $isBosAlert = !empty($alert->bos_alert_id) || !empty($alert->bos_uuid);
+                
                 // Message generation
                 $message = '';
                 $level = '';
-                if($alert->device_type == 'Pump') {
+                
+                // For BOS alerts, prefer description if available
+                if ($isBosAlert && !empty($alert->description)) {
+                    $message = $alert->description;
+                    // Try to determine level from code if available
+                    if ($isCritical) {
+                        $level = 'high';
+                    } elseif ($isWarning) {
+                        $level = 'medium';
+                    } else {
+                        $level = 'low';
+                    }
+                } elseif($alert->device_type == 'Pump') {
                     if($alert->code == 1) { $message = 'Pump '.$alert->device_number.' offline state detected'; $level='high'; }
                     elseif($alert->code == 2) { $message = 'Pump '.$alert->device_number.' overfilling detected'; $level='medium'; }
+                    else { $message = 'Pump '.$alert->device_number.' notification'; $level='low'; }
                 } elseif($alert->device_type == 'Probe') {
                     switch($alert->code) {
                         case 1: $message = 'Probe '.$alert->device_number.' offline state detected'; $level='high'; break;
@@ -83,9 +111,14 @@
                         case 6: $message = 'Probe '.$alert->device_number.' critical low product level'; $level='high'; break;
                         case 7: $message = 'Probe '.$alert->device_number.' high water level'; $level='medium'; break;
                         case 8: $message = 'Probe '.$alert->device_number.' tank leakage detected'; $level='high'; break;
-                        default: $message = 'Probe '.$alert->device_number.' unknown alert'; $level=''; break;
+                        default: $message = 'Probe '.$alert->device_number.' notification'; $level='low'; break;
                     }
+                } else {
+                    // For other device types or BOS alerts without description
+                    $message = $alert->description ?? ($alert->device_type ?? 'Unknown').' alert';
+                    $level = $isCritical ? 'high' : ($isWarning ? 'medium' : 'low');
                 }
+                
                 $badge = $level === 'high' ? 'danger' : ($level === 'medium' ? 'warning' : 'secondary');
                 $icon = $level === 'high' ? 'fa-exclamation-triangle text-danger' : ($level === 'medium' ? 'fa-exclamation-circle text-warning' : 'fa-info-circle text-muted');
             @endphp

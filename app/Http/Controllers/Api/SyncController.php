@@ -1556,16 +1556,17 @@ class SyncController extends Controller
                         'pending'
                     );
 
+                    // Build match criteria for updateOrCreate
+                    // Prefer bos_alert_id if available, otherwise use bos_uuid
                     $match = [
                         'station_id' => $station->id,
-                        'bos_alert_id' => $alertData['id'] ?? null,
                     ];
 
-                    if (empty($match['bos_alert_id']) && !empty($alertData['uuid'])) {
+                    if (!empty($alertData['id'])) {
+                        $match['bos_alert_id'] = $alertData['id'];
+                    } elseif (!empty($alertData['uuid'])) {
                         $match['bos_uuid'] = $alertData['uuid'];
-                    }
-
-                    if (empty($match['bos_alert_id']) && empty($match['bos_uuid'])) {
+                    } else {
                         throw new \InvalidArgumentException('Alert payload missing BOS identifier (id or uuid).');
                     }
 
