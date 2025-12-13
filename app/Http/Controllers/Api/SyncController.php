@@ -2286,6 +2286,8 @@ class SyncController extends Controller
         return [
             'site_id' => $bosData['site_id'] ?? null,
             'site_name' => $bosData['site_name'],
+            'latitude' => $bosData['latitude'] ?? null,
+            'longitude' => $bosData['longitude'] ?? null,
             'type' => $bosData['type'] ?? null,
             'dealer' => $bosData['dealer'] ?? null,
             'mobile' => $bosData['mobile'] ?? null,
