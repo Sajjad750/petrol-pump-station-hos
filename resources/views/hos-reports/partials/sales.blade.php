@@ -190,6 +190,9 @@
 @push('js')
     <script>
         $(document).ready(function() {
+            // Detect user's timezone
+            const USER_TIMEZONE = moment.tz.guess();
+            
             var salesTable = $('#sales-table').DataTable({
                 'processing': true,
                 'serverSide': true,
@@ -256,14 +259,15 @@
                         render: function(data, type) {
                             if (type !== 'display' || !data) return data || '';
                             try {
-                                var date = new Date(data.replace(' ', 'T'));
-                                if (isNaN(date.getTime())) return data;
-                                var month = String(date.getMonth() + 1).padStart(2, '0');
-                                var day = String(date.getDate()).padStart(2, '0');
-                                var year = date.getFullYear();
-                                var hours = String(date.getHours()).padStart(2, '0');
-                                var minutes = String(date.getMinutes()).padStart(2, '0');
-                                return month + '/' + day + '/' + year + ' ' + hours + ':' + minutes;
+                                // Parse as UTC and convert to user's timezone
+                                var utcMoment = moment.utc(data);
+                                if (!utcMoment.isValid()) {
+                                    // Fallback: try parsing as local time
+                                    utcMoment = moment(data);
+                                    if (!utcMoment.isValid()) return data;
+                                }
+                                var userTime = utcMoment.tz(USER_TIMEZONE);
+                                return userTime.format('MM/DD/YYYY HH:mm');
                             } catch (e) {
                                 return data;
                             }
@@ -349,14 +353,15 @@
                         render: function(data, type) {
                             if (type !== 'display' || !data) return data || '';
                             try {
-                                var date = new Date(data.replace(' ', 'T'));
-                                if (isNaN(date.getTime())) return data;
-                                var month = String(date.getMonth() + 1).padStart(2, '0');
-                                var day = String(date.getDate()).padStart(2, '0');
-                                var year = date.getFullYear();
-                                var hours = String(date.getHours()).padStart(2, '0');
-                                var minutes = String(date.getMinutes()).padStart(2, '0');
-                                return month + '/' + day + '/' + year + ' ' + hours + ':' + minutes;
+                                // Parse as UTC and convert to user's timezone using moment-timezone
+                                var utcMoment = moment.utc(data);
+                                if (!utcMoment.isValid()) {
+                                    // Fallback: try parsing as local time
+                                    utcMoment = moment(data);
+                                    if (!utcMoment.isValid()) return data;
+                                }
+                                var userTime = utcMoment.tz(USER_TIMEZONE);
+                                return userTime.format('MM/DD/YYYY HH:mm');
                             } catch (e) {
                                 return data;
                             }
