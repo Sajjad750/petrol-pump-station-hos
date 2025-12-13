@@ -91,7 +91,7 @@
             <table id="tank-deliveries-table" class="table">
                 <thead>
                     <tr>
-                        <th>Site</th>
+                        <th>Station</th>
                         <th>Date & Time <span class="sort-indicator"><i class="fas fa-sort"></i></span></th>
                         <th>Tank</th>
                         <th>Product</th>

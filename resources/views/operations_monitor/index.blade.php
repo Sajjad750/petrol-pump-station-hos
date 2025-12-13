@@ -19,9 +19,9 @@
             <div class="col-md-3">
                 <div class="card h-100 shadow-sm">
                     <div class="card-body">
-                        <div class="fw-semibold mb-2">Sites Summary</div>
+                        <div class="fw-semibold mb-2">Stations Summary</div>
                         <div class="d-flex justify-content-between align-items-center">
-                            <span class="text-muted small">Total Sites</span>
+                            <span class="text-muted small">Total Stations</span>
                             <span class="fs-4">{{ $totalSites }}</span>
                         </div>
                         <div class="d-flex justify-content-between mt-2">
@@ -119,18 +119,18 @@
             </div>
         </div>
 
-        <!-- All Sites Table -->
+        <!-- All Stations Table -->
         <div class="card shadow-sm">
             <div class="card-header border-bottom-0 bg-white">
-                <h5 class="fw-bold mb-0">All Sites</h5>
+                <h5 class="fw-bold mb-0">All Stations</h5>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="mb-0 table align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th>Site Code</th>
-                                <th>Site Name</th>
+                                <th>Station Code</th>
+                                <th>Station Name</th>
                                 <th>Status</th>
                                 <th>Last Connected</th>
                                 <th>Last Transaction</th>

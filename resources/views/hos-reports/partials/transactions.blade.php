@@ -343,8 +343,8 @@
             <table id="transactions-table" class="table">
                 <thead>
                     <tr>
-                        <th>Site ID</th>
-                        <th>Site Name</th>
+                        <th>Station ID</th>
+                        <th>Station Name</th>
                         <th>Trans ID</th>
                         <th>Trans Date <span class="sort-indicator"><i class="fas fa-sort"></i></span></th>
                         <th>Pump</th>
